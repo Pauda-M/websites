@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Compound Growth Calculator</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; min-height: 100%; }
+  body {
+    background: #020617;
+    color: #f1f5f9;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 24px;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+  h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .sub { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+
+  .card {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 20px;
+  }
+  .card h2 {
+    font-size: 13px; font-weight: 500; color: #cbd5e1; margin-bottom: 14px;
+  }
+
+  .inputs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  @media (max-width: 780px) { .inputs { grid-template-columns: 1fr 1fr; } }
+  .field label {
+    display: block; font-size: 11px; font-weight: 500;
+    color: #94a3b8; margin-bottom: 6px; text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .field input {
+    width: 100%; background: #020617; border: 1px solid #334155;
+    border-radius: 4px; padding: 9px 11px; color: #f1f5f9;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px;
+    outline: none; -webkit-appearance: none; appearance: none;
+  }
+  .field input:focus { border-color: #10b981; }
+  .toggle { display: flex; gap: 8px; }
+  .toggle button {
+    flex: 1; padding: 9px 10px; border-radius: 4px; font-size: 11px;
+    font-weight: 500; border: 1px solid #334155; background: #020617;
+    color: #cbd5e1; cursor: pointer; transition: all 0.15s;
+    font-family: inherit;
+  }
+  .toggle button:hover { border-color: #475569; }
+  .toggle button.active {
+    background: #059669; border-color: #10b981; color: #fff;
+  }
+
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  @media (max-width: 780px) { .tiles { grid-template-columns: 1fr 1fr; } }
+  .tile {
+    background: #0f172a; border: 1px solid #1e293b;
+    border-radius: 8px; padding: 14px 16px;
+  }
+  .tile .label {
+    font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .tile .value {
+    font-size: 20px; font-weight: 600; margin-top: 4px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  .val-pos { color: #34d399; }
+  .val-neg { color: #f87171; }
+  .val-neutral { color: #e2e8f0; }
+
+  svg.chart { width: 100%; height: 320px; display: block; }
+  .grid-line { stroke: #1e293b; stroke-dasharray: 3 3; }
+  .axis-text { fill: #64748b; font-size: 11px; font-family: ui-monospace, monospace; }
+  .line-path { fill: none; stroke: #10b981; stroke-width: 2; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: rgba(2, 6, 23, 0.5); }
+  thead th {
+    text-align: right; padding: 12px 18px; font-weight: 500;
+    color: #94a3b8; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  thead th:first-child { text-align: left; }
+  tbody td, tfoot td {
+    padding: 11px 18px; border-top: 1px solid #1e293b;
+    text-align: right; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  tbody td:first-child, tfoot td:first-child {
+    text-align: left; font-family: inherit; font-weight: 500;
+  }
+  tbody tr:hover { background: rgba(30, 41, 59, 0.3); }
+  tfoot tr { background: rgba(2, 6, 23, 0.5); font-weight: 600; }
+  tfoot td { border-top: 2px solid #334155; }
+
+  .table-card { padding: 0; overflow: hidden; }
+  .table-card .header { padding: 20px; border-bottom: 1px solid #1e293b; }
+  .table-scroll { overflow-x: auto; }
+
+  .footer-note { font-size: 11px; color: #64748b; padding-top: 4px; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Compound Growth Calculator</h1>
+    <div class="sub">Daily compounding projection with monthly breakdown</div>
+  </header>
+
+  <div class="card">
+    <div class="inputs">
+      <div class="field">
+        <label>Start Equity</label>
+        <input type="text" inputmode="decimal" id="in-equity" value="10000" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label>Daily Net Profit %</label>
+        <input type="text" inputmode="decimal" id="in-daily" value="0.5" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label>Duration (months)</label>
+        <input type="text" inputmode="numeric" id="in-months" value="12" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label>Days per Month</label>
+        <div class="toggle">
+          <button type="button" id="btn-21" class="active">21 (trading)</button>
+          <button type="button" id="btn-30">30 (calendar)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tiles">
+    <div class="tile"><div class="label">Final Equity</div><div class="value val-pos" id="t-final">–</div></div>
+    <div class="tile"><div class="label">Total Profit</div><div class="value" id="t-delta">–</div></div>
+    <div class="tile"><div class="label">Total Return</div><div class="value" id="t-pct">–</div></div>
+    <div class="tile"><div class="label">Total Days</div><div class="value val-neutral" id="t-days">–</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Equity Curve</h2>
+    <svg class="chart" id="chart"></svg>
+  </div>
+
+  <div class="card table-card">
+    <div class="header"><h2 style="margin: 0;">Monthly Breakdown</h2></div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Month Start</th>
+            <th>Month End</th>
+            <th>Delta Amount</th>
+            <th>Delta %</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+        <tfoot id="tfoot"></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    Formula: equity_t = equity_0 × (1 + daily%)^t.
+    Constant daily return compounded on prior balance.
+    Monthly rows reflect equity at the first and last day of each month window.
+  </div>
+</div>
+
+<script>
+(function() {
+  function el(id) { return document.getElementById(id); }
+
+  function parseNum(str) {
+    if (str === null || str === undefined) return 0;
+    var s = String(str).trim().replace(/[\s']/g, "").replace(",", ".");
+    var n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+  }
+
+  function fmt(n) {
+    if (!isFinite(n)) return "0.00";
+    var parts = Math.abs(n).toFixed(2).split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+    return (n < 0 ? "-" : "") + parts.join(".");
+  }
+  function fmtCompact(n) {
+    var a = Math.abs(n);
+    if (a >= 1e6) return (n / 1e6).toFixed(2) + "M";
+    if (a >= 1e3) return (n / 1e3).toFixed(1) + "k";
+    return n.toFixed(0);
+  }
+  function signClass(n) { return n >= 0 ? "val-pos" : "val-neg"; }
+  function signStr(n)   { return n >= 0 ? "+" : ""; }
+
+  function compute() {
+    var startEquity = parseNum(el("in-equity").value);
+    var dailyPct = parseNum(el("in-daily").value);
+    var months = Math.max(1, Math.round(parseNum(el("in-months").value) || 1));
+    var r = dailyPct / 100;
+    var totalDays = Math.round(months * daysPerMonth);
+
+    var daily = [{ day: 0, equity: startEquity }];
+    var eq = startEquity;
+    for (var d = 1; d <= totalDays; d++) {
+      eq = eq * (1 + r);
+      daily.push({ day: d, equity: eq });
+    }
+
+    var monthly = [];
+    for (var m = 1; m <= months; m++) {
+      var sIdx = (m - 1) * daysPerMonth;
+      var eIdx = Math.min(m * daysPerMonth, totalDays);
+      var mStart = daily[sIdx].equity;
+      var mEnd = daily[eIdx].equity;
+      monthly.push({
+        month: m, start: mStart, end: mEnd,
+        delta: mEnd - mStart,
+        pct: mStart !== 0 ? ((mEnd / mStart) - 1) * 100 : 0
+      });
+    }
+
+    var finalEq = daily[daily.length - 1].equity;
+    return {
+      daily: daily, monthly: monthly, startEquity: startEquity,
+      totalDays: totalDays, finalEq: finalEq,
+      totalDelta: finalEq - startEquity,
+      totalPct: startEquity !== 0 ? ((finalEq / startEquity) - 1) * 100 : 0
+    };
+  }
+
+  function renderTiles(s) {
+    el("t-final").textContent = fmt(s.finalEq);
+    el("t-final").className = "value val-pos";
+
+    var dEl = el("t-delta");
+    dEl.textContent = signStr(s.totalDelta) + fmt(s.totalDelta);
+    dEl.className = "value " + signClass(s.totalDelta);
+
+    var pEl = el("t-pct");
+    pEl.textContent = signStr(s.totalPct) + s.totalPct.toFixed(2) + "%";
+    pEl.className = "value " + signClass(s.totalPct);
+
+    el("t-days").textContent = s.totalDays.toString();
+  }
+
+  function renderTable(s) {
+    var rows = "";
+    for (var i = 0; i < s.monthly.length; i++) {
+      var m = s.monthly[i];
+      rows += '<tr>' +
+        '<td>M' + m.month + '</td>' +
+        '<td>' + fmt(m.start) + '</td>' +
+        '<td>' + fmt(m.end) + '</td>' +
+        '<td class="' + signClass(m.delta) + '">' + signStr(m.delta) + fmt(m.delta) + '</td>' +
+        '<td class="' + signClass(m.pct) + '">' + signStr(m.pct) + m.pct.toFixed(2) + '%</td>' +
+      '</tr>';
+    }
+    el("tbody").innerHTML = rows;
+
+    el("tfoot").innerHTML =
+      '<tr>' +
+        '<td>Total</td>' +
+        '<td>' + fmt(s.startEquity) + '</td>' +
+        '<td>' + fmt(s.finalEq) + '</td>' +
+        '<td class="' + signClass(s.totalDelta) + '">' + signStr(s.totalDelta) + fmt(s.totalDelta) + '</td>' +
+        '<td class="' + signClass(s.totalPct) + '">' + signStr(s.totalPct) + s.totalPct.toFixed(2) + '%</td>' +
+      '</tr>';
+  }
+
+  function renderChart(s) {
+    var svg = el("chart");
+    var rect = svg.getBoundingClientRect();
+    var W = Math.max(400, rect.width || 1000);
+    var H = 320;
+    var padL = 60, padR = 20, padT = 10, padB = 30;
+    var innerW = W - padL - padR;
+    var innerH = H - padT - padB;
+
+    var data = s.daily;
+    var xMax = data[data.length - 1].day || 1;
+    var yVals = [];
+    for (var k = 0; k < data.length; k++) yVals.push(data[k].equity);
+    var yMin = Math.min.apply(null, yVals);
+    var yMax = Math.max.apply(null, yVals);
+    var yRange = (yMax - yMin) || 1;
+    var yLo = yMin - yRange * 0.05;
+    var yHi = yMax + yRange * 0.05;
+
+    function xScale(v) { return padL + (v / xMax) * innerW; }
+    function yScale(v) { return padT + (1 - (v - yLo) / (yHi - yLo)) * innerH; }
+
+    var gridSvg = "";
+    for (var i = 0; i <= 5; i++) {
+      var val = yLo + (yHi - yLo) * (i / 5);
+      var y = yScale(val);
+      gridSvg += '<line class="grid-line" x1="' + padL + '" y1="' + y + '" x2="' + (W - padR) + '" y2="' + y + '" />';
+      gridSvg += '<text class="axis-text" x="' + (padL - 8) + '" y="' + (y + 4) + '" text-anchor="end">' + fmtCompact(val) + '</text>';
+    }
+    var monthsCount = Math.max(1, Math.round(xMax / daysPerMonth));
+    var xTickStep = Math.max(1, Math.ceil(monthsCount / 8));
+    for (var mm = 0; mm <= monthsCount; mm += xTickStep) {
+      var day = mm * daysPerMonth;
+      if (day > xMax) break;
+      var x = xScale(day);
+      gridSvg += '<text class="axis-text" x="' + x + '" y="' + (H - padB + 16) + '" text-anchor="middle">D' + day + '</text>';
+    }
+
+    var pathD = "";
+    var areaD = "";
+    for (var j = 0; j < data.length; j++) {
+      var dpt = data[j];
+      var px = xScale(dpt.day);
+      var py = yScale(dpt.equity);
+      if (j === 0) {
+        pathD = "M " + px + " " + py;
+        areaD = "M " + px + " " + yScale(yLo) + " L " + px + " " + py;
+      } else {
+        pathD += " L " + px + " " + py;
+        areaD += " L " + px + " " + py;
+      }
+    }
+    areaD += " L " + xScale(xMax) + " " + yScale(yLo) + " Z";
+
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    svg.setAttribute("preserveAspectRatio", "none");
+    svg.innerHTML =
+      '<defs>' +
+        '<linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0%" stop-color="#10b981" stop-opacity="0.4" />' +
+          '<stop offset="100%" stop-color="#10b981" stop-opacity="0" />' +
+        '</linearGradient>' +
+      '</defs>' +
+      gridSvg +
+      '<path d="' + areaD + '" fill="url(#eqGrad)" />' +
+      '<path d="' + pathD + '" class="line-path" />';
+  }
+
+  var daysPerMonth = 21;
+
+  function update() {
+    try {
+      var s = compute();
+      renderTiles(s);
+      renderTable(s);
+      renderChart(s);
+    } catch (err) {
+      console.error("update failed:", err);
+    }
+  }
+
+  // Wire up all possible events — Teams iframe may suppress some
+  var inputs = [el("in-equity"), el("in-daily"), el("in-months")];
+  var events = ["input", "change", "keyup", "paste", "blur"];
+  for (var i = 0; i < inputs.length; i++) {
+    (function(node) {
+      for (var e = 0; e < events.length; e++) {
+        node.addEventListener(events[e], function() { update(); }, false);
+      }
+    })(inputs[i]);
+  }
+
+  el("btn-21").addEventListener("click", function() {
+    daysPerMonth = 21;
+    el("btn-21").classList.add("active");
+    el("btn-30").classList.remove("active");
+    update();
+  }, false);
+  el("btn-30").addEventListener("click", function() {
+    daysPerMonth = 30;
+    el("btn-30").classList.add("active");
+    el("btn-21").classList.remove("active");
+    update();
+  }, false);
+
+  window.addEventListener("resize", function() {
+    try { renderChart(compute()); } catch(e) {}
+  }, false);
+
+  // Poll fallback: if Teams blocks events, still catch changes
+  var lastSig = "";
+  setInterval(function() {
+    var sig = el("in-equity").value + "|" + el("in-daily").value + "|" + el("in-months").value + "|" + daysPerMonth;
+    if (sig !== lastSig) {
+      lastSig = sig;
+      update();
+    }
+  }, 300);
+
+  update();
+})();
+</script>
+</body>
+</html>
