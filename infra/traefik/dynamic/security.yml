@@ -3,6 +3,17 @@
 
 http:
   middlewares:
+    # Restrict a route to callers on the private/compose networks. Applied to
+    # /metrics so the Prometheus endpoint is never reachable from the internet
+    # (Prometheus itself scrapes the api container directly, not via Traefik).
+    internal-only:
+      ipAllowList:
+        sourceRange:
+          - "127.0.0.1/32"
+          - "10.0.0.0/8"
+          - "172.16.0.0/12"
+          - "192.168.0.0/16"
+
     security-headers:
       headers:
         browserXssFilter: true

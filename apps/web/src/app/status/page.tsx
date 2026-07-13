@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Activity, AlertTriangle, ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  ArrowLeft,
+  CheckCircle2,
+  MinusCircle,
+  XCircle,
+} from "lucide-react";
 
 import { PbApiClient } from "@pb/api-client";
 import type { LivenessResponse, ReadinessResponse } from "@pb/api-client";
@@ -46,6 +53,16 @@ function StatusBadge({ status }: { status: string }) {
       <Badge className="bg-amber-500 text-amber-950">
         <AlertTriangle aria-hidden="true" />
         Degraded
+      </Badge>
+    );
+  }
+  if (status === "skipped") {
+    // A dependency that isn't configured (e.g. Redis on a single-node deploy)
+    // is a neutral state, not an error.
+    return (
+      <Badge variant="secondary">
+        <MinusCircle aria-hidden="true" />
+        Not configured
       </Badge>
     );
   }

@@ -24,12 +24,31 @@ services:
   traefik:
     image: traefik:v3.3
     restart: unless-stopped
+    # Static configuration is passed as CLI flags (not a config file) so the
+    # production overlay can extend it — mixing --configfile with other static
+    # flags makes Traefik ignore the flags. Dynamic config stays a file provider.
+    command:
+      - "--global.checknewversion=false"
+      - "--global.sendanonymoususage=false"
+      - "--log.level=INFO"
+      - "--log.format=json"
+      - "--accesslog=true"
+      - "--accesslog.format=json"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=pb-edge"
+      - "--providers.file.directory=/etc/traefik/dynamic"
+      - "--providers.file.watch=true"
+      - "--api.dashboard=false"
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./infra/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - ./infra/traefik/dynamic:/etc/traefik/dynamic:ro
       - letsencrypt:/letsencrypt
     networks:
@@ -84,8 +103,14 @@ services:
       PB_API_CORS_ORIGINS: ${PB_API_CORS_ORIGINS:-["http://localhost:3000"]}
       PB_API_ACCESS_TOKEN_EXPIRE_MINUTES: ${PB_API_ACCESS_TOKEN_EXPIRE_MINUTES:-15}
       PB_API_REFRESH_TOKEN_EXPIRE_MINUTES: ${PB_API_REFRESH_TOKEN_EXPIRE_MINUTES:-20160}
+      PB_API_PASSWORD_MIN_LENGTH: ${PB_API_PASSWORD_MIN_LENGTH:-10}
       PB_API_LOG_LEVEL: ${PB_API_LOG_LEVEL:-INFO}
+      PB_API_METRICS_ENABLED: ${PB_API_METRICS_ENABLED:-true}
+      PB_API_RATE_LIMIT_ENABLED: ${PB_API_RATE_LIMIT_ENABLED:-true}
       PB_API_RATE_LIMIT_PER_MINUTE: ${PB_API_RATE_LIMIT_PER_MINUTE:-120}
+      PB_API_DATABASE_POOL_SIZE: ${PB_API_DATABASE_POOL_SIZE:-10}
+      PB_API_DATABASE_MAX_OVERFLOW: ${PB_API_DATABASE_MAX_OVERFLOW:-20}
+      # The API sits behind Traefik, so client IPs arrive via X-Forwarded-For.
       PB_API_TRUST_PROXY_HEADERS: "true"
     networks:
       - internal
@@ -117,14 +142,26 @@ services:
       - "traefik.http.routers.api.tls=true"
       - "traefik.http.routers.api.middlewares=compress@file"
       - "traefik.http.services.api.loadbalancer.server.port=8000"
+      # Higher-priority router keeps /metrics reachable only from internal
+      # networks; public callers get 403 at the edge.
+      - "traefik.http.routers.api-metrics.rule=Host(`api.${PB_DOMAIN:-localhost}`) && PathPrefix(`/metrics`)"
+      - "traefik.http.routers.api-metrics.entrypoints=websecure"
+      - "traefik.http.routers.api-metrics.tls=true"
+      - "traefik.http.routers.api-metrics.priority=100"
+      - "traefik.http.routers.api-metrics.middlewares=internal-only@file"
+      - "traefik.http.routers.api-metrics.service=api"
 
   web:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      args:
+        # NEXT_PUBLIC_* is inlined at build time by Next.js, so the browser
+        # bundle must be built with the real public API URL, not the runtime env.
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.localhost}
     restart: unless-stopped
     environment:
-      PB_WEB_API_INTERNAL_URL: http://api:8000
+      PB_WEB_API_INTERNAL_URL: ${PB_WEB_API_INTERNAL_URL:-http://api:8000}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.localhost}
     networks:
       - edge

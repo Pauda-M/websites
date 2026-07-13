@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
+
+import jwt
 import pytest
 
 from pb_api.core.config import Settings
@@ -57,3 +60,31 @@ def test_tampered_token_rejected(settings: Settings) -> None:
     tampered = token[:-4] + ("AAAA" if not token.endswith("AAAA") else "BBBB")
     with pytest.raises(TokenError):
         decode_token(tampered, expected_type="access", settings=settings)
+
+
+def test_token_with_wrong_issuer_rejected(settings: Settings) -> None:
+    now = datetime.now(UTC)
+    forged = jwt.encode(
+        {
+            "sub": "user-1",
+            "type": "access",
+            "iat": now,
+            "exp": now + timedelta(minutes=5),
+            "iss": "some-other-service",
+        },
+        settings.secret_key.get_secret_value(),
+        settings.jwt_algorithm,
+    )
+    with pytest.raises(TokenError):
+        decode_token(forged, expected_type="access", settings=settings)
+
+
+def test_token_missing_required_claim_rejected(settings: Settings) -> None:
+    # Missing "type" — decode_token requires it.
+    forged = jwt.encode(
+        {"sub": "user-1", "iat": 0, "exp": 9999999999, "iss": settings.app_name},
+        settings.secret_key.get_secret_value(),
+        settings.jwt_algorithm,
+    )
+    with pytest.raises(TokenError):
+        decode_token(forged, expected_type="access", settings=settings)

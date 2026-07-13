@@ -6,7 +6,9 @@ from __future__ import annotations
 import uuid
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.concurrency import run_in_threadpool
 
 from pb_api.core.security import dummy_verify, hash_password, verify_password
 from pb_api.db.models.user import User, UserRole
@@ -51,14 +53,23 @@ async def create_user(
     if await get_user_by_email(session, normalized) is not None:
         raise EmailAlreadyRegisteredError(normalized)
 
+    # Argon2id is CPU-bound (~70ms); run it off the event loop so concurrent
+    # requests aren't blocked while a password is hashed.
+    hashed = await run_in_threadpool(hash_password, password)
     user = User(
         email=normalized,
-        hashed_password=hash_password(password),
+        hashed_password=hashed,
         full_name=full_name.strip(),
         role=role,
     )
     session.add(user)
-    await session.commit()
+    try:
+        await session.commit()
+    except IntegrityError as exc:
+        # The pre-check above is a fast path; the unique index is authoritative
+        # and closes the check-then-insert race between concurrent signups.
+        await session.rollback()
+        raise EmailAlreadyRegisteredError(normalized) from exc
     await session.refresh(user)
     return user
 
@@ -67,9 +78,9 @@ async def authenticate(session: AsyncSession, *, email: str, password: str) -> U
     user = await get_user_by_email(session, email)
     if user is None:
         # Equalise response timing between unknown-user and bad-password paths.
-        dummy_verify()
+        await run_in_threadpool(dummy_verify)
         return None
-    if not verify_password(password, user.hashed_password):
+    if not await run_in_threadpool(verify_password, password, user.hashed_password):
         return None
     if not user.is_active:
         return None

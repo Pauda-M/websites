@@ -8,7 +8,7 @@ WEB_DIR := apps/web
 
 .PHONY: help setup setup-api setup-web dev-api dev-web migrate lint lint-api lint-web \
 	format format-api format-web format-check typecheck typecheck-api typecheck-web \
-	test test-api test-web test-e2e build openapi up down logs ps compose-config
+	test test-api test-web test-e2e build openapi up up-db down logs ps compose-config
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
@@ -87,6 +87,9 @@ build: ## Production builds of all JS/TS workspaces
 
 up: ## Start the full stack (traefik, api, web, postgres, redis)
 	docker compose up -d --build
+
+up-db: ## Start only PostgreSQL + Redis (for local API development)
+	docker compose up -d postgres redis
 
 down: ## Stop the stack
 	docker compose down

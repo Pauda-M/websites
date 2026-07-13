@@ -84,6 +84,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         rate_limit_backend = RedisRateLimiter(redis_for_limiter)
     else:
         rate_limit_backend = MemoryRateLimiter()
+    app.state.rate_limit_backend = rate_limit_backend
 
     # Starlette middleware run in reverse order of registration: the last
     # add_middleware call is the outermost layer. Effective request path:

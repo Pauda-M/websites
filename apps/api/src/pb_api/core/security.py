@@ -1,9 +1,9 @@
 """Password hashing and JWT issuing/verification.
 
 Passwords are hashed with Argon2id (pwdlib recommended profile). Tokens are
-short-lived HS256 JWTs: access tokens carry the user's role for RBAC checks,
-refresh tokens carry a ``jti`` so a revocation store can be added without a
-token-format change.
+short-lived HS256 JWTs: access tokens additionally carry the user's role for
+RBAC checks. Every token (access and refresh) carries a ``jti`` and issuer, so
+a revocation store can be added without a token-format change.
 """
 
 from __future__ import annotations

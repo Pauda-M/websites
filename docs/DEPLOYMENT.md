@@ -25,7 +25,7 @@ starts (its own healthcheck gates Traefik-visible readiness) → `web` starts.
 ## 2. Prerequisites
 
 - A Linux host with Docker Engine 24+ and the compose plugin.
-- DNS: `A` records for `pbsolutions.example` and `api.pbsolutions.example`
+- DNS: `A` records for `pb-solutions.today` and `api.pb-solutions.today`
   pointing at the host (Traefik routes web on the apex and API on the `api.`
   subdomain).
 - Ports 80 and 443 reachable from the internet (ACME HTTP-01 challenge).
@@ -41,12 +41,12 @@ Set at minimum:
 | Variable              | Production value                                      |
 | --------------------- | ----------------------------------------------------- |
 | `PB_ENVIRONMENT`      | `production` (also forced by the prod overlay)        |
-| `PB_DOMAIN`           | your apex domain, e.g. `pbsolutions.example`          |
+| `PB_DOMAIN`           | your apex domain, e.g. `pb-solutions.today`           |
 | `PB_ACME_EMAIL`       | ops email for Let's Encrypt expiry notices            |
 | `POSTGRES_PASSWORD`   | long random string                                    |
 | `PB_API_SECRET_KEY`   | ≥32 chars of real entropy (`openssl rand -base64 48`) |
-| `PB_API_CORS_ORIGINS` | `["https://pbsolutions.example"]`                     |
-| `NEXT_PUBLIC_API_URL` | `https://api.pbsolutions.example`                     |
+| `PB_API_CORS_ORIGINS` | `["https://pb-solutions.today"]`                      |
+| `NEXT_PUBLIC_API_URL` | `https://api.pb-solutions.today`                      |
 
 The API **refuses to boot** in production with a placeholder secret, wildcard
 CORS, or a non-PostgreSQL database — misconfiguration fails loudly at start,
@@ -83,13 +83,13 @@ curl -fsSI https://$PB_DOMAIN | head -5
 
 ## 5. Operations
 
-| Task              | Command                                                                                            |
-| ----------------- | -------------------------------------------------------------------------------------------------- |
-| Tail logs         | `docker compose logs -f --tail=100 api web traefik`                                                |
-| Restart a service | `docker compose restart api`                                                                       |
-| Manual migration  | `docker compose run --rm migrations`                                                               |
-| Create admin user | `docker compose run --rm migrations python -m pb_api.cli create-admin --email ... --full-name ...` |
-| Metrics           | `GET /metrics` on the api container (scrape over the internal network; not routed through Traefik) |
+| Task              | Command                                                                                                                                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tail logs         | `docker compose logs -f --tail=100 api web traefik`                                                                                                                                                          |
+| Restart a service | `docker compose restart api`                                                                                                                                                                                 |
+| Manual migration  | `docker compose run --rm migrations`                                                                                                                                                                         |
+| Create admin user | `docker compose run --rm migrations python -m pb_api.cli create-admin --email ... --full-name ...`                                                                                                           |
+| Metrics           | `GET /metrics` on the api container over the internal network. At the edge a dedicated Traefik router restricts `/metrics` to private source ranges (`internal-only@file`), so it is not reachable publicly. |
 
 Logs are JSON-per-line from every service (api, traefik) — point your
 collector at the Docker log driver.

@@ -20,6 +20,28 @@ async def test_security_headers_present(client: AsyncClient) -> None:
     assert "Strict-Transport-Security" not in response.headers
 
 
+async def test_hsts_emitted_when_enabled() -> None:
+    # Production wires SecureHeadersMiddleware(enable_hsts=True); assert the
+    # header the production path depends on is actually emitted.
+    from starlette.applications import Starlette
+    from starlette.responses import PlainTextResponse
+    from starlette.routing import Route
+
+    from pb_api.middleware.secure_headers import SecureHeadersMiddleware
+
+    async def ok(_request: object) -> PlainTextResponse:
+        return PlainTextResponse("ok")
+
+    app = Starlette(routes=[Route("/", ok)])
+    app.add_middleware(SecureHeadersMiddleware, enable_hsts=True)
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as http_client:
+        response = await http_client.get("/")
+    hsts = response.headers["Strict-Transport-Security"]
+    assert "max-age=63072000" in hsts
+    assert "includeSubDomains" in hsts
+
+
 async def test_cors_preflight_allows_configured_origin(client: AsyncClient) -> None:
     response = await client.options(
         "/api/v1/auth/login",
@@ -58,6 +80,9 @@ async def test_metrics_endpoint_exposes_prometheus_counters(client: AsyncClient)
 async def rate_limited_client() -> AsyncIterator[AsyncClient]:
     settings = build_test_settings(rate_limit_enabled=True, rate_limit_per_minute=3)
     application: FastAPI = create_app(settings)
+    # Pin the limiter clock so a real 60s window boundary can never roll over
+    # mid-test — the assertions below become deterministic.
+    application.state.rate_limit_backend._time_fn = lambda: 1000.0
     async with application.router.lifespan_context(application):
         engine = application.state.engine
         from pb_api.db.base import Base

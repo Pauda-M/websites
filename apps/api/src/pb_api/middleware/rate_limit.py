@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import time
+from collections.abc import Callable
 from typing import Protocol
 
 from redis.asyncio import Redis
@@ -39,14 +40,23 @@ class RateLimiterBackend(Protocol):
 
 
 class MemoryRateLimiter:
-    """Per-process fixed window. Correct only for a single instance."""
+    """Per-process fixed window. Correct only for a single instance.
 
-    def __init__(self) -> None:
+    Stale windows are swept periodically so the key set stays bounded rather
+    than growing once per distinct client for the process lifetime. The clock
+    is injectable so tests can pin it and avoid window-boundary flakiness.
+    """
+
+    _SWEEP_EVERY = 1024
+
+    def __init__(self, *, time_fn: Callable[[], float] = time.monotonic) -> None:
         self._windows: dict[str, tuple[int, int]] = {}
         self._lock = asyncio.Lock()
+        self._time_fn = time_fn
+        self._hits_since_sweep = 0
 
     async def hit(self, key: str, limit: int, window_seconds: int) -> RateLimitResult:
-        now = int(time.monotonic())
+        now = int(self._time_fn())
         window_start = now - (now % window_seconds)
         async with self._lock:
             start, count = self._windows.get(key, (window_start, 0))
@@ -54,6 +64,13 @@ class MemoryRateLimiter:
                 start, count = window_start, 0
             count += 1
             self._windows[key] = (start, count)
+
+            self._hits_since_sweep += 1
+            if self._hits_since_sweep >= self._SWEEP_EVERY:
+                self._hits_since_sweep = 0
+                stale = [k for k, (s, _) in self._windows.items() if s < window_start]
+                for k in stale:
+                    del self._windows[k]
         if count > limit:
             return RateLimitResult(False, window_seconds - (now - window_start))
         return RateLimitResult(True, 0)

@@ -85,7 +85,7 @@ are the wire format. Cross-cutting concerns live in `core/` and `middleware/`.
 
 1. Create the model under `db/models/` and import it in `db/models/__init__.py`
    (that import is what makes autogenerate and `create_all` see it).
-2. Generate a migration (needs a running PostgreSQL, e.g. `make up postgres`):
+2. Generate a migration (needs a running PostgreSQL, e.g. `make up-db`):
    ```bash
    cd apps/api && uv run alembic revision --autogenerate -m "add invoices table"
    ```

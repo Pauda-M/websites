@@ -93,3 +93,13 @@ async def promote_to_admin(app: FastAPI, email: str) -> None:
     async with app.state.session_factory() as session:
         await session.execute(update(User).where(User.email == email).values(role=UserRole.ADMIN))
         await session.commit()
+
+
+async def set_active(app: FastAPI, email: str, *, is_active: bool) -> None:
+    from sqlalchemy import update
+
+    from pb_api.db.models.user import User
+
+    async with app.state.session_factory() as session:
+        await session.execute(update(User).where(User.email == email).values(is_active=is_active))
+        await session.commit()

@@ -35,7 +35,8 @@ class Settings(BaseSettings):
     app_name: str = "pb-api"
     environment: Environment = Field(
         default="development",
-        validation_alias=AliasChoices("PB_ENVIRONMENT", "PB_API_ENVIRONMENT"),
+        # Service-specific override wins; the shared cross-stack var is the fallback.
+        validation_alias=AliasChoices("PB_API_ENVIRONMENT", "PB_ENVIRONMENT"),
     )
     debug: bool = False
 

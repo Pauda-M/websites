@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from httpx import AsyncClient
 
-from tests.conftest import login, promote_to_admin, register_user, unique_email
+from tests.conftest import login, promote_to_admin, register_user, set_active, unique_email
 
 PASSWORD = "correct-horse-battery"
 
@@ -122,6 +122,31 @@ async def test_refresh_token_rejected_as_access_token(client: AsyncClient) -> No
 async def test_garbage_token_rejected(client: AsyncClient) -> None:
     response = await client.get("/api/v1/users/me", headers={"Authorization": "Bearer not-a-jwt"})
     assert response.status_code == 401
+
+
+async def test_inactive_user_cannot_login(client: AsyncClient, app: FastAPI) -> None:
+    email = unique_email("inactive")
+    await register_user(client, email=email)
+    await set_active(app, email, is_active=False)
+
+    response = await client.post("/api/v1/auth/login", json={"email": email, "password": PASSWORD})
+    assert response.status_code == 401
+
+
+async def test_deactivation_revokes_existing_access_token(
+    client: AsyncClient, app: FastAPI
+) -> None:
+    email = unique_email("revoked")
+    await register_user(client, email=email)
+    tokens = await login(client, email=email, password=PASSWORD)
+    headers = {"Authorization": f"Bearer {tokens['access_token']}"}
+
+    assert (await client.get("/api/v1/users/me", headers=headers)).status_code == 200
+
+    await set_active(app, email, is_active=False)
+    # get_current_user re-checks is_active on every request, so the still-valid
+    # JWT no longer grants access.
+    assert (await client.get("/api/v1/users/me", headers=headers)).status_code == 401
 
 
 async def test_rbac_client_cannot_list_users(client: AsyncClient) -> None:
