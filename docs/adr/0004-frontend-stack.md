@@ -70,7 +70,8 @@ Quality gates are ESLint, `tsc --noEmit`, and Vitest + Testing Library
 - Owning the shadcn/ui components means updates are deliberate (copy/patch),
   trading auto-updates for full control of the design system.
 - The typed client is a single choke point for the web↔API contract; the e2e
-  suite boots the real API and web build, so a contract break fails CI.
+  suite boots the real API and web build, so a contract break fails the local
+  e2e run.
 - The `standalone` output keeps the production image small and dependency-light.
 
 ## Future Considerations

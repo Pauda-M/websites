@@ -7,16 +7,16 @@ proposal generator, invoicing, and internal admin.
 
 ## Stack
 
-| Layer    | Technology                                                           |
-| -------- | -------------------------------------------------------------------- |
-| Frontend | Next.js 15 (App Router), TypeScript, Tailwind CSS v4, shadcn/ui      |
-| Backend  | FastAPI, SQLAlchemy 2 (async), Alembic, Pydantic v2                  |
-| Data     | PostgreSQL 17, Redis 7                                               |
-| Edge     | Traefik v3 (TLS termination, routing, security headers)              |
-| Auth     | JWT (access + refresh), Argon2id password hashing, role-based access |
-| Quality  | Ruff, Black, MyPy (strict), ESLint, Prettier                         |
-| Testing  | Pytest, Vitest, Playwright                                           |
-| CI       | GitHub Actions (lint → types → tests → build → compose smoke test)   |
+| Layer      | Technology                                                           |
+| ---------- | -------------------------------------------------------------------- |
+| Frontend   | Next.js 15 (App Router), TypeScript, Tailwind CSS v4, shadcn/ui      |
+| Backend    | FastAPI, SQLAlchemy 2 (async), Alembic, Pydantic v2                  |
+| Data       | PostgreSQL 17, Redis 7                                               |
+| Edge       | Traefik v3 (TLS termination, routing, security headers)              |
+| Auth       | JWT (access + refresh), Argon2id password hashing, role-based access |
+| Quality    | Ruff, Black, MyPy (strict), ESLint, Prettier                         |
+| Testing    | Pytest, Vitest, Playwright                                           |
+| Validation | Local `make` gates (lint → types → tests → build → compose config)   |
 
 ## Repository layout
 
@@ -46,7 +46,7 @@ loosely-coupled API namespaces declared in the platform module registry
 
 Root-level `docker-compose.yml` runs the full stack; `docker-compose.prod.yml`
 layers production hardening on top. The `Makefile` is the canonical entry
-point for every workflow — CI runs the same targets.
+point for every workflow — run them locally before every commit.
 
 ## Quick start
 
@@ -78,7 +78,8 @@ make test-e2e       # playwright against the real, booted stack
 make format         # auto-fix formatting everywhere
 ```
 
-All of these must pass before a commit lands — CI enforces the same gates.
+All of these must pass locally before a commit lands — this project runs no CI
+service, so the `make` gates are the enforcement point.
 
 ## Governance
 

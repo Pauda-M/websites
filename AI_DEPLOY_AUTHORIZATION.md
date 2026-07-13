@@ -90,7 +90,8 @@ A feature is not complete until its relevant tests pass.
 After every significant implementation: build → lint → type check → run tests
 → fix failures → repeat. Continue until there are zero known failures. In this
 repository the loop is codified as `make lint typecheck test` (plus
-`make test-e2e` for cross-service changes) and enforced by CI.
+`make test-e2e` for cross-service changes) and must pass locally before every
+commit — validation is performed on the developer's machine, not a CI service.
 
 ## Git workflow
 

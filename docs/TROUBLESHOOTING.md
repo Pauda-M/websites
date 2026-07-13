@@ -160,22 +160,21 @@ executable is missing.
 environment.
 
 **Fix.** Install it: `cd tests/e2e && pnpm exec playwright install chromium`
-(CI uses `--with-deps`). In a sandbox that already ships a Chromium, point
-Playwright at it instead of installing:
+(on a fresh machine use `--with-deps` to pull the OS libraries too). In a
+sandbox that already ships a Chromium, point Playwright at it instead of
+installing:
 `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/path/to/chromium make test-e2e` — the e2e config
 reads that variable and sets `launchOptions.executablePath` when present
 (`tests/e2e/playwright.config.ts`).
 
 ## Frozen-lockfile mismatches (pnpm / uv)
 
-**Symptom.** CI or a clean install fails: `pnpm install --frozen-lockfile`
-reports the lockfile is out of date, or `uv sync --frozen` reports the lock is
-stale.
+**Symptom.** A clean install fails: `pnpm install --frozen-lockfile` reports the
+lockfile is out of date, or `uv sync --frozen` reports the lock is stale.
 
 **Cause.** A manifest (`package.json` / `pyproject.toml`) changed without its
 lockfile (`pnpm-lock.yaml` / `apps/api/uv.lock`) being regenerated and committed.
-CI installs with frozen lockfiles to guarantee reproducible builds, so any drift
-fails.
+Frozen installs (used for reproducible builds) fail on any such drift.
 
 **Fix.** Regenerate and commit the lockfile: run `pnpm install` (writes
 `pnpm-lock.yaml`) or `cd apps/api && uv sync` (writes `uv.lock`), then commit the

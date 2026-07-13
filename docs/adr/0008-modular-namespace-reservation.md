@@ -69,7 +69,7 @@ running system is therefore caught automatically.
 - New modules slot into their reserved namespace without touching existing
   routes; adding one is a registry entry plus the actual implementation.
 - The registry is a single source of truth that tests hold to the governance
-  document, so a missing or renamed module fails CI.
+  document, so a missing or renamed module fails the test suite.
 - The manifest carries no behaviour, so it stays cheap and cannot become stale
   placeholder logic.
 - The registry is the natural place ADR-0009 attaches outreach compliance

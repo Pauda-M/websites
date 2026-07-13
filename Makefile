@@ -1,5 +1,6 @@
 # PB Platform — canonical developer entry points.
-# Every target here is also what CI runs; keep them in sync.
+# These targets are the project's validation gates. There is no CI service;
+# run them locally before every commit.
 
 .DEFAULT_GOAL := help
 

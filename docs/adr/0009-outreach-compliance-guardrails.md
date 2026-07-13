@@ -52,8 +52,9 @@ The guarantee is enforced by tests in `apps/api/tests/test_platform.py`:
 - `test_non_outreach_modules_have_no_controls` asserts that non-outreach modules
   carry none (so the marker means what it says).
 
-Because these tests are part of the suite that gates CI, an outreach module
-cannot be added or shipped with a missing control without turning the build red.
+Because these tests are part of the required `make test` suite, an outreach
+module cannot be added or shipped with a missing control without turning the
+local build red.
 
 ## Alternatives Considered
 

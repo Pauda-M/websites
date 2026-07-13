@@ -49,16 +49,16 @@ The boundary rules, enforced by convention and reflected in
 4. **Contracts are generated, not hand-maintained**: `make openapi` exports the
    spec from FastAPI and `@pb/api-client` mirrors it under test.
 
-The `Makefile` is the canonical entry point for every workflow, and CI
-(`.github/workflows/ci.yml`) runs the same targets, so local and CI behaviour
-cannot diverge.
+The `Makefile` is the canonical entry point for every workflow. Validation is
+performed locally (this project runs no CI service); the `make` gates are the
+single enforcement point and must pass before every commit.
 
 ## Alternatives Considered
 
 - **Polyrepo (one repository per app/library).** Gives each service a hard
   boundary and independent history, but makes atomic cross-cutting changes
   (a contract change touching API + client + web) span several pull requests,
-  duplicates tooling and CI, and invites version drift between the API and its
+  duplicates tooling, and invites version drift between the API and its
   client. Rejected: the coordination cost outweighs the isolation benefit at
   this stage, and the monorepo already enforces app independence by convention.
 - **A single application (no `apps/` split).** Fewer moving parts early on, but
@@ -71,7 +71,8 @@ cannot diverge.
 - One clone, one install (`make setup`), one validation loop
   (`make lint typecheck test`, plus `make test-e2e`) covers the whole system.
 - Cross-cutting changes land atomically and are validated together; the e2e
-  suite boots the real API and web build so a broken contract fails CI.
+  suite boots the real API and web build so a broken contract fails the local
+  `make test-e2e` run.
 - The `apps/` boundary must be defended in review — there is no build-time
   barrier stopping one app from importing another, so the discipline is social
   plus the e2e/contract tests that would break if boundaries were crossed.

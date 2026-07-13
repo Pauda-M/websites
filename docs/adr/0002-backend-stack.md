@@ -68,7 +68,8 @@ mode (`pyproject.toml`).
 - Two toolchains (uv/Python and pnpm/Node) live in one repo; contributors need
   uv installed for backend work.
 - Portable model column types (`Uuid`, non-native enums) let the suite run on
-  SQLite while production runs PostgreSQL, and CI exercises both.
+  SQLite while production runs PostgreSQL, and the test suite exercises both
+  (SQLite by default, PostgreSQL via `TEST_DATABASE_URL`).
 - MyPy strict and Ruff's security lint (`S`) raise the floor for new code but
   require discipline (justified `type: ignore`/`Any`).
 

@@ -26,8 +26,8 @@ const apiEnv = {
   PB_ENVIRONMENT: "test",
 };
 
-// Sandboxes with a preinstalled Chromium expose it here; CI installs the
-// matching browser via `playwright install` and leaves this unset.
+// Sandboxes with a preinstalled Chromium expose it here; on a normal machine
+// `playwright install` provides the browser and this stays unset.
 const chromiumExecutable = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 
 export default defineConfig({

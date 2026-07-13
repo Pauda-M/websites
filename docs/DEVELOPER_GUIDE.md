@@ -2,7 +2,7 @@
 
 Everything you need for day-to-day work. All commands run from the repository
 root unless stated otherwise; the `Makefile` targets are the canonical
-interface (CI runs the same ones).
+interface, run locally before every commit.
 
 ## 1. Prerequisites
 
@@ -56,9 +56,10 @@ make test        # pytest (apps/api) + vitest (web, api-client)
 make test-e2e    # playwright: boots real api + web and drives a browser
 ```
 
-CI (`.github/workflows/ci.yml`) runs exactly these gates plus a full
-`docker compose up` smoke test. A red gate is a broken build — fix it before
-pushing.
+These are the required gates and they run locally — this project has no CI
+service; validation is done on the developer's machine before every commit.
+For a full-stack smoke test, `make up` then check the health endpoints
+(`docs/OPERATIONS.md`). A red gate is a broken build — fix it before you push.
 
 Sandboxed environments with a preinstalled Chromium can point Playwright at
 it: `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium make test-e2e`.
@@ -149,4 +150,4 @@ cd tests/e2e && pnpm run e2e:only   # skip the web rebuild while iterating
   `type: ignore` need a justifying comment.
 - **No secrets in git**, ever, including tests and fixtures.
 - **Every new service** ships with: Dockerfile, health endpoints, metrics,
-  structured logs, tests, and an entry in the compose stack + CI.
+  structured logs, tests, and an entry in the compose stack.
