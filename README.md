@@ -1,0 +1,90 @@
+# PB Platform
+
+The operating system of **PB Solutions** — a production monorepo that hosts the
+consulting website today and is architected to grow into the full product
+suite: CRM, client portal, AI services, blog, ticketing, knowledge base,
+proposal generator, invoicing, and internal admin.
+
+## Stack
+
+| Layer    | Technology                                                           |
+| -------- | -------------------------------------------------------------------- |
+| Frontend | Next.js 15 (App Router), TypeScript, Tailwind CSS v4, shadcn/ui      |
+| Backend  | FastAPI, SQLAlchemy 2 (async), Alembic, Pydantic v2                  |
+| Data     | PostgreSQL 17, Redis 7                                               |
+| Edge     | Traefik v3 (TLS termination, routing, security headers)              |
+| Auth     | JWT (access + refresh), Argon2id password hashing, role-based access |
+| Quality  | Ruff, Black, MyPy (strict), ESLint, Prettier                         |
+| Testing  | Pytest, Vitest, Playwright                                           |
+| CI       | GitHub Actions (lint → types → tests → build → compose smoke test)   |
+
+## Repository layout
+
+```
+apps/          Deployable applications
+  api/         FastAPI service — auth, RBAC, health, metrics (own Dockerfile)
+  web/         Next.js site — landing + live status page (own Dockerfile)
+packages/      Shared JS/TS libraries
+  api-client/  Typed client for the API (consumed by apps/web)
+  tsconfig/    Shared TypeScript configurations
+shared/        Cross-language contracts
+  openapi/     OpenAPI spec exported from the API (make openapi)
+infra/         Infrastructure configuration
+  traefik/     Edge proxy static + dynamic config
+docs/          Architecture, developer guide, deployment guide
+scripts/       Operational scripts (OpenAPI export, ...)
+tests/
+  e2e/         Playwright suite that boots the real API + web app
+compound-calculator/  Legacy standalone page (pre-platform, unmanaged)
+```
+
+Root-level `docker-compose.yml` runs the full stack; `docker-compose.prod.yml`
+layers production hardening on top. The `Makefile` is the canonical entry
+point for every workflow — CI runs the same targets.
+
+## Quick start
+
+Prerequisites: Node 22+, pnpm 10+, Python 3.11+, [uv](https://docs.astral.sh/uv/), Docker.
+
+```bash
+# 1. Install everything
+make setup
+
+# 2. Run the API (SQLite fallback works out of the box for a quick look;
+#    use docker compose for the real PostgreSQL/Redis stack)
+make dev-api        # http://localhost:8000  (docs at /docs)
+
+# 3. Run the web app
+make dev-web        # http://localhost:3000
+
+# — or run the whole stack in containers —
+cp .env.example .env
+make up             # https://localhost (web), https://api.localhost (API)
+```
+
+## Quality gates
+
+```bash
+make lint           # ruff + black --check + eslint
+make typecheck      # mypy (strict) + tsc across all workspaces
+make test           # pytest + vitest
+make test-e2e       # playwright against the real, booted stack
+make format         # auto-fix formatting everywhere
+```
+
+All of these must pass before a commit lands — CI enforces the same gates.
+
+## Documentation
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — system design, boundaries, and how the platform grows
+- [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) — day-to-day workflows, adding endpoints/pages/migrations
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — running the stack in production
+
+## Security posture (phase 1)
+
+- Argon2id password hashing, JWT access (15 min) + refresh (14 d) tokens with type separation and `jti`
+- RBAC roles (`admin` / `staff` / `client`) enforced by dependency injection
+- Strict security headers, locked-down CORS, IP rate limiting (Redis-backed)
+- Settings validation refuses production boot with placeholder secrets,
+  wildcard CORS, or a non-PostgreSQL database
+- TLS at the edge via Traefik; HSTS in production

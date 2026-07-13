@@ -1,0 +1,50 @@
+# --- Node / JavaScript ---
+node_modules/
+.pnpm-store/
+*.tsbuildinfo
+.next/
+out/
+dist/
+coverage/
+.turbo/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- Environment / secrets ---
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# --- Test artifacts ---
+playwright-report/
+test-results/
+blob-report/
+
+# --- Editors / OS ---
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# --- Logs / temp ---
+*.log
+logs/
+tmp/
+*.local.db
+*.sqlite3
+
+# e2e transient database
+tests/e2e/.tmp/

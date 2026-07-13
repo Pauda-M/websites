@@ -1,0 +1,17 @@
+{
+  "name": "@pb/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "description": "End-to-end tests for PB Platform (boots the real API and web app)",
+  "scripts": {
+    "pree2e": "pnpm -C ../../apps/web build",
+    "e2e": "playwright test",
+    "e2e:only": "playwright test",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  }
+}

@@ -1,0 +1,46 @@
+# Traefik static configuration (mounted read-only by docker compose).
+# Routing rules live as labels on each service; TLS middleware lives in
+# dynamic/. Production concerns (ACME) are enabled via docker-compose.prod.yml.
+
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+log:
+  level: INFO
+  format: json
+
+accessLog:
+  format: json
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: ":443"
+
+providers:
+  docker:
+    exposedByDefault: false
+    network: pb-edge
+  file:
+    directory: /etc/traefik/dynamic
+    watch: true
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      # Registration email is injected via CLI flag in docker-compose.prod.yml
+      # (--certificatesresolvers.letsencrypt.acme.email=...).
+      storage: /letsencrypt/acme.json
+      httpChallenge:
+        entryPoint: web
+
+api:
+  dashboard: false
+  insecure: false

@@ -1,0 +1,10 @@
+{
+  "name": "@pb/tsconfig",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared TypeScript configurations for PB Platform workspaces",
+  "files": [
+    "base.json",
+    "library.json"
+  ]
+}

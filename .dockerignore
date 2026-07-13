@@ -1,0 +1,21 @@
+# Applies to every image built from the repository root context.
+.git
+**/node_modules
+**/.next
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/dist
+**/coverage
+**/playwright-report
+**/test-results
+.env
+.env.*
+!.env.example
+docs
+compound-calculator
+*.log
+*.sqlite3
+*.local.db
