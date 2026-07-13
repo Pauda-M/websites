@@ -88,6 +88,26 @@ authority for this repository — engineering standards, security requirements,
 the validation loop, and compliance rules. Where any implementation conflicts
 with it, the governance document takes precedence.
 
+## Genesis — Autonomous Digital Workforce
+
+The long-term product built on this foundation is **Genesis**: a platform for
+deploying **AI Employees** that collaborate through a shared **Company Brain**
+under governed autonomy. Its complete architecture specification — the canonical
+source of truth every future implementation must follow — lives in
+[docs/genesis/](docs/genesis/):
+
+- [000_Glossary.md](docs/genesis/000_Glossary.md) — the binding spine: terminology and locked decisions
+- [001_Vision.md](docs/genesis/001_Vision.md) · [002_System_Architecture.md](docs/genesis/002_System_Architecture.md) · [003_Cognitive_Architecture.md](docs/genesis/003_Cognitive_Architecture.md) · [004_Company_Brain.md](docs/genesis/004_Company_Brain.md)
+- [005_Event_Model.md](docs/genesis/005_Event_Model.md) · [006_Agent_Runtime.md](docs/genesis/006_Agent_Runtime.md) · [007_AI_Employees.md](docs/genesis/007_AI_Employees.md) · [008_Memory_Engine.md](docs/genesis/008_Memory_Engine.md)
+- [009_Knowledge_Graph.md](docs/genesis/009_Knowledge_Graph.md) · [010_Workflow_Engine.md](docs/genesis/010_Workflow_Engine.md) · [011_ML_Platform.md](docs/genesis/011_ML_Platform.md) · [012_Security.md](docs/genesis/012_Security.md)
+- [013_APIs.md](docs/genesis/013_APIs.md) · [014_Data_Model.md](docs/genesis/014_Data_Model.md) · [015_Roadmap.md](docs/genesis/015_Roadmap.md)
+
+Genesis is event-driven and modular by construction: it depends on ports (never
+vendors), reserves loosely-coupled module namespaces (see the module registry
+above), and keeps autonomy governed (explicit authority levels, human-in-the-loop,
+and the outreach-compliance controls). Phase 1 here is its foundation; the
+roadmap in `015_Roadmap.md` sequences the build.
+
 ## Documentation
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — system design, boundaries, and how the platform grows

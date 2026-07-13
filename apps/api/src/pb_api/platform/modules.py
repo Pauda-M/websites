@@ -101,7 +101,7 @@ MODULE_REGISTRY: tuple[PlatformModule, ...] = (
         category=ModuleCategory.PRODUCT,
         status=ModuleStatus.PLANNED,
         api_namespace="/api/v1/crm",
-        description="Contacts, companies, deals, and the pipeline that powers PB Solutions sales.",
+        description="Contacts, accounts, deals, and the pipeline that powers PB Solutions sales.",
     ),
     PlatformModule(
         slug="client-portal",
