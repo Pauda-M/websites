@@ -46,6 +46,7 @@ order:
 | 0007   | [Configuration and secrets](0007-configuration-and-secrets.md)           | Accepted |
 | 0008   | [Modular namespace reservation](0008-modular-namespace-reservation.md)   | Accepted |
 | 0009   | [Outreach compliance guardrails](0009-outreach-compliance-guardrails.md) | Accepted |
+| 0010   | [Cognitive Core](0010-cognitive-core.md)                                 | Accepted |
 
 ## Governance
 

@@ -101,12 +101,16 @@ source of truth every future implementation must follow — lives in
 - [005_Event_Model.md](docs/genesis/005_Event_Model.md) · [006_Agent_Runtime.md](docs/genesis/006_Agent_Runtime.md) · [007_AI_Employees.md](docs/genesis/007_AI_Employees.md) · [008_Memory_Engine.md](docs/genesis/008_Memory_Engine.md)
 - [009_Knowledge_Graph.md](docs/genesis/009_Knowledge_Graph.md) · [010_Workflow_Engine.md](docs/genesis/010_Workflow_Engine.md) · [011_ML_Platform.md](docs/genesis/011_ML_Platform.md) · [012_Security.md](docs/genesis/012_Security.md)
 - [013_APIs.md](docs/genesis/013_APIs.md) · [014_Data_Model.md](docs/genesis/014_Data_Model.md) · [015_Roadmap.md](docs/genesis/015_Roadmap.md)
+- [016_Cognitive_Core.md](docs/genesis/016_Cognitive_Core.md) — Cognitive Core implementation reference (Phase 7)
 
 Genesis is event-driven and modular by construction: it depends on ports (never
 vendors), reserves loosely-coupled module namespaces (see the module registry
 above), and keeps autonomy governed (explicit authority levels, human-in-the-loop,
 and the outreach-compliance controls). Phase 1 here is its foundation; the
-roadmap in `015_Roadmap.md` sequences the build.
+roadmap in `015_Roadmap.md` sequences the build. The **Cognitive Core** (Phase 7)
+is implemented under `apps/api/src/pb_api/cognitive` and served at
+`/api/v1/cognitive` — see `016_Cognitive_Core.md` and
+[ADR-0010](docs/adr/0010-cognitive-core.md).
 
 ## Documentation
 

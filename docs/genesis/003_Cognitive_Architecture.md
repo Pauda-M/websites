@@ -751,3 +751,19 @@ enforced by `006`.
 - `011_ML_Platform.md` — training/serving of `MemoryRankNet`, `TaskPriorityNet`,
   `ReflectionNet`, `WorkflowNet`.
 - `012_Security.md` — RBAC/ABAC permission gate; authority enforcement.
+
+---
+
+## 17. Implementation status
+
+Phase 7 implemented the Cognitive Core described here as a top-level bounded context at
+`apps/api/src/pb_api/cognitive`, served at `/api/v1/cognitive`. It realises the reasoning,
+planning, reflection, goal-management, and context-building subsystems of this document
+together with the memory engine of `008_Memory_Engine.md`, all tenant-scoped and
+event-sourced. The memory ranker ships as a deterministic, explainable heuristic behind a
+swappable interface (the learned `MemoryRankNet` remains future work), and embeddings use
+a deterministic default so recall works end-to-end before pgvector.
+
+See `016_Cognitive_Core.md` for the implementation reference and
+[ADR-0010](../adr/0010-cognitive-core.md) for the placement, layering, and default-adapter
+decisions.
