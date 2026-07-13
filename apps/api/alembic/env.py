@@ -9,6 +9,7 @@ from alembic import context
 from sqlalchemy import Connection, pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+from pb_api.agents.program_manager.db import models as program_manager_models  # noqa: F401
 from pb_api.cognitive.db import models as cognitive_models  # noqa: F401 - populates Base.metadata
 from pb_api.core.config import get_settings
 from pb_api.db import models  # noqa: F401 - populates Base.metadata

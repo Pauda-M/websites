@@ -102,6 +102,7 @@ source of truth every future implementation must follow — lives in
 - [009_Knowledge_Graph.md](docs/genesis/009_Knowledge_Graph.md) · [010_Workflow_Engine.md](docs/genesis/010_Workflow_Engine.md) · [011_ML_Platform.md](docs/genesis/011_ML_Platform.md) · [012_Security.md](docs/genesis/012_Security.md)
 - [013_APIs.md](docs/genesis/013_APIs.md) · [014_Data_Model.md](docs/genesis/014_Data_Model.md) · [015_Roadmap.md](docs/genesis/015_Roadmap.md)
 - [016_Cognitive_Core.md](docs/genesis/016_Cognitive_Core.md) — Cognitive Core implementation reference (Phase 7)
+- [017_Program_Manager.md](docs/genesis/017_Program_Manager.md) — Program Manager AI Employee reference (Epic 008)
 
 Genesis is event-driven and modular by construction: it depends on ports (never
 vendors), reserves loosely-coupled module namespaces (see the module registry
@@ -111,6 +112,14 @@ roadmap in `015_Roadmap.md` sequences the build. The **Cognitive Core** (Phase 7
 is implemented under `apps/api/src/pb_api/cognitive` and served at
 `/api/v1/cognitive` — see `016_Cognitive_Core.md` and
 [ADR-0010](docs/adr/0010-cognitive-core.md).
+
+The first **AI Employee** built on that core is the **Program Manager** (Epic
+008): an autonomous business employee for customer communication, opportunity
+and project management, proposal preparation, scheduling, follow-ups, and
+organizational memory, running a governed cognitive lifecycle within explicit
+authority limits. It is implemented under `apps/api/src/pb_api/agents/program_manager`
+and served at `/api/v1/agents/program-manager` — see `017_Program_Manager.md` and
+[ADR-0011](docs/adr/0011-program-manager-ai-employee.md).
 
 ## Documentation
 

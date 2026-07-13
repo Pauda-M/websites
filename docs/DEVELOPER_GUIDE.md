@@ -107,6 +107,37 @@ All settings are `PB_API_*` env vars parsed by `core/config.py` (see
 - `require_roles(UserRole.ADMIN)` in `dependencies=[...]` → RBAC guard.
 - Access tokens expire in 15 min; clients refresh via `POST /api/v1/auth/refresh`.
 
+### AI Employees (`agents/`)
+
+AI Employees live under `pb_api/agents/`; the **Program Manager**
+(`agents/program_manager/`) is the reference implementation. Each employee
+composes the Cognitive Core (`CognitiveCore`) for memory, goals, policy,
+reflection, and events, and adds its own Domain / Application / Infrastructure /
+API layers — it never re-implements the core.
+
+To drive the Program Manager against a dependency-free SQLite database:
+
+```bash
+cd apps/api
+PB_API_DATABASE_URL=sqlite+aiosqlite:///dev.db uv run alembic upgrade head
+PB_API_DATABASE_URL=sqlite+aiosqlite:///dev.db uv run uvicorn pb_api.main:app
+# then, against http://localhost:8000/api/v1/agents/program-manager :
+#   POST /bootstrap {"tenant_id": "..."}          register + seed policies
+#   POST /runs      {"tenant_id","input_text",...} run one cognitive lifecycle pass
+#   GET  /runs/{id}/tasks                          inspect per-step execution + approvals
+#   POST /tasks/{id}/approve                        approve a paused action
+```
+
+Extending it: add domain models under `domain/`, a repository under
+`infrastructure/` (mirror `cognitive/repositories/goals.py`), a service under
+`application/`, and routes under `api/routes/`. New tables must be tenant-scoped
+and covered by an Alembic migration. The authority a new action needs is declared
+in `application/authority.py`'s `ACTION_CATALOG`; the deterministic plan a goal
+expands into lives in `application/task_planner.py`. Keep outward-transport
+effects behind a port — record the prepared artifact and emit an event rather than
+assuming a vendor. Tests go under `tests/agents/program_manager/` and run against
+real SQLite with no mocks.
+
 ## 6. Frontend workflows (`apps/web`)
 
 - Server components by default; add `"use client"` only where interaction
