@@ -7,6 +7,13 @@ implementation conflicts with this document, this document takes precedence.
 It is adopted repo-wide and applies to every change, by any contributor,
 human or AI.
 
+> **Read first:** the [Genesis Execution Manifesto](docs/governance/GENESIS_EXECUTION_MANIFESTO.md)
+> is the primary engineering constitution of PB Genesis — the highest-priority
+> engineering document after the Product Vision. Every AI engineer must read it in
+> full before writing any code, and validate every Epic against it. This
+> authorization operationalizes the manifesto for this repository; where they
+> speak to the same concern, the manifesto's principles govern.
+
 ---
 
 ## Purpose
