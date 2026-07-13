@@ -149,7 +149,23 @@ Grafana (or hosted equivalent) scrapes `/metrics`; logs are JSON-per-line and
 collector-ready. Readiness gives orchestrators the signal to pull an instance
 out of rotation while liveness stays green.
 
-## 7. Growth path (beyond Phase 1)
+## 7. Module registry and growth path (beyond Phase 1)
+
+The product modules the platform is designed to host are declared in a single
+authoritative registry — `apps/api/src/pb_api/platform/modules.py` — and served
+at `GET /api/v1/platform/modules`. Each entry reserves a stable API namespace,
+records lifecycle status (`available` / `planned`), and — for modules that
+contact customers or prospects — the compliance controls a future
+implementation must ship with. Reserving namespaces in a tested registry
+(rather than leaving empty stub packages) keeps the codebase free of
+placeholder logic while committing to a stable layout. See
+[ADR-0008](adr/0008-modular-namespace-reservation.md) and
+[ADR-0009](adr/0009-outreach-compliance-guardrails.md).
+
+Reserved product namespaces: `marketing` (Marketing Website), `crm`, `portal`
+(Client Portal), `ai` (AI Services), `billing` (Billing & Invoicing),
+`ticketing`, `kb` (Knowledge Base), `proposals` (Proposal Engine), `outbound`
+(Outbound Sales Engine — compliance-gated).
 
 | Future capability        | Where it lands                                                               |
 | ------------------------ | ---------------------------------------------------------------------------- |
@@ -164,3 +180,5 @@ out of rotation while liveness stays green.
 The invariants to preserve: apps stay independently deployable, contracts stay
 generated, services own business rules, and every new surface ships with
 health endpoints, metrics, and tests from day one.
+
+Architectural decisions are recorded as ADRs in [`adr/`](adr/).

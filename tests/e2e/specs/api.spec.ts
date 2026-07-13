@@ -77,4 +77,13 @@ test.describe("API over real HTTP", () => {
     expect(headers["x-frame-options"]).toBe("DENY");
     expect(headers["x-request-id"]).toBeTruthy();
   });
+
+  test("platform module manifest lists reserved namespaces", async ({ request }) => {
+    const response = await request.get(`${API_URL}/api/v1/platform/modules`);
+    expect(response.status()).toBe(200);
+    const body = await response.json();
+    const slugs = body.modules.map((m: { slug: string }) => m.slug);
+    expect(slugs).toEqual(expect.arrayContaining(["crm", "billing", "outbound-sales"]));
+    expect(body.available + body.planned).toBe(body.total);
+  });
 });

@@ -30,13 +30,19 @@ packages/      Shared JS/TS libraries
 shared/        Cross-language contracts
   openapi/     OpenAPI spec exported from the API (make openapi)
 infra/         Infrastructure configuration
-  traefik/     Edge proxy static + dynamic config
-docs/          Architecture, developer guide, deployment guide
+  traefik/     Edge proxy dynamic config (static config is CLI flags in compose)
+docs/          Architecture, guides, and Architecture Decision Records (adr/)
 scripts/       Operational scripts (OpenAPI export, ...)
 tests/
   e2e/         Playwright suite that boots the real API + web app
 compound-calculator/  Legacy standalone page (pre-platform, unmanaged)
 ```
+
+Product modules (CRM, Client Portal, AI Services, Billing, Ticketing, Knowledge
+Base, Proposal Engine, Marketing Website, Outbound Sales Engine) have reserved,
+loosely-coupled API namespaces declared in the platform module registry
+(`apps/api/src/pb_api/platform/modules.py`) and served at
+`GET /api/v1/platform/modules`.
 
 Root-level `docker-compose.yml` runs the full stack; `docker-compose.prod.yml`
 layers production hardening on top. The `Makefile` is the canonical entry
@@ -50,9 +56,9 @@ Prerequisites: Node 22+, pnpm 10+, Python 3.11+, [uv](https://docs.astral.sh/uv/
 # 1. Install everything
 make setup
 
-# 2. Run the API (SQLite fallback works out of the box for a quick look;
-#    use docker compose for the real PostgreSQL/Redis stack)
-make dev-api        # http://localhost:8000  (docs at /docs)
+# 2. Run the API. It needs PostgreSQL — start one with `make up-db`,
+#    or point it at SQLite for a quick, dependency-free look:
+PB_API_DATABASE_URL=sqlite+aiosqlite:///dev.db make migrate dev-api  # http://localhost:8000 (/docs)
 
 # 3. Run the web app
 make dev-web        # http://localhost:3000
@@ -74,11 +80,23 @@ make format         # auto-fix formatting everywhere
 
 All of these must pass before a commit lands — CI enforces the same gates.
 
+## Governance
+
+[`AI_DEPLOY_AUTHORIZATION.md`](AI_DEPLOY_AUTHORIZATION.md) is the governing
+authority for this repository — engineering standards, security requirements,
+the validation loop, and compliance rules. Where any implementation conflicts
+with it, the governance document takes precedence.
+
 ## Documentation
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — system design, boundaries, and how the platform grows
 - [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) — day-to-day workflows, adding endpoints/pages/migrations
+- [docs/CONFIGURATION.md](docs/CONFIGURATION.md) — every environment variable and the production-hardening rules
 - [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — running the stack in production
+- [docs/OPERATIONS.md](docs/OPERATIONS.md) — day-2 operations: deploys, backups, scaling, migrations
+- [docs/SECURITY.md](docs/SECURITY.md) — security model, posture, and hardening roadmap
+- [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) — symptom → cause → fix for common issues
+- [docs/adr/](docs/adr/) — Architecture Decision Records
 
 ## Security posture (phase 1)
 

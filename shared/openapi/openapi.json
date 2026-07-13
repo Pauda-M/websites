@@ -64,6 +64,99 @@
         "title": "LoginRequest",
         "type": "object"
       },
+      "ModuleCategory": {
+        "enum": [
+          "core",
+          "product"
+        ],
+        "title": "ModuleCategory",
+        "type": "string"
+      },
+      "ModuleManifest": {
+        "description": "The platform's module manifest: what exists, what's reserved, and the\ncompliance controls outreach modules must ship with.",
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "integer"
+          },
+          "modules": {
+            "items": {
+              "$ref": "#/components/schemas/ModuleRead"
+            },
+            "title": "Modules",
+            "type": "array"
+          },
+          "planned": {
+            "title": "Planned",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total",
+          "available",
+          "planned",
+          "modules"
+        ],
+        "title": "ModuleManifest",
+        "type": "object"
+      },
+      "ModuleRead": {
+        "properties": {
+          "api_namespace": {
+            "title": "Api Namespace",
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/ModuleCategory"
+          },
+          "compliance_controls": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Compliance Controls",
+            "type": "array"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModuleStatus"
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "category",
+          "status",
+          "api_namespace",
+          "description",
+          "compliance_controls"
+        ],
+        "title": "ModuleRead",
+        "type": "object"
+      },
+      "ModuleStatus": {
+        "description": "Lifecycle of a platform module.",
+        "enum": [
+          "available",
+          "planned"
+        ],
+        "title": "ModuleStatus",
+        "type": "string"
+      },
       "ReadinessResponse": {
         "properties": {
           "checks": {
@@ -470,6 +563,27 @@
         "summary": "Readiness",
         "tags": [
           "health"
+        ]
+      }
+    },
+    "/api/v1/platform/modules": {
+      "get": {
+        "operationId": "list_modules_api_v1_platform_modules_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModuleManifest"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Platform module manifest",
+        "tags": [
+          "platform"
         ]
       }
     },
