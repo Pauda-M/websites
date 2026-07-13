@@ -48,6 +48,7 @@ order:
 | 0009   | [Outreach compliance guardrails](0009-outreach-compliance-guardrails.md) | Accepted |
 | 0010   | [Cognitive Core](0010-cognitive-core.md)                                 | Accepted |
 | 0011   | [Program Manager AI Employee](0011-program-manager-ai-employee.md)       | Accepted |
+| 0012   | [Workspace Integration](0012-workspace-integration.md)                   | Accepted |
 
 ## Governance
 

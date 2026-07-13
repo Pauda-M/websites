@@ -14,6 +14,7 @@ from pb_api.cognitive.db import models as cognitive_models  # noqa: F401 - popul
 from pb_api.core.config import get_settings
 from pb_api.db import models  # noqa: F401 - populates Base.metadata
 from pb_api.db.base import Base
+from pb_api.integrations.workspace.db import models as workspace_models  # noqa: F401
 
 config = context.config
 

@@ -200,6 +200,309 @@
         "title": "AgentStatusRequest",
         "type": "object"
       },
+      "ApprovalDecisionRequest": {
+        "properties": {
+          "approve": {
+            "title": "Approve",
+            "type": "boolean"
+          },
+          "decided_by": {
+            "title": "Decided By",
+            "type": "string"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "approve",
+          "decided_by"
+        ],
+        "title": "ApprovalDecisionRequest",
+        "type": "object"
+      },
+      "ApprovalDecisionType": {
+        "description": "The four possible rulings of the approval engine.",
+        "enum": [
+          "approve_automatically",
+          "create_draft",
+          "require_human_approval",
+          "reject"
+        ],
+        "title": "ApprovalDecisionType",
+        "type": "string"
+      },
+      "ApprovalPolicy": {
+        "description": "A rule mapping a matched action to an approval decision.\n\n``communication_type`` / ``customer_organization_id`` / ``customer_contact_id`` /\n``agent_id`` are optional match facets \u2014 ``None`` means \"any\". ``min_authority`` is\nthe authority an actor must hold for the decision to apply as-is; below it, an\n``APPROVE_AUTOMATICALLY`` is downgraded to ``REQUIRE_HUMAN_APPROVAL``.",
+        "properties": {
+          "agent_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id"
+          },
+          "communication_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CommunicationType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "customer_contact_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Contact Id"
+          },
+          "customer_organization_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Organization Id"
+          },
+          "decision": {
+            "$ref": "#/components/schemas/ApprovalDecisionType",
+            "default": "require_human_approval"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "min_authority": {
+            "default": 0,
+            "title": "Min Authority",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "priority": {
+            "default": 100,
+            "minimum": 0.0,
+            "title": "Priority",
+            "type": "integer"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "name"
+        ],
+        "title": "ApprovalPolicy",
+        "type": "object"
+      },
+      "ApprovalPolicyRequest": {
+        "properties": {
+          "agent_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id"
+          },
+          "communication_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CommunicationType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "customer_organization_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Organization Id"
+          },
+          "decision": {
+            "$ref": "#/components/schemas/ApprovalDecisionType"
+          },
+          "min_authority": {
+            "default": 0,
+            "title": "Min Authority",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "priority": {
+            "default": 100,
+            "title": "Priority",
+            "type": "integer"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "name",
+          "decision"
+        ],
+        "title": "ApprovalPolicyRequest",
+        "type": "object"
+      },
+      "ApprovalRequest": {
+        "description": "A queued action awaiting a human decision.",
+        "properties": {
+          "agent_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id"
+          },
+          "communication_type": {
+            "$ref": "#/components/schemas/CommunicationType"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "customer_organization_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Organization Id"
+          },
+          "decided_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided At"
+          },
+          "decided_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided By"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ApprovalRequestStatus",
+            "default": "pending"
+          },
+          "summary": {
+            "default": "",
+            "title": "Summary",
+            "type": "string"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "communication_type"
+        ],
+        "title": "ApprovalRequest",
+        "type": "object"
+      },
+      "ApprovalRequestStatus": {
+        "enum": [
+          "pending",
+          "approved",
+          "rejected",
+          "cancelled"
+        ],
+        "title": "ApprovalRequestStatus",
+        "type": "string"
+      },
       "ApproveRequest": {
         "properties": {
           "approver": {
@@ -256,6 +559,89 @@
         "title": "AssembledPrompt",
         "type": "object"
       },
+      "Attachment": {
+        "description": "Mail attachment metadata; ``content`` is loaded on demand, never eagerly.",
+        "properties": {
+          "content_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Id"
+          },
+          "content_type": {
+            "default": "application/octet-stream",
+            "title": "Content Type",
+            "type": "string"
+          },
+          "disposition": {
+            "$ref": "#/components/schemas/AttachmentDisposition",
+            "default": "attachment"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "size_bytes": {
+            "default": 0,
+            "title": "Size Bytes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "Attachment",
+        "type": "object"
+      },
+      "AttachmentDisposition": {
+        "enum": [
+          "inline",
+          "attachment"
+        ],
+        "title": "AttachmentDisposition",
+        "type": "string"
+      },
+      "Attendee": {
+        "properties": {
+          "email": {
+            "$ref": "#/components/schemas/EmailAddress"
+          },
+          "required": {
+            "default": true,
+            "title": "Required",
+            "type": "boolean"
+          },
+          "response": {
+            "$ref": "#/components/schemas/AttendeeResponse",
+            "default": "none"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "Attendee",
+        "type": "object"
+      },
+      "AttendeeResponse": {
+        "enum": [
+          "none",
+          "accepted",
+          "tentative",
+          "declined"
+        ],
+        "title": "AttendeeResponse",
+        "type": "string"
+      },
       "AuthorityLevel": {
         "description": "Governed-autonomy levels A0-A5 (Genesis glossary \u00a78).\n\nInteger-valued so ``min()`` composes an effective authority and comparisons\nare natural. Names mirror the specification exactly.",
         "enum": [
@@ -268,6 +654,76 @@
         ],
         "title": "AuthorityLevel",
         "type": "integer"
+      },
+      "AvailabilityRequest": {
+        "properties": {
+          "attendee_provider_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Attendee Provider Ids",
+            "type": "array"
+          },
+          "connection_id": {
+            "format": "uuid",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "slot_minutes": {
+            "default": 30,
+            "title": "Slot Minutes",
+            "type": "integer"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          },
+          "window_end": {
+            "format": "date-time",
+            "title": "Window End",
+            "type": "string"
+          },
+          "window_start": {
+            "format": "date-time",
+            "title": "Window Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "connection_id",
+          "attendee_provider_ids",
+          "window_start",
+          "window_end"
+        ],
+        "title": "AvailabilityRequest",
+        "type": "object"
+      },
+      "AvailabilitySlot": {
+        "description": "A candidate free slot with the set of attendees free for it.",
+        "properties": {
+          "all_free": {
+            "default": true,
+            "title": "All Free",
+            "type": "boolean"
+          },
+          "free_attendees": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Free Attendees",
+            "type": "array"
+          },
+          "slot": {
+            "$ref": "#/components/schemas/TimeSlot"
+          }
+        },
+        "required": [
+          "slot"
+        ],
+        "title": "AvailabilitySlot",
+        "type": "object"
       },
       "BootstrapResponse": {
         "properties": {
@@ -334,6 +790,165 @@
           "token_budget"
         ],
         "title": "BuiltContext",
+        "type": "object"
+      },
+      "CalendarEvent": {
+        "description": "A calendar event, normalized across providers. Times are timezone-aware.",
+        "properties": {
+          "action_items": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Action Items",
+            "type": "array"
+          },
+          "attendees": {
+            "items": {
+              "$ref": "#/components/schemas/Attendee"
+            },
+            "title": "Attendees",
+            "type": "array"
+          },
+          "body": {
+            "default": "",
+            "title": "Body",
+            "type": "string"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "end": {
+            "format": "date-time",
+            "title": "End",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_all_day": {
+            "default": false,
+            "title": "Is All Day",
+            "type": "boolean"
+          },
+          "is_cancelled": {
+            "default": false,
+            "title": "Is Cancelled",
+            "type": "boolean"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "online_meeting_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Online Meeting Url"
+          },
+          "organizer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EmailAddress"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "provider_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Id"
+          },
+          "start": {
+            "format": "date-time",
+            "title": "Start",
+            "type": "string"
+          },
+          "subject": {
+            "default": "",
+            "title": "Subject",
+            "type": "string"
+          },
+          "summary": {
+            "default": "",
+            "title": "Summary",
+            "type": "string"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          },
+          "timezone": {
+            "default": "UTC",
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "start",
+          "end"
+        ],
+        "title": "CalendarEvent",
+        "type": "object"
+      },
+      "CategorizeRequest": {
+        "properties": {
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "connection_id": {
+            "format": "uuid",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "connection_id",
+          "categories"
+        ],
+        "title": "CategorizeRequest",
         "type": "object"
       },
       "CognitiveEvent": {
@@ -448,6 +1063,84 @@
           "subsystems"
         ],
         "title": "CognitiveHealth",
+        "type": "object"
+      },
+      "CommunicationType": {
+        "enum": [
+          "mail_reply",
+          "mail_forward",
+          "mail_new",
+          "meeting_invite",
+          "meeting_response",
+          "teams_message",
+          "task_assignment",
+          "notification"
+        ],
+        "title": "CommunicationType",
+        "type": "string"
+      },
+      "ConnectRequest": {
+        "properties": {
+          "client_id": {
+            "default": "",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "client_secret": {
+            "default": "",
+            "title": "Client Secret",
+            "type": "string"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "mailbox": {
+            "title": "Mailbox",
+            "type": "string"
+          },
+          "provider_tenant_id": {
+            "default": "",
+            "title": "Provider Tenant Id",
+            "type": "string"
+          },
+          "refresh_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refresh Token"
+          },
+          "scopes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scopes"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "display_name",
+          "mailbox"
+        ],
+        "title": "ConnectRequest",
         "type": "object"
       },
       "ConsolidateRequest": {
@@ -807,6 +1500,348 @@
         "title": "ContextSection",
         "type": "object"
       },
+      "CreateEventRequest": {
+        "properties": {
+          "actor_authority": {
+            "default": 0,
+            "title": "Actor Authority",
+            "type": "integer"
+          },
+          "agent_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id"
+          },
+          "attendee_addresses": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Attendee Addresses",
+            "type": "array"
+          },
+          "body": {
+            "default": "",
+            "title": "Body",
+            "type": "string"
+          },
+          "connection_id": {
+            "format": "uuid",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "end": {
+            "format": "date-time",
+            "title": "End",
+            "type": "string"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "start": {
+            "format": "date-time",
+            "title": "Start",
+            "type": "string"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "connection_id",
+          "subject",
+          "start",
+          "end"
+        ],
+        "title": "CreateEventRequest",
+        "type": "object"
+      },
+      "DirectoryGroup": {
+        "properties": {
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "group_type": {
+            "$ref": "#/components/schemas/GroupType",
+            "default": "security"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "member_provider_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Member Provider Ids",
+            "type": "array"
+          },
+          "provider_id": {
+            "title": "Provider Id",
+            "type": "string"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "provider_id",
+          "display_name"
+        ],
+        "title": "DirectoryGroup",
+        "type": "object"
+      },
+      "DirectoryUser": {
+        "description": "A member of the customer's own organization (their staff).",
+        "properties": {
+          "account_enabled": {
+            "default": true,
+            "title": "Account Enabled",
+            "type": "boolean"
+          },
+          "department": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Department"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "job_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Title"
+          },
+          "manager_provider_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manager Provider Id"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "office_location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Office Location"
+          },
+          "provider_id": {
+            "title": "Provider Id",
+            "type": "string"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "user_principal_name": {
+            "title": "User Principal Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "provider_id",
+          "display_name",
+          "user_principal_name"
+        ],
+        "title": "DirectoryUser",
+        "type": "object"
+      },
+      "DriveItem": {
+        "description": "A file or folder in a drive (OneDrive or a SharePoint document library).",
+        "properties": {
+          "content_type": {
+            "default": "application/octet-stream",
+            "title": "Content Type",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "drive_id": {
+            "title": "Drive Id",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_folder": {
+            "default": false,
+            "title": "Is Folder",
+            "type": "boolean"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "modified_at": {
+            "format": "date-time",
+            "title": "Modified At",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "parent_path": {
+            "default": "/",
+            "title": "Parent Path",
+            "type": "string"
+          },
+          "provider_id": {
+            "title": "Provider Id",
+            "type": "string"
+          },
+          "size_bytes": {
+            "default": 0,
+            "title": "Size Bytes",
+            "type": "integer"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          },
+          "web_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Web Url"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "provider_id",
+          "drive_id",
+          "name"
+        ],
+        "title": "DriveItem",
+        "type": "object"
+      },
+      "EmailAddress": {
+        "properties": {
+          "address": {
+            "title": "Address",
+            "type": "string"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "address"
+        ],
+        "title": "EmailAddress",
+        "type": "object"
+      },
       "EpisodicEvent": {
         "description": "A recorded experience. Fields mirror the Phase 7 specification exactly.\n\n``organization`` is the tenant; ``actor`` is who/what caused it;\n``conversation`` / ``customer`` / ``project`` are cross-context references by\nID (never foreign keys \u2014 Genesis integrates contexts by ID).",
         "properties": {
@@ -1039,6 +2074,31 @@
           "runs"
         ],
         "title": "ExecuteDueResponse",
+        "type": "object"
+      },
+      "FlagRequest": {
+        "properties": {
+          "connection_id": {
+            "format": "uuid",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "flagged": {
+            "title": "Flagged",
+            "type": "boolean"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "connection_id",
+          "flagged"
+        ],
+        "title": "FlagRequest",
         "type": "object"
       },
       "FollowUpCadence": {
@@ -1326,6 +2386,15 @@
         "title": "GoalStatusRequest",
         "type": "object"
       },
+      "GroupType": {
+        "enum": [
+          "security",
+          "microsoft_365",
+          "distribution"
+        ],
+        "title": "GroupType",
+        "type": "string"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1337,6 +2406,116 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "IndexEntry": {
+        "description": "A unified, searchable document projected from a workspace resource.",
+        "properties": {
+          "body": {
+            "default": "",
+            "title": "Body",
+            "type": "string"
+          },
+          "connection_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connection Id"
+          },
+          "embedding": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Embedding",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "indexed_at": {
+            "format": "date-time",
+            "title": "Indexed At",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "ref": {
+            "additionalProperties": true,
+            "title": "Ref",
+            "type": "object"
+          },
+          "snippet": {
+            "default": "",
+            "title": "Snippet",
+            "type": "string"
+          },
+          "source_provider_id": {
+            "title": "Source Provider Id",
+            "type": "string"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          },
+          "web_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Web Url"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "kind",
+          "source_provider_id"
+        ],
+        "title": "IndexEntry",
+        "type": "object"
+      },
+      "IngestRequest": {
+        "properties": {
+          "connection_id": {
+            "format": "uuid",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "drive_id": {
+            "title": "Drive Id",
+            "type": "string"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "connection_id",
+          "drive_id"
+        ],
+        "title": "IngestRequest",
         "type": "object"
       },
       "KnowledgeKind": {
@@ -1622,6 +2801,16 @@
         "title": "MemoryType",
         "type": "string"
       },
+      "MessagePriority": {
+        "enum": [
+          "low",
+          "normal",
+          "high",
+          "urgent"
+        ],
+        "title": "MessagePriority",
+        "type": "string"
+      },
       "ModuleCategory": {
         "enum": [
           "core",
@@ -1714,6 +2903,31 @@
         ],
         "title": "ModuleStatus",
         "type": "string"
+      },
+      "MoveRequest": {
+        "properties": {
+          "connection_id": {
+            "format": "uuid",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "destination_folder": {
+            "title": "Destination Folder",
+            "type": "string"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "connection_id",
+          "destination_folder"
+        ],
+        "title": "MoveRequest",
+        "type": "object"
       },
       "Opportunity": {
         "description": "A qualified deal in the pipeline.",
@@ -2756,6 +3970,37 @@
         "title": "PolicyEvaluateRequest",
         "type": "object"
       },
+      "PostalAddress": {
+        "properties": {
+          "city": {
+            "default": "",
+            "title": "City",
+            "type": "string"
+          },
+          "country": {
+            "default": "",
+            "title": "Country",
+            "type": "string"
+          },
+          "postal_code": {
+            "default": "",
+            "title": "Postal Code",
+            "type": "string"
+          },
+          "state": {
+            "default": "",
+            "title": "State",
+            "type": "string"
+          },
+          "street": {
+            "default": "",
+            "title": "Street",
+            "type": "string"
+          }
+        },
+        "title": "PostalAddress",
+        "type": "object"
+      },
       "Procedure": {
         "description": "A reusable workflow definition held in procedural memory.",
         "properties": {
@@ -3262,6 +4507,16 @@
         "title": "ProposalStatus",
         "type": "string"
       },
+      "Provider": {
+        "description": "A workspace provider (vendor). Adapters register under one of these.",
+        "enum": [
+          "microsoft_graph",
+          "in_memory",
+          "google_workspace"
+        ],
+        "title": "Provider",
+        "type": "string"
+      },
       "ReadinessResponse": {
         "properties": {
           "checks": {
@@ -3604,6 +4859,83 @@
         "title": "Relationship",
         "type": "object"
       },
+      "ReplyRequest": {
+        "properties": {
+          "actor_authority": {
+            "default": 0,
+            "title": "Actor Authority",
+            "type": "integer"
+          },
+          "agent_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id"
+          },
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "connection_id": {
+            "format": "uuid",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "kind": {
+            "default": "reply",
+            "title": "Kind",
+            "type": "string"
+          },
+          "message_provider_id": {
+            "title": "Message Provider Id",
+            "type": "string"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "connection_id",
+          "message_provider_id",
+          "body"
+        ],
+        "title": "ReplyRequest",
+        "type": "object"
+      },
+      "RespondEventRequest": {
+        "properties": {
+          "connection_id": {
+            "format": "uuid",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "response": {
+            "title": "Response",
+            "type": "string"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "connection_id",
+          "response"
+        ],
+        "title": "RespondEventRequest",
+        "type": "object"
+      },
       "RunRequest": {
         "properties": {
           "agent_id": {
@@ -3865,6 +5197,24 @@
         "title": "ScheduledActionStatus",
         "type": "string"
       },
+      "SearchHit": {
+        "description": "An index entry paired with its similarity score for a query.",
+        "properties": {
+          "entry": {
+            "$ref": "#/components/schemas/IndexEntry"
+          },
+          "score": {
+            "default": 0.0,
+            "title": "Score",
+            "type": "number"
+          }
+        },
+        "required": [
+          "entry"
+        ],
+        "title": "SearchHit",
+        "type": "object"
+      },
       "SemanticAddRequest": {
         "properties": {
           "confidence": {
@@ -4066,6 +5416,53 @@
         "title": "SemanticUpdateRequest",
         "type": "object"
       },
+      "SharePointSite": {
+        "properties": {
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "drive_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Drive Ids",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "provider_id": {
+            "title": "Provider Id",
+            "type": "string"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          },
+          "web_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Web Url"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "provider_id",
+          "display_name"
+        ],
+        "title": "SharePointSite",
+        "type": "object"
+      },
       "SideEffect": {
         "description": "How consequential invoking a tool is \u2014 drives approval requirements.",
         "enum": [
@@ -4090,6 +5487,195 @@
         "title": "SubjectType",
         "type": "string"
       },
+      "SyncJob": {
+        "description": "A record of a single synchronization run, for observability and auditing.",
+        "properties": {
+          "connection_id": {
+            "format": "uuid",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "items_processed": {
+            "default": 0,
+            "title": "Items Processed",
+            "type": "integer"
+          },
+          "resource": {
+            "$ref": "#/components/schemas/SyncResource"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SyncStatus",
+            "default": "running"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "connection_id",
+          "resource"
+        ],
+        "title": "SyncJob",
+        "type": "object"
+      },
+      "SyncRequest": {
+        "properties": {
+          "connection_id": {
+            "format": "uuid",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "connection_id"
+        ],
+        "title": "SyncRequest",
+        "type": "object"
+      },
+      "SyncResource": {
+        "description": "A resource kind that supports incremental / delta synchronization.",
+        "enum": [
+          "mail",
+          "calendar",
+          "contacts",
+          "directory_users",
+          "directory_groups",
+          "files",
+          "tasks"
+        ],
+        "title": "SyncResource",
+        "type": "string"
+      },
+      "SyncState": {
+        "description": "The persisted delta cursor and status for one (connection, resource).",
+        "properties": {
+          "connection_id": {
+            "format": "uuid",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "delta_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delta Token"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "items_synced": {
+            "default": 0,
+            "title": "Items Synced",
+            "type": "integer"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "last_synced_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Synced At"
+          },
+          "resource": {
+            "$ref": "#/components/schemas/SyncResource"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SyncStatus",
+            "default": "idle"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "connection_id",
+          "resource"
+        ],
+        "title": "SyncState",
+        "type": "object"
+      },
+      "SyncStatus": {
+        "enum": [
+          "idle",
+          "running",
+          "succeeded",
+          "failed"
+        ],
+        "title": "SyncStatus",
+        "type": "string"
+      },
       "TenantBody": {
         "properties": {
           "tenant_id": {
@@ -4102,6 +5688,26 @@
           "tenant_id"
         ],
         "title": "TenantBody",
+        "type": "object"
+      },
+      "TimeSlot": {
+        "properties": {
+          "end": {
+            "format": "date-time",
+            "title": "End",
+            "type": "string"
+          },
+          "start": {
+            "format": "date-time",
+            "title": "Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start",
+          "end"
+        ],
+        "title": "TimeSlot",
         "type": "object"
       },
       "TokenPair": {
@@ -4631,6 +6237,463 @@
         ],
         "title": "WorkingSet",
         "type": "object"
+      },
+      "WorkspaceConnection": {
+        "description": "A configured connection to one workspace provider mailbox/account.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "display_name": {
+            "default": "",
+            "title": "Display Name",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "mailbox": {
+            "default": "",
+            "title": "Mailbox",
+            "type": "string"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/Provider",
+            "default": "microsoft_graph"
+          },
+          "status": {
+            "default": "active",
+            "title": "Status",
+            "type": "string"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id"
+        ],
+        "title": "WorkspaceConnection",
+        "type": "object"
+      },
+      "WorkspaceContact": {
+        "description": "A person synchronized from the provider's contacts/directory.",
+        "properties": {
+          "addresses": {
+            "items": {
+              "$ref": "#/components/schemas/PostalAddress"
+            },
+            "title": "Addresses",
+            "type": "array"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company"
+          },
+          "crm_contact_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Crm Contact Id"
+          },
+          "crm_organization_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Crm Organization Id"
+          },
+          "department": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Department"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "given_name": {
+            "default": "",
+            "title": "Given Name",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "phones": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Phones",
+            "type": "array"
+          },
+          "provider_id": {
+            "title": "Provider Id",
+            "type": "string"
+          },
+          "surname": {
+            "default": "",
+            "title": "Surname",
+            "type": "string"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "provider_id",
+          "display_name"
+        ],
+        "title": "WorkspaceContact",
+        "type": "object"
+      },
+      "WorkspaceMessage": {
+        "description": "A mailbox message, normalized across providers.\n\n``provider_id`` is the vendor's stable id; ``conversation_id`` threads a\nconversation; ``customer_organization_id`` / ``customer_contact_id`` are set by\ncustomer identification once the sender is matched to the CRM.",
+        "properties": {
+          "attachments": {
+            "items": {
+              "$ref": "#/components/schemas/Attachment"
+            },
+            "title": "Attachments",
+            "type": "array"
+          },
+          "body": {
+            "default": "",
+            "title": "Body",
+            "type": "string"
+          },
+          "body_preview": {
+            "default": "",
+            "title": "Body Preview",
+            "type": "string"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "cc": {
+            "items": {
+              "$ref": "#/components/schemas/EmailAddress"
+            },
+            "title": "Cc",
+            "type": "array"
+          },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "customer_contact_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Contact Id"
+          },
+          "customer_organization_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Organization Id"
+          },
+          "folder": {
+            "default": "inbox",
+            "title": "Folder",
+            "type": "string"
+          },
+          "has_attachments": {
+            "default": false,
+            "title": "Has Attachments",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "internet_message_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Internet Message Id"
+          },
+          "is_flagged": {
+            "default": false,
+            "title": "Is Flagged",
+            "type": "boolean"
+          },
+          "is_html": {
+            "default": false,
+            "title": "Is Html",
+            "type": "boolean"
+          },
+          "is_read": {
+            "default": false,
+            "title": "Is Read",
+            "type": "boolean"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/MessagePriority",
+            "default": "normal"
+          },
+          "provider_id": {
+            "title": "Provider Id",
+            "type": "string"
+          },
+          "received_at": {
+            "format": "date-time",
+            "title": "Received At",
+            "type": "string"
+          },
+          "sender": {
+            "$ref": "#/components/schemas/EmailAddress"
+          },
+          "subject": {
+            "default": "",
+            "title": "Subject",
+            "type": "string"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          },
+          "to": {
+            "items": {
+              "$ref": "#/components/schemas/EmailAddress"
+            },
+            "title": "To",
+            "type": "array"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "provider_id",
+          "sender"
+        ],
+        "title": "WorkspaceMessage",
+        "type": "object"
+      },
+      "WorkspaceTask": {
+        "description": "A task from To Do or Planner.",
+        "properties": {
+          "assigned_to_provider_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Assigned To Provider Ids",
+            "type": "array"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "due_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "list_or_plan_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "List Or Plan Id"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "notes": {
+            "default": "",
+            "title": "Notes",
+            "type": "string"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/WorkspaceTaskPriority",
+            "default": "normal"
+          },
+          "provider_id": {
+            "title": "Provider Id",
+            "type": "string"
+          },
+          "source": {
+            "default": "todo",
+            "title": "Source",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/WorkspaceTaskStatus",
+            "default": "not_started"
+          },
+          "tenant_id": {
+            "format": "uuid",
+            "title": "Tenant Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "provider_id",
+          "title"
+        ],
+        "title": "WorkspaceTask",
+        "type": "object"
+      },
+      "WorkspaceTaskPriority": {
+        "enum": [
+          "low",
+          "normal",
+          "high"
+        ],
+        "title": "WorkspaceTaskPriority",
+        "type": "string"
+      },
+      "WorkspaceTaskStatus": {
+        "enum": [
+          "not_started",
+          "in_progress",
+          "completed",
+          "deferred"
+        ],
+        "title": "WorkspaceTaskStatus",
+        "type": "string"
       }
     },
     "securitySchemes": {
@@ -8617,6 +10680,1568 @@
         "summary": "Readiness",
         "tags": [
           "health"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/approvals/pending": {
+      "get": {
+        "operationId": "list_pending_api_v1_integrations_workspace_approvals_pending_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ApprovalRequest"
+                  },
+                  "title": "Response List Pending Api V1 Integrations Workspace Approvals Pending Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Pending",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/approvals/policies": {
+      "get": {
+        "operationId": "list_policies_api_v1_integrations_workspace_approvals_policies_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ApprovalPolicy"
+                  },
+                  "title": "Response List Policies Api V1 Integrations Workspace Approvals Policies Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Policies",
+        "tags": [
+          "workspace"
+        ]
+      },
+      "post": {
+        "operationId": "add_policy_api_v1_integrations_workspace_approvals_policies_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovalPolicyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalPolicy"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Policy",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/approvals/{request_id}/decide": {
+      "post": {
+        "operationId": "decide_api_v1_integrations_workspace_approvals__request_id__decide_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Request Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovalDecisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalRequest"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Decide",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/calendar": {
+      "get": {
+        "operationId": "list_events_api_v1_integrations_workspace_calendar_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Connection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CalendarEvent"
+                  },
+                  "title": "Response List Events Api V1 Integrations Workspace Calendar Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Events",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/calendar/availability": {
+      "post": {
+        "operationId": "availability_api_v1_integrations_workspace_calendar_availability_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvailabilityRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AvailabilitySlot"
+                  },
+                  "title": "Response Availability Api V1 Integrations Workspace Calendar Availability Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Availability",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/calendar/events": {
+      "post": {
+        "operationId": "create_event_api_v1_integrations_workspace_calendar_events_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEventRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Event Api V1 Integrations Workspace Calendar Events Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Event",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/calendar/events/{event_provider_id}/respond": {
+      "post": {
+        "operationId": "respond_event_api_v1_integrations_workspace_calendar_events__event_provider_id__respond_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_provider_id",
+            "required": true,
+            "schema": {
+              "title": "Event Provider Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RespondEventRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Respond Event Api V1 Integrations Workspace Calendar Events  Event Provider Id  Respond Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Respond Event",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/connections": {
+      "get": {
+        "operationId": "list_connections_api_v1_integrations_workspace_connections_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WorkspaceConnection"
+                  },
+                  "title": "Response List Connections Api V1 Integrations Workspace Connections Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Connections",
+        "tags": [
+          "workspace"
+        ]
+      },
+      "post": {
+        "operationId": "create_connection_api_v1_integrations_workspace_connections_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceConnection"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Connection",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/connections/health": {
+      "get": {
+        "operationId": "connection_health_api_v1_integrations_workspace_connections_health_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Connection Health Api V1 Integrations Workspace Connections Health Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Connection Health",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/contacts": {
+      "get": {
+        "operationId": "list_contacts_api_v1_integrations_workspace_contacts_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Connection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WorkspaceContact"
+                  },
+                  "title": "Response List Contacts Api V1 Integrations Workspace Contacts Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Contacts",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/directory/groups": {
+      "get": {
+        "operationId": "list_groups_api_v1_integrations_workspace_directory_groups_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Connection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DirectoryGroup"
+                  },
+                  "title": "Response List Groups Api V1 Integrations Workspace Directory Groups Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Groups",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/directory/users": {
+      "get": {
+        "operationId": "list_users_api_v1_integrations_workspace_directory_users_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Connection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DirectoryUser"
+                  },
+                  "title": "Response List Users Api V1 Integrations Workspace Directory Users Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Users",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/documents": {
+      "get": {
+        "operationId": "list_items_api_v1_integrations_workspace_documents_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Connection Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "drive_id",
+            "required": true,
+            "schema": {
+              "title": "Drive Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DriveItem"
+                  },
+                  "title": "Response List Items Api V1 Integrations Workspace Documents Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Items",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/documents/ingest": {
+      "post": {
+        "operationId": "ingest_drive_api_v1_integrations_workspace_documents_ingest_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IngestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Ingest Drive Api V1 Integrations Workspace Documents Ingest Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ingest Drive",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/documents/sites": {
+      "get": {
+        "operationId": "list_sites_api_v1_integrations_workspace_documents_sites_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Connection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SharePointSite"
+                  },
+                  "title": "Response List Sites Api V1 Integrations Workspace Documents Sites Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Sites",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/live": {
+      "get": {
+        "operationId": "live_api_v1_integrations_workspace_live_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Live Api V1 Integrations Workspace Live Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Live",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/mail": {
+      "get": {
+        "operationId": "list_messages_api_v1_integrations_workspace_mail_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Connection Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "folder",
+            "required": false,
+            "schema": {
+              "default": "inbox",
+              "title": "Folder",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WorkspaceMessage"
+                  },
+                  "title": "Response List Messages Api V1 Integrations Workspace Mail Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Messages",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/mail/conversation/{conversation_id}": {
+      "get": {
+        "operationId": "get_conversation_api_v1_integrations_workspace_mail_conversation__conversation_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WorkspaceMessage"
+                  },
+                  "title": "Response Get Conversation Api V1 Integrations Workspace Mail Conversation  Conversation Id  Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Conversation",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/mail/reply": {
+      "post": {
+        "operationId": "prepare_reply_api_v1_integrations_workspace_mail_reply_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Prepare Reply Api V1 Integrations Workspace Mail Reply Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Prepare Reply",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/mail/search": {
+      "get": {
+        "operationId": "search_messages_api_v1_integrations_workspace_mail_search_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "required": true,
+            "schema": {
+              "title": "Query",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WorkspaceMessage"
+                  },
+                  "title": "Response Search Messages Api V1 Integrations Workspace Mail Search Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Search Messages",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/mail/sync": {
+      "post": {
+        "operationId": "sync_mailbox_api_v1_integrations_workspace_mail_sync_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncState"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Sync Mailbox",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/mail/{message_provider_id}/categorize": {
+      "post": {
+        "operationId": "categorize_message_api_v1_integrations_workspace_mail__message_provider_id__categorize_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "message_provider_id",
+            "required": true,
+            "schema": {
+              "title": "Message Provider Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategorizeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Categorize Message Api V1 Integrations Workspace Mail  Message Provider Id  Categorize Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Categorize Message",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/mail/{message_provider_id}/flag": {
+      "post": {
+        "operationId": "flag_message_api_v1_integrations_workspace_mail__message_provider_id__flag_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "message_provider_id",
+            "required": true,
+            "schema": {
+              "title": "Message Provider Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlagRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Flag Message Api V1 Integrations Workspace Mail  Message Provider Id  Flag Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Flag Message",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/mail/{message_provider_id}/move": {
+      "post": {
+        "operationId": "move_message_api_v1_integrations_workspace_mail__message_provider_id__move_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "message_provider_id",
+            "required": true,
+            "schema": {
+              "title": "Message Provider Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Move Message Api V1 Integrations Workspace Mail  Message Provider Id  Move Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Move Message",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/search": {
+      "get": {
+        "operationId": "search_api_v1_integrations_workspace_search_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "required": true,
+            "schema": {
+              "title": "Query",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kinds",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kinds"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SearchHit"
+                  },
+                  "title": "Response Search Api V1 Integrations Workspace Search Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Search",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/sync/run": {
+      "post": {
+        "operationId": "run_sync_api_v1_integrations_workspace_sync_run_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Run Sync Api V1 Integrations Workspace Sync Run Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run Sync",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/sync/status": {
+      "get": {
+        "operationId": "sync_status_api_v1_integrations_workspace_sync_status_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "connection_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Connection Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SyncJob"
+                  },
+                  "title": "Response Sync Status Api V1 Integrations Workspace Sync Status Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Sync Status",
+        "tags": [
+          "workspace"
+        ]
+      }
+    },
+    "/api/v1/integrations/workspace/tasks": {
+      "get": {
+        "operationId": "list_tasks_api_v1_integrations_workspace_tasks_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Connection Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source",
+            "required": false,
+            "schema": {
+              "default": "todo",
+              "title": "Source",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WorkspaceTask"
+                  },
+                  "title": "Response List Tasks Api V1 Integrations Workspace Tasks Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Tasks",
+        "tags": [
+          "workspace"
         ]
       }
     },

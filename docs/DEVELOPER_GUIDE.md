@@ -138,6 +138,41 @@ effects behind a port — record the prepared artifact and emit an event rather 
 assuming a vendor. Tests go under `tests/agents/program_manager/` and run against
 real SQLite with no mocks.
 
+### Workspace integration (`integrations/workspace/`)
+
+The workspace integration connects Genesis to Microsoft 365 through a
+ports-and-adapters boundary. **Business logic depends only on the provider ports
+(`ports/providers.py`) — never on Microsoft Graph.** The Graph adapter (`graph/`)
+is one implementation; the in-memory adapter (`local/`) is a fully-functional
+alternate backend used for development, air-gapped operation, and tests. The
+provider is chosen by `PB_WS_PROVIDER` (defaults to `in_memory`, so the platform
+runs with no external credentials).
+
+Run it against SQLite + the in-memory provider:
+
+```bash
+cd apps/api
+PB_API_DATABASE_URL=sqlite+aiosqlite:///dev.db uv run alembic upgrade head
+PB_API_DATABASE_URL=sqlite+aiosqlite:///dev.db uv run uvicorn pb_api.main:app
+# then, against http://localhost:8000/api/v1/integrations/workspace :
+#   POST /connections {"tenant_id","display_name","mailbox"}   register a mailbox
+#   POST /sync/run    {"tenant_id","connection_id"}            delta-sync every resource
+#   GET  /search?tenant_id=..&query=..                         unified semantic search
+#   GET  /approvals/pending?tenant_id=..                       the human approval queue
+```
+
+To add a **new provider** (e.g. Google Workspace): implement the ports in a new
+`integrations/workspace/<vendor>/` package, add a `Provider` enum value, and add a
+branch in `application/provider_factory.py` / `api/deps.py` — no business-logic
+change. Secrets come from `PB_WS_*` env / the credential store and are encrypted
+with Fernet (`security/crypto.py`); never hardcode them. New outbound actions are
+gated by the approval engine and must pass `ApprovalEngine.submit` before leaving
+the building. New tables are tenant-scoped and covered by an Alembic migration.
+Tests live under `tests/integrations/workspace/` (real SQLite + the in-memory
+adapter; Graph is exercised with `httpx.MockTransport`). See
+`docs/genesis/018_Workspace_Integration.md`, the Graph/provider/approval guides in
+`docs/genesis/`, and [ADR-0012](adr/0012-workspace-integration.md).
+
 ## 6. Frontend workflows (`apps/web`)
 
 - Server components by default; add `"use client"` only where interaction

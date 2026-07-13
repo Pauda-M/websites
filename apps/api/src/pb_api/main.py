@@ -22,6 +22,7 @@ from pb_api.core.config import Settings, get_settings
 from pb_api.core.logging import configure_logging, get_logger
 from pb_api.core.redis import create_redis
 from pb_api.db.session import create_engine, create_session_factory
+from pb_api.integrations.workspace.api.deps import close_workspace_state, init_workspace_state
 from pb_api.middleware.metrics import AppMetrics, MetricsMiddleware
 from pb_api.middleware.rate_limit import (
     MemoryRateLimiter,
@@ -47,6 +48,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.engine = engine
         app.state.session_factory = create_session_factory(engine)
         app.state.redis = create_redis(settings)
+        init_workspace_state(app)
         logger.info(
             "startup",
             environment=settings.environment,
@@ -56,6 +58,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         try:
             yield
         finally:
+            await close_workspace_state(app)
             if app.state.redis is not None:
                 await app.state.redis.aclose()
             limiter_redis = getattr(app.state, "rate_limit_redis", None)

@@ -83,10 +83,16 @@ service, so the `make` gates are the enforcement point.
 
 ## Governance
 
+The [Genesis Execution Manifesto](docs/governance/GENESIS_EXECUTION_MANIFESTO.md)
+is the primary engineering constitution — the highest-priority engineering
+document after the Product Vision. Every AI engineer must read it in full before
+writing any code, and validate every Epic against it.
+
 [`AI_DEPLOY_AUTHORIZATION.md`](AI_DEPLOY_AUTHORIZATION.md) is the governing
 authority for this repository — engineering standards, security requirements,
-the validation loop, and compliance rules. Where any implementation conflicts
-with it, the governance document takes precedence.
+the validation loop, and compliance rules. It operationalizes the manifesto;
+where any implementation conflicts with either, the governance documents take
+precedence.
 
 ## Genesis — Autonomous Digital Workforce
 
@@ -103,6 +109,7 @@ source of truth every future implementation must follow — lives in
 - [013_APIs.md](docs/genesis/013_APIs.md) · [014_Data_Model.md](docs/genesis/014_Data_Model.md) · [015_Roadmap.md](docs/genesis/015_Roadmap.md)
 - [016_Cognitive_Core.md](docs/genesis/016_Cognitive_Core.md) — Cognitive Core implementation reference (Phase 7)
 - [017_Program_Manager.md](docs/genesis/017_Program_Manager.md) — Program Manager AI Employee reference (Epic 008)
+- [018_Workspace_Integration.md](docs/genesis/018_Workspace_Integration.md) — Enterprise Workspace Integration reference (Epic 009)
 
 Genesis is event-driven and modular by construction: it depends on ports (never
 vendors), reserves loosely-coupled module namespaces (see the module registry
@@ -120,6 +127,19 @@ organizational memory, running a governed cognitive lifecycle within explicit
 authority limits. It is implemented under `apps/api/src/pb_api/agents/program_manager`
 and served at `/api/v1/agents/program-manager` — see `017_Program_Manager.md` and
 [ADR-0011](docs/adr/0011-program-manager-ai-employee.md).
+
+Genesis connects to the customer's digital workplace through the **Enterprise
+Workspace Integration** (Epic 009): a provider-agnostic, ports-and-adapters
+boundary with **Microsoft Graph** as the primary adapter (OAuth, token rotation,
+retry, pagination, delta sync, webhooks) and a fully-functional in-memory adapter
+for development and tests. Mailbox, calendar, contacts, directory, Teams,
+SharePoint/OneDrive, and tasks flow in as Genesis events that update memory and
+CRM; every outbound action passes an approval engine. It lives under
+`apps/api/src/pb_api/integrations/workspace`, served at
+`/api/v1/integrations/workspace` — see `018_Workspace_Integration.md` and
+[ADR-0012](docs/adr/0012-workspace-integration.md). Business logic never imports a
+vendor SDK, keeping the platform vendor-independent per the
+[Genesis Execution Manifesto](docs/governance/GENESIS_EXECUTION_MANIFESTO.md).
 
 ## Documentation
 
