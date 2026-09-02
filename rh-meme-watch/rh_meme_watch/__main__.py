@@ -21,6 +21,8 @@ def main() -> int:
         level=getattr(logging, cfg.log_level, logging.INFO),
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
+    # httpx logs full request URLs at INFO, which would leak the bot token
+    logging.getLogger("httpx").setLevel(logging.WARNING)
     log = logging.getLogger("rh_meme_watch")
 
     app = App(cfg)
