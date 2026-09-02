@@ -1,0 +1,103 @@
+# CI for the rh-meme-watch project while it lives on this branch of Pauda-M/websites.
+# This file is NOT part of the standalone project: when rh-meme-watch/ is
+# transplanted into its own repository (see rh-meme-watch/README.md), the
+# project's own .github/workflows/build.yml takes over and this file is dropped.
+#
+# Jobs:
+#   test            - pytest against the committed fixture (offline)
+#   docker-build    - image builds (no push from this repo)
+#   refresh-fixture - the build sandbox that authored this project had no
+#                     egress to api.geckoterminal.com, so the fixture could
+#                     not be pulled from the live API at build time. This job
+#                     runs on the GitHub runner, which has open internet: it
+#                     pulls 40 live robinhood pools, re-runs the full test
+#                     suite against them, and commits the result. If the live
+#                     API is unreachable it falls back to the deterministic
+#                     synthetic seed (kept marked with a "provenance" key so
+#                     the next push retries the live upgrade). Once a live
+#                     fixture is committed the job becomes a no-op.
+name: rh-meme-watch CI
+
+on:
+  push:
+    branches: [claude/rh-meme-watch-alerter-rgq04l]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rh-meme-watch-ci
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: rh-meme-watch
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Ensure a fixture exists (fresh branch before refresh-fixture ran)
+        run: test -f tests/fixture_robinhood_pools.json || python scripts/make_seed_fixture.py
+      - name: Install
+        run: pip install -e ".[test]"
+      - name: Run tests
+        run: pytest
+
+  docker-build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image (no push)
+        run: docker build -t rh-meme-watch:ci .
+
+  refresh-fixture:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - name: Classify the committed fixture
+        id: check
+        run: |
+          if [ ! -f tests/fixture_robinhood_pools.json ]; then
+            state=missing
+          elif grep -q '"provenance"' tests/fixture_robinhood_pools.json; then
+            state=synthetic
+          else
+            state=live
+          fi
+          echo "fixture state: $state"
+          echo "state=$state" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-python@v5
+        if: steps.check.outputs.state != 'live'
+        with:
+          python-version: "3.12"
+      - name: Install
+        if: steps.check.outputs.state != 'live'
+        run: pip install -e ".[test]"
+      - name: Materialize fixture (live API preferred, synthetic seed fallback)
+        if: steps.check.outputs.state != 'live'
+        run: |
+          if python scripts/refresh_fixture.py && python -m pytest; then
+            echo "live fixture pulled and validated" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "live refresh failed; committing the synthetic seed instead" >> "$GITHUB_STEP_SUMMARY"
+            python scripts/make_seed_fixture.py
+            python -m pytest
+          fi
+      - name: Commit fixture
+        if: steps.check.outputs.state != 'live'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/fixture_robinhood_pools.json
+          git -c commit.gpgsign=false commit -m "rh-meme-watch: materialize test fixture [skip ci]" || exit 0
+          git push origin HEAD:${{ github.ref_name }}

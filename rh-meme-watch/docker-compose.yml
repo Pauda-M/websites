@@ -1,0 +1,14 @@
+services:
+  rh-meme-watch:
+    image: ghcr.io/pauda-m/rh-meme-watch:latest
+    container_name: rh-meme-watch
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATA_DIR: /data
+    volumes:
+      - rh_meme_watch_data:/data
+    mem_limit: 128m
+
+volumes:
+  rh_meme_watch_data:

@@ -1,0 +1,3759 @@
+{
+ "provenance": "synthetic-seed 2026-09-02: shaped from GeckoTerminal API v2 pool objects and the verified robinhood-network quirks (negative bankr reserves, decoy CLIPPY pools, garbage h24 pct on young pools, stock-as-base names). Replace with live data via scripts/refresh_fixture.py (the branch CI refresh-fixture job does this automatically).",
+ "data": [
+  {
+   "id": "robinhood_0x9e87760b978fb374d788d3e2cfacb6ec9e69d414",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x9e87760b978fb374d788d3e2cfacb6ec9e69d414",
+    "name": "AI / NVDA",
+    "pool_name": "AI / NVDA",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-29T14:02:11Z",
+    "fdv_usd": "18500000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "18.2",
+     "h6": "12.0",
+     "h24": "42.7"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "310500.2",
+     "h6": "160000.0",
+     "h24": "8200000.9"
+    },
+    "reserve_in_usd": "2400000.55"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xbaf0b7890f0e5a6a0d1055242056313200fffaa4",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x1c10bac7abbdb9bdf58818da2e92d3f0060c99b4",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x48a653a73c9923f82dc7a9a26e7add25cabf7057",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x48a653a73c9923f82dc7a9a26e7add25cabf7057",
+    "name": "MOO / MU",
+    "pool_name": "MOO / MU",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-30T08:41:03Z",
+    "fdv_usd": "2900000.0",
+    "market_cap_usd": "2100000.0",
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "-4.2",
+     "h6": "12.0",
+     "h24": "11.9"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "88000.4",
+     "h6": "160000.0",
+     "h24": "1900000.2"
+    },
+    "reserve_in_usd": "612000.11"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x5cb0041036beaca1ddb410f6aabb6f981d714def",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x7a6c996f9332bf658de4f714ce812766e843e37e",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x1dddea807a2d4d82ae08c72d14ca22cd9a4734ac",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x1dddea807a2d4d82ae08c72d14ca22cd9a4734ac",
+    "name": "BONER / HIMS",
+    "pool_name": "BONER / HIMS",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-28T21:17:45Z",
+    "fdv_usd": "5100000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "7.7",
+     "h6": "12.0",
+     "h24": "-9.4"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "141000.7",
+     "h6": "160000.0",
+     "h24": "2600000.5"
+    },
+    "reserve_in_usd": "893000.02"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x82518bed6c6891c4ef2ff1226a18293d11c29d0c",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0xa23b38b30338f39cc69640add3e5e4118c773ba4",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x1e054349b9cc5a12c5f4f19bf113afe51f70a7a7",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x1e054349b9cc5a12c5f4f19bf113afe51f70a7a7",
+    "name": "AAPLCAT / AAPL",
+    "pool_name": "AAPLCAT / AAPL",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-31T11:55:29Z",
+    "fdv_usd": "1600000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "22.4",
+     "h6": "12.0",
+     "h24": "310.2"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "64000.1",
+     "h6": "160000.0",
+     "h24": "990000.3"
+    },
+    "reserve_in_usd": "431000.9"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xb70e98849b972c6cb8a5c26027b997959a3a3b17",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x7871e640ba3525f5728747f93278c872675eafb8",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x33e0c84fa946db348547c3901b10058f4c62574b",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x33e0c84fa946db348547c3901b10058f4c62574b",
+    "name": "CLIPPY / MSFT",
+    "pool_name": "CLIPPY / MSFT",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-30T16:24:52Z",
+    "fdv_usd": "9400000.0",
+    "market_cap_usd": "8100000.0",
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "31.5",
+     "h6": "12.0",
+     "h24": "88.0"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "422000.8",
+     "h6": "160000.0",
+     "h24": "5600000.1"
+    },
+    "reserve_in_usd": "1910000.33"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x4076184f3a94c6e80549d9d0196f29df7bdac0d4",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x9c6783734cba84a891f7feda2caaebbd16f31212",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x9b3a44becf8445c52dea2e3c93e8947b94f12994",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x9b3a44becf8445c52dea2e3c93e8947b94f12994",
+    "name": "CLIPPY / MSFT",
+    "pool_name": "CLIPPY / MSFT",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-09-01T22:03:14Z",
+    "fdv_usd": "9400000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "3.1",
+     "h6": "12.0",
+     "h24": "1200.5"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "900.2",
+     "h6": "160000.0",
+     "h24": "14000.7"
+    },
+    "reserve_in_usd": "5100.4"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xc6d6d9f58b2bbdece489c0b41bf93125aa1a3e03",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x338bcf4bc7236f721697e9bf3e320ef101bda77d",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0xbb82b06933310df07fd6363715f0e3f2507cd489",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0xbb82b06933310df07fd6363715f0e3f2507cd489",
+    "name": "CLIPPY / MSFT",
+    "pool_name": "CLIPPY / MSFT",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-09-02T01:12:40Z",
+    "fdv_usd": "9400000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "-8.8",
+     "h6": "12.0",
+     "h24": "540.1"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "120.0",
+     "h6": "160000.0",
+     "h24": "2200.4"
+    },
+    "reserve_in_usd": "812.9"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x8ea97b3fc53f1ba4185262e8408a0b782a215790",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0xcbe95b47c4e789de17a777c5bdc6c2237d014155",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "bankr-robinhood",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0xf82646a60274e43a1b49e305fee2b86a8a11b57a",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0xf82646a60274e43a1b49e305fee2b86a8a11b57a",
+    "name": "CLIPPY / WETH",
+    "pool_name": "CLIPPY / WETH",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-09-01T19:44:09Z",
+    "fdv_usd": "9400000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "1.9",
+     "h6": "12.0",
+     "h24": "780.3"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "3100.5",
+     "h6": "160000.0",
+     "h24": "45000.2"
+    },
+    "reserve_in_usd": "12400.6"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x37e4d861a8bdb59a2ab82dd80bb6fbae09a331fe",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x485289a0e039fe4fa9d12152f476ec88cf0744cd",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x5f790d7db5c4378fa52520d44b659ea81d67517b",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x5f790d7db5c4378fa52520d44b659ea81d67517b",
+    "name": "CLIPPY / USDG",
+    "pool_name": "CLIPPY / USDG",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-09-01T13:37:56Z",
+    "fdv_usd": "9400000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "-2.4",
+     "h6": "12.0",
+     "h24": "95.7"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "15400.9",
+     "h6": "160000.0",
+     "h24": "230000.6"
+    },
+    "reserve_in_usd": "68000.2"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x456fb1363726139190658ae865fb841f79efeeb4",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x864b6d0ddc34f4dfb47e242fea3aba28f7e9c218",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x080e6195115a8dbfe5576f435532da16b1250dce",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x080e6195115a8dbfe5576f435532da16b1250dce",
+    "name": "AMZN / WADDLES",
+    "pool_name": "AMZN / WADDLES",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-31T06:20:33Z",
+    "fdv_usd": "245000000000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "5.5",
+     "h6": "12.0",
+     "h24": "14.2"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "56000.3",
+     "h6": "160000.0",
+     "h24": "870000.8"
+    },
+    "reserve_in_usd": "241000.5"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x9d16f87c918d35b447bb09bd7aa917f4726bc3ab",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x72aa9ce9d956fb229689c933a4ec41d8564cef99",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0xca07e739ae653394ac4e1a433668bc0abd56d9f7",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0xca07e739ae653394ac4e1a433668bc0abd56d9f7",
+    "name": "AAPLDOG / AAPL",
+    "pool_name": "AAPLDOG / AAPL",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-09-02T06:19:00Z",
+    "fdv_usd": "440000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "311.0",
+     "h6": "12.0",
+     "h24": "35866.2"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 1204,
+      "sells": 980,
+      "buyers": 301,
+      "sellers": 288
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "212000.5",
+     "h6": "160000.0",
+     "h24": "212000.5"
+    },
+    "reserve_in_usd": "118000.44"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x389ac36a0d7426b701022c9b3d4c5ece209559c1",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0xdb2e22cd4fa3d0042e66d280c22d9fb302f4597a",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x55cfb5a64a2e7da6dfa4d9eef11aaa9446404234",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x55cfb5a64a2e7da6dfa4d9eef11aaa9446404234",
+    "name": "BNKRDOG / WETH",
+    "pool_name": "BNKRDOG / WETH",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-09-01T23:58:21Z",
+    "fdv_usd": "310000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "44.1",
+     "h6": "12.0",
+     "h24": "5120.8"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "45000.1",
+     "h6": "160000.0",
+     "h24": "160000.9"
+    },
+    "reserve_in_usd": "-3421.77"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xc50ce4a9d92c367affbda7e2732952152d5da996",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0xc78d53e7ad39f6e671ad8ebc1a7fa9d9ddef826c",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "bankr-robinhood",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x91fa15f18ca7073f7d67c49568eedc007cb66d05",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x91fa15f18ca7073f7d67c49568eedc007cb66d05",
+    "name": "GROKCOIN / USDG",
+    "pool_name": "GROKCOIN / USDG",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-09-02T03:11:02Z",
+    "fdv_usd": "125000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "-12.5",
+     "h6": "12.0",
+     "h24": "980.4"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "8100.6",
+     "h6": "160000.0",
+     "h24": "22000.3"
+    },
+    "reserve_in_usd": "-0.01"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x8a29ad1d03a9fb2ffc025a02918f5125a5ca9bea",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0xcd079b8b1d14d85abaf7b902ecaddb8dc529e07c",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "bankr-robinhood",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x19a44eecd2dfa00f1ade610f31e07fd7c417c0f3",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x19a44eecd2dfa00f1ade610f31e07fd7c417c0f3",
+    "name": "TSLADOG / TSLA",
+    "pool_name": "TSLADOG / TSLA",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-09-02T05:40:10Z",
+    "fdv_usd": "760000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "42.3",
+     "h6": "12.0",
+     "h24": "35866.0"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "98000.2",
+     "h6": "160000.0",
+     "h24": "101000.5"
+    },
+    "reserve_in_usd": "205000.7"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x6fd4c440c790d47e7c10daceeb727ada24fa1458",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0xa96ebd17951247ee0a9a8c3fd6a32292cc0f727c",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0xe242be7ac4aed73a69e2bc6e035296f8836af6f9",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0xe242be7ac4aed73a69e2bc6e035296f8836af6f9",
+    "name": "AMZN / USDG",
+    "pool_name": "AMZN / USDG",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-15T10:00:00Z",
+    "fdv_usd": "245000000000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "0.8",
+     "h6": "12.0",
+     "h24": "1.9"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "1200000.4",
+     "h6": "160000.0",
+     "h24": "22000000.7"
+    },
+    "reserve_in_usd": "5400000.0"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x3393a4d12ffa29134e0d3e346ab094331f251845",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0xc59aeafd25c340f52384f96f8f1fc1c236655cd8",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x510e058ed706e0c2d6c17aa23851f9c4c16704eb",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x510e058ed706e0c2d6c17aa23851f9c4c16704eb",
+    "name": "gld / USDG",
+    "pool_name": "gld / USDG",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-10T09:30:00Z",
+    "fdv_usd": "18000000000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "0.2",
+     "h6": "12.0",
+     "h24": "0.9"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "310000.2",
+     "h6": "160000.0",
+     "h24": "2900000.1"
+    },
+    "reserve_in_usd": "980000.0"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x3e3ce49fe0521f424fd131d9539a7c5f3650711a",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0xf408cd64ff52d2b88b54839fb9fb1621b2347c02",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x25f90feccd5501ec14d1e4f0d92b0f3269a371b6",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x25f90feccd5501ec14d1e4f0d92b0f3269a371b6",
+    "name": "TSLA / USDG",
+    "pool_name": "TSLA / USDG",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-12T14:45:00Z",
+    "fdv_usd": "1080000000000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "-1.1",
+     "h6": "12.0",
+     "h24": "2.4"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "890000.9",
+     "h6": "160000.0",
+     "h24": "16500000.2"
+    },
+    "reserve_in_usd": "3900000.0"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xf3a58c1c44c4de929c80ce796ff70cf3f1174936",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x9f506c2dffa31d1baad5ab6cd09fdcc41cb5e9cd",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0xd566cd97c45d7d2a1ace965caa0d6e4f4bc29375",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0xd566cd97c45d7d2a1ace965caa0d6e4f4bc29375",
+    "name": "MOONPIG / AAPL 0.3%",
+    "pool_name": "MOONPIG / AAPL 0.3%",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-31T18:22:47Z",
+    "fdv_usd": "890000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "9.9",
+     "h6": "12.0",
+     "h24": "120.7"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "34000.4",
+     "h6": "160000.0",
+     "h24": "410000.6"
+    },
+    "reserve_in_usd": "156000.8"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xd64ef6d673aed9f5392997938dff034f81374940",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x76b993631f31f6bc206d305ac62cf5d851bf5dd6",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x1b654a56bbf105669bb71a865dae594c8d9ee4d9",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x1b654a56bbf105669bb71a865dae594c8d9ee4d9",
+    "name": "HOODCAT / HOOD",
+    "pool_name": "HOODCAT / HOOD",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-30T12:12:12Z",
+    "fdv_usd": "1400000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "14.8",
+     "h6": "12.0",
+     "h24": "33.1"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "71000.8",
+     "h6": "160000.0",
+     "h24": "1200000.4"
+    },
+    "reserve_in_usd": "324000.1"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xa6963f444afccbae2ba86303a47630c4358b1176",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x600837bdbf9dec5f497b9bf0f4b4905adfd17109",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x208ac32b0e634a77d0d3af571a13ba1336bedf70",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x208ac32b0e634a77d0d3af571a13ba1336bedf70",
+    "name": "PEPE / WETH",
+    "pool_name": "PEPE / WETH",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-29T10:10:10Z",
+    "fdv_usd": "3200000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "6.2",
+     "h6": "12.0",
+     "h24": "19.5"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "190000.5",
+     "h6": "160000.0",
+     "h24": "2100000.8"
+    },
+    "reserve_in_usd": "740000.3"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xb5bfdfde4073c978c77c8828820ce0d5ea15ce5d",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0xaca7efc776b5f9a5870f674f41bc7d3c7d64c7e9",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x95ebaffff19c871c8a6d8038527dda31f0730b2e",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x95ebaffff19c871c8a6d8038527dda31f0730b2e",
+    "name": "WADDLES / USDG",
+    "pool_name": "WADDLES / USDG",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-30T20:20:20Z",
+    "fdv_usd": "1900000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "6.2",
+     "h6": "12.0",
+     "h24": "19.5"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "84000.2",
+     "h6": "160000.0",
+     "h24": "1150000.9"
+    },
+    "reserve_in_usd": "410000.6"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x5c34ad9a6278a919a29a7b4eafa4c8802d5c4565",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0xd760151123d916aa8147ef569448a8378ebd3f80",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x134c18fbfea300d9e06c4379650c00dc21738eb7",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x134c18fbfea300d9e06c4379650c00dc21738eb7",
+    "name": "DOGWIFHOOD / WETH",
+    "pool_name": "DOGWIFHOOD / WETH",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-09-01T09:09:09Z",
+    "fdv_usd": "980000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "6.2",
+     "h6": "12.0",
+     "h24": "19.5"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "51000.7",
+     "h6": "160000.0",
+     "h24": "640000.3"
+    },
+    "reserve_in_usd": "265000.9"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x64fbf35ca268c59abd097605694d4f47a1b9a81a",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x8472b4a8b8db46e8b9585977dc9f62291ca3a9d4",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x85f610f2558b1413fcc693388d703d3b05e56326",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x85f610f2558b1413fcc693388d703d3b05e56326",
+    "name": "RHINU / USDG",
+    "pool_name": "RHINU / USDG",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-28T17:35:00Z",
+    "fdv_usd": "720000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "6.2",
+     "h6": "12.0",
+     "h24": "19.5"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "23000.9",
+     "h6": "160000.0",
+     "h24": "390000.1"
+    },
+    "reserve_in_usd": "188000.2"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xab23f7ec9bd2621c2eebedeefd87f1fabc5afae0",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x704215a57ff6f0f5b83b6e8c8353a5320def4966",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0xa6f02823aa693d9b36369f1083c1d240c2afef99",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0xa6f02823aa693d9b36369f1083c1d240c2afef99",
+    "name": "SNEK / WETH",
+    "pool_name": "SNEK / WETH",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-09-01T15:26:38Z",
+    "fdv_usd": "455000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "6.2",
+     "h6": "12.0",
+     "h24": "19.5"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "17800.3",
+     "h6": "160000.0",
+     "h24": "210000.4"
+    },
+    "reserve_in_usd": "97000.5"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xea264f99a1ac751e131fd1b9548664344d5480c0",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x0d1e54138dc068d9b8c99da2ea054524be794295",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x3abc38c5193125523de70321553ae98fd1ec5144",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x3abc38c5193125523de70321553ae98fd1ec5144",
+    "name": "CHAD / USDG",
+    "pool_name": "CHAD / USDG",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-31T23:47:19Z",
+    "fdv_usd": "610000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "6.2",
+     "h6": "12.0",
+     "h24": "19.5"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "29000.6",
+     "h6": "160000.0",
+     "h24": "330000.2"
+    },
+    "reserve_in_usd": "154000.7"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xad9197ae0ef620e6cd7348ebf1a7beaf7af52357",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x407acc2e3a54a95382d810882a7f570f8342a18d",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0xb1eab6dd6096df6276be9d8d413292d9bc22f2f9",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0xb1eab6dd6096df6276be9d8d413292d9bc22f2f9",
+    "name": "GIGA / WETH",
+    "pool_name": "GIGA / WETH",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-09-02T02:02:02Z",
+    "fdv_usd": "830000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "6.2",
+     "h6": "12.0",
+     "h24": "19.5"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "62000.1",
+     "h6": "160000.0",
+     "h24": "88000.8"
+    },
+    "reserve_in_usd": "176000.4"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x962b5c7336aee83667bafc65bec7969ebf778781",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x2b343d4c4e80cdb93dc0864a98d394ec97a4b699",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0xc5aca913b7cbecce3061eba9c75798c03eadbf6e",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0xc5aca913b7cbecce3061eba9c75798c03eadbf6e",
+    "name": "FROGGO / USDG",
+    "pool_name": "FROGGO / USDG",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-30T05:55:44Z",
+    "fdv_usd": "540000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "6.2",
+     "h6": "12.0",
+     "h24": "19.5"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "12000.4",
+     "h6": "160000.0",
+     "h24": "260000.5"
+    },
+    "reserve_in_usd": "132000.8"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xb04b17b3cab0a457956187dda9d5a20a317988a3",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x5fbe3d3ac6768c43287ddd785764b4558e3efca5",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x4b32d372ccb872d2edf1842a9df67f8f3a9c69af",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x4b32d372ccb872d2edf1842a9df67f8f3a9c69af",
+    "name": "HODLCAT / WETH",
+    "pool_name": "HODLCAT / WETH",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-29T19:08:27Z",
+    "fdv_usd": "310000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "6.2",
+     "h6": "12.0",
+     "h24": "19.5"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "9100.2",
+     "h6": "160000.0",
+     "h24": "150000.7"
+    },
+    "reserve_in_usd": "88000.1"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xc3f27f00627e3c5302b384383c4c2f77ecab899e",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x123f461094396b6e86c2c2053908df45d9f7acc7",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x615d160f2db7a747396dfed29f1f3707f7a209e1",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x615d160f2db7a747396dfed29f1f3707f7a209e1",
+    "name": "YOLO / USDG",
+    "pool_name": "YOLO / USDG",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-09-01T11:31:53Z",
+    "fdv_usd": "915000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "6.2",
+     "h6": "12.0",
+     "h24": "19.5"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "41000.5",
+     "h6": "160000.0",
+     "h24": "480000.9"
+    },
+    "reserve_in_usd": "203000.3"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xa471be8a3793581c013ef0b0dea0ce1cd04c7975",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0xdadd6bbd07a27c612f4720775c9769275a33ecac",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x9e49561d7c379a1cc472fa66b19bb6d9c6ab396c",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x9e49561d7c379a1cc472fa66b19bb6d9c6ab396c",
+    "name": "NVDAPUP / NVDA",
+    "pool_name": "NVDAPUP / NVDA",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-31T13:13:13Z",
+    "fdv_usd": "1200000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "8.4",
+     "h6": "12.0",
+     "h24": "27.3"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "58000.2",
+     "h6": "160000.0",
+     "h24": "760000.6"
+    },
+    "reserve_in_usd": "268000.4"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xe97202522691b0d7899dafd709b4d1dac5344921",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0xed1905bdddbe778f607067377b2dfa9eada12ab5",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0xaae6e3a2111cc0901b9358328de413710d2b6a9b",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0xaae6e3a2111cc0901b9358328de413710d2b6a9b",
+    "name": "SPYCAT / SPY",
+    "pool_name": "SPYCAT / SPY",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-09-01T07:07:07Z",
+    "fdv_usd": "530000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "8.4",
+     "h6": "12.0",
+     "h24": "27.3"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "26000.8",
+     "h6": "160000.0",
+     "h24": "310000.2"
+    },
+    "reserve_in_usd": "142000.9"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x07b0b46b088615dffcdfbc768a27ca97f28766f4",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0xd4e6fb5b5a42f236fc964681c5d5038e3f68e817",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0xc3d5a9acff672d9fe00f459d4b2fa7c5da970096",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0xc3d5a9acff672d9fe00f459d4b2fa7c5da970096",
+    "name": "METAMOON / META",
+    "pool_name": "METAMOON / META",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-30T15:15:15Z",
+    "fdv_usd": "870000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "8.4",
+     "h6": "12.0",
+     "h24": "27.3"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "39000.1",
+     "h6": "160000.0",
+     "h24": "540000.8"
+    },
+    "reserve_in_usd": "221000.6"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x5b35e630e76129273e6f97f80b71ece79dc148ac",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0xcb5c5f17261197f8476ac36e413d3f4f98277212",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0xb5c6005ed6236fc0621b45c7509c31d16c96ed6f",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0xb5c6005ed6236fc0621b45c7509c31d16c96ed6f",
+    "name": "PLTRDOG / PLTR",
+    "pool_name": "PLTRDOG / PLTR",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-09-01T21:21:21Z",
+    "fdv_usd": "365000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "8.4",
+     "h6": "12.0",
+     "h24": "27.3"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "14000.7",
+     "h6": "160000.0",
+     "h24": "175000.4"
+    },
+    "reserve_in_usd": "96000.3"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x672feebcd36d0b78be50e4792613b5cc74f5ccc2",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x65b84d0a8e142cf3f3f186513ed5ee1a802fb442",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x86618c8dcf9deec871dbaee2ea2c00db6c086612",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x86618c8dcf9deec871dbaee2ea2c00db6c086612",
+    "name": "GMEFROG / GME",
+    "pool_name": "GMEFROG / GME",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-29T04:44:04Z",
+    "fdv_usd": "690000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "8.4",
+     "h6": "12.0",
+     "h24": "27.3"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "31000.9",
+     "h6": "160000.0",
+     "h24": "420000.1"
+    },
+    "reserve_in_usd": "184000.5"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xf92088fe4d1e6256414d6d3205c91e092d499a6e",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x14da9ad1b81475ba0d3f9933cac8ff10d8960835",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0xf4b45eaf625362f942a8c154eef6e8c6114160e8",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0xf4b45eaf625362f942a8c154eef6e8c6114160e8",
+    "name": "GHOST / WETH",
+    "pool_name": "GHOST / WETH",
+    "pool_fee_percentage": null,
+    "pool_created_at": null,
+    "fdv_usd": null,
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": null,
+     "h6": "12.0",
+     "h24": null
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "8000.0",
+     "h6": "160000.0",
+     "h24": "95000.0"
+    },
+    "reserve_in_usd": "125000.0"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x21ca9d2b89f1d0616e2a2f001e839f8f0a086787",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x513b7c50cef4456235635923d9843dd3f78eded5",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x15f55c401b4f25b088f43af8936ef74e6ef39cb0",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x15f55c401b4f25b088f43af8936ef74e6ef39cb0",
+    "name": "NOFDV / USDG",
+    "pool_name": "NOFDV / USDG",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-09-01T16:16:16Z",
+    "fdv_usd": null,
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "4.4",
+     "h6": "12.0",
+     "h24": "18.8"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "21000.3",
+     "h6": "160000.0",
+     "h24": "240000.6"
+    },
+    "reserve_in_usd": "168000.2"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0x888a7b9bca96d4fac0f9873f08b57c771a0c6640",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0xa04c147ad006f2348d04790c81439e05caf15609",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x62233317fb95ce6b9d8978e938b7921fe3988aa8",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x62233317fb95ce6b9d8978e938b7921fe3988aa8",
+    "name": "NOTX / WETH",
+    "pool_name": "NOTX / WETH",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-31T02:22:42Z",
+    "fdv_usd": "480000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "2.2",
+     "h6": "12.0",
+     "h24": "9.6"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "6000.1",
+     "h6": "160000.0",
+     "h24": "82000.3"
+    },
+    "reserve_in_usd": "111000.9"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xd7e4e09c61f7d2a5b119049aab4eee638cfcb058",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x89fc7310bfa0bb63f53f3786b8e3e2eb8c5bebb3",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x458dfa02d7287ccfa29a8a58b696686d6b07190f",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x458dfa02d7287ccfa29a8a58b696686d6b07190f",
+    "name": "NORES / USDG",
+    "pool_name": "NORES / USDG",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-09-01T18:45:36Z",
+    "fdv_usd": "260000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "1.5",
+     "h6": "12.0",
+     "h24": "7.1"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "5000.4",
+     "h6": "160000.0",
+     "h24": "61000.2"
+    },
+    "reserve_in_usd": null
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xe267f5474bd2bd5e5c188def5d89be9131fdd24b",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0xc52c600b067dec0a5ea7a2370613c2f74da7a656",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0x8dcea77198f801f68dd06d8e31c3fe2673c27e37",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0x8dcea77198f801f68dd06d8e31c3fe2673c27e37",
+    "name": "ZERORES / WETH",
+    "pool_name": "ZERORES / WETH",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-09-02T04:24:48Z",
+    "fdv_usd": "140000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "-3.3",
+     "h6": "12.0",
+     "h24": "44.9"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "2000.2",
+     "h6": "160000.0",
+     "h24": "18000.5"
+    },
+    "reserve_in_usd": "0"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xf01cb294841bdb8d3bc0c7439f234ea70e30748d",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0x7fee75bcfbac41da1bd6e5017c7508b312547da1",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "bankr-robinhood",
+      "type": "dex"
+     }
+    }
+   }
+  },
+  {
+   "id": "robinhood_0xb319da3dbe76af43346ac56672af0f23415abaa8",
+   "type": "pool",
+   "attributes": {
+    "base_token_price_usd": "0.0001230045",
+    "base_token_price_native_currency": "0.000000031",
+    "quote_token_price_usd": "1.0002",
+    "quote_token_price_native_currency": "0.00025",
+    "base_token_price_quote_token": "0.000123",
+    "quote_token_price_base_token": "8130.1",
+    "address": "0xb319da3dbe76af43346ac56672af0f23415abaa8",
+    "name": "LASTCAT / USDG",
+    "pool_name": "LASTCAT / USDG",
+    "pool_fee_percentage": null,
+    "pool_created_at": "2026-08-28T08:18:28Z",
+    "fdv_usd": "1150000.0",
+    "market_cap_usd": null,
+    "price_change_percentage": {
+     "m5": "0.4",
+     "m15": "1.1",
+     "m30": "2.5",
+     "h1": "5.9",
+     "h6": "12.0",
+     "h24": "16.4"
+    },
+    "transactions": {
+     "m5": {
+      "buys": 3,
+      "sells": 1,
+      "buyers": 3,
+      "sellers": 1
+     },
+     "m15": {
+      "buys": 9,
+      "sells": 4,
+      "buyers": 8,
+      "sellers": 4
+     },
+     "m30": {
+      "buys": 21,
+      "sells": 9,
+      "buyers": 18,
+      "sellers": 8
+     },
+     "h1": {
+      "buys": 120,
+      "sells": 95,
+      "buyers": 60,
+      "sellers": 48
+     },
+     "h6": {
+      "buys": 500,
+      "sells": 410,
+      "buyers": 220,
+      "sellers": 180
+     },
+     "h24": {
+      "buys": 1900,
+      "sells": 1500,
+      "buyers": 700,
+      "sellers": 560
+     }
+    },
+    "volume_usd": {
+     "m5": "1200.5",
+     "m15": "4100.2",
+     "m30": "9400.9",
+     "h1": "47000.6",
+     "h6": "160000.0",
+     "h24": "660000.3"
+    },
+    "reserve_in_usd": "301000.4"
+   },
+   "relationships": {
+    "base_token": {
+     "data": {
+      "id": "robinhood_0xc90eab0b82b1e4e8beb310547eb8a10da00b7539",
+      "type": "token"
+     }
+    },
+    "quote_token": {
+     "data": {
+      "id": "robinhood_0xb99f46fe9e0f3aeb4f5bb3b3a27434e982605cb3",
+      "type": "token"
+     }
+    },
+    "dex": {
+     "data": {
+      "id": "uniswap-v4",
+      "type": "dex"
+     }
+    }
+   }
+  }
+ ]
+}
