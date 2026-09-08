@@ -71,3 +71,37 @@ def test_digest_sent_once_per_day(tmp_path):
     clock.advance(hours=24)  # 07:01 next local day
     app.run_cycle()
     assert len(telegram.sent) == 2
+
+
+def test_digest_excludes_dust_and_unknown_liquidity(tmp_path):
+    """MIN_LIQ gate: wash-volume dust pools never reach the digest."""
+    from datetime import timedelta
+
+    clock = Clock(AFTER_SEVEN)
+    items = _pools(AFTER_SEVEN)  # 12 fresh pools at $50k liq + OLDIE
+    items.append(
+        api_item(
+            name="DUSTY / WETH",
+            address="0x" + "d" * 40,
+            reserve="812",  # decoy-sized liquidity
+            vol_h24="88888888",  # but the loudest volume of all
+            created_at=AFTER_SEVEN - timedelta(hours=1),
+        )
+    )
+    items.append(
+        api_item(
+            name="NEGRES / USDG",
+            address="0x" + "e" * 40,
+            reserve="-500",  # unknown liquidity
+            vol_h24="77777777",
+            created_at=AFTER_SEVEN - timedelta(hours=1),
+        )
+    )
+    gecko = FakeGecko(top_items=items)
+    app, telegram, _ = mk_app(tmp_path, gecko, clock=clock, cfg=mk_cfg(tmp_path))
+    app.run_cycle()
+    assert len(telegram.sent) == 1
+    digest = telegram.sent[0]
+    assert "DUSTY" not in digest
+    assert "NEGRES" not in digest
+    assert "MEME11" in digest

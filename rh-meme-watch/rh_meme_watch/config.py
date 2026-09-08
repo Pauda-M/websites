@@ -42,6 +42,7 @@ class Config:
     liq_floor_stock: float = 75_000.0
     new_window_min: int = 180
     esc_vol_h1: float = 500_000.0
+    min_liq: float = 10_000.0  # pools below this never appear in digests/escalations
     stock_symbols: frozenset[str] = field(
         default_factory=lambda: frozenset(s for s in DEFAULT_STOCK_SYMBOLS.split(",") if s)
     )
@@ -80,6 +81,7 @@ class Config:
             liq_floor_stock=_f("LIQ_FLOOR_STOCK", 75_000.0),
             new_window_min=_i("NEW_WINDOW_MIN", 180),
             esc_vol_h1=_f("ESC_VOL_H1", 500_000.0),
+            min_liq=_f("MIN_LIQ", 10_000.0),
             stock_symbols=symbols,
             log_level=os.environ.get("LOG_LEVEL", "INFO").strip().upper() or "INFO",
             tz=os.environ.get("TZ", "Europe/Zurich").strip() or "Europe/Zurich",

@@ -111,3 +111,31 @@ def test_dump_warning_shown_inside_escalation(tmp_path):
     assert len(telegram.sent) == 2
     assert "⚠️" in telegram.sent[1]
     assert "buyers/sellers h1 0" in telegram.sent[1].replace("\\", "")
+
+
+def test_no_escalation_below_min_liq(tmp_path):
+    """A volume spike on a drained pool (< MIN_LIQ) is exit noise, not growth."""
+    app, telegram, clock, gecko = _bootstrap(tmp_path)
+
+    clock.advance(minutes=30)
+    gecko.new_items = []
+    gecko.top_items = [_new_item(reserve="5000", vol_h1="600000")]  # drained but loud
+    app.run_cycle()
+    assert len(telegram.sent) == 1, "sub-MIN_LIQ pool must not escalate"
+
+    # back above the gate with the volume condition still true -> escalates
+    clock.advance(minutes=5)
+    gecko.top_items = [_new_item(reserve="12000", vol_h1="600000")]
+    app.run_cycle()
+    assert len(telegram.sent) == 2
+
+
+def test_no_escalation_on_unknown_reserve(tmp_path):
+    """Negative/unknown reserve (bankr quirk) never escalates, whatever the volume."""
+    app, telegram, clock, gecko = _bootstrap(tmp_path)
+
+    clock.advance(minutes=30)
+    gecko.new_items = []
+    gecko.top_items = [_new_item(reserve="-3421.77", vol_h1="900000")]
+    app.run_cycle()
+    assert len(telegram.sent) == 1

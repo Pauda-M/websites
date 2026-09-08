@@ -94,7 +94,11 @@ def escalation_verdict(
     now: datetime,
 ) -> EscalationVerdict:
     """R3: reserve >= 2x first-alert reserve OR vol.h1 >= ESC_VOL_H1,
-    at most once per esc_cooldown_h per address."""
+    at most once per esc_cooldown_h per address. Pools whose current
+    liquidity is unknown or below cfg.min_liq never escalate (a volume
+    spike on a drained pool is exit noise, not growth)."""
+    if pool.reserve_usd is None or pool.reserve_usd < cfg.min_liq:
+        return EscalationVerdict(False, None, None)
     if escalated_ts is not None and now - escalated_ts < timedelta(hours=cfg.esc_cooldown_h):
         return EscalationVerdict(False, None, None)
     liq_mult = None
@@ -125,12 +129,20 @@ def dump_warnings(pool: Pool, first_liq: float | None) -> list[str]:
     return warnings
 
 
-def digest_pools(pools: list[Pool], now: datetime, limit: int = 10) -> list[Pool]:
-    """Top pools by h24 volume among pools created in the last 24 h."""
+def digest_pools(
+    pools: list[Pool], now: datetime, limit: int = 10, min_liq: float = 0.0
+) -> list[Pool]:
+    """Top pools by h24 volume among pools created in the last 24 h.
+
+    Pools with unknown liquidity or liquidity below min_liq are dropped, so
+    dust/decoy pools with wash volume never reach the digest."""
     fresh = [
         p
         for p in pools
-        if p.created_at is not None and now - p.created_at <= timedelta(hours=24)
+        if p.created_at is not None
+        and now - p.created_at <= timedelta(hours=24)
+        and p.reserve_usd is not None
+        and p.reserve_usd >= min_liq
     ]
     fresh.sort(key=lambda p: p.vol_h24 or 0.0, reverse=True)
     return fresh[:limit]

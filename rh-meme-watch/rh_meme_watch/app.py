@@ -198,7 +198,7 @@ class App:
         last = self.store.last_alert_ts("digest")
         if last is not None and last.astimezone(self.tzinfo).date() >= local.date():
             return
-        top = rules.digest_pools(pools, now)
+        top = rules.digest_pools(pools, now, min_liq=self.cfg.min_liq)
         entries = []
         for pool in top:
             cls = rules.classify(pool, self.cfg)

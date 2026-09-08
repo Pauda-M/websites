@@ -69,6 +69,7 @@ If Telegram auth fails at startup the container exits non-zero (and
 | `LIQ_FLOOR_STOCK` | `75000` | USD, R2 floor |
 | `NEW_WINDOW_MIN` | `180` | max pool age for R1 |
 | `ESC_VOL_H1` | `500000` | USD, R3 volume trigger |
+| `MIN_LIQ` | `10000` | USD, pools below this never appear in digests or escalations |
 | `STOCK_SYMBOLS` | AAPL,…,HOOD | CSV, see `.env.example` |
 | `LOG_LEVEL` | `INFO` | |
 | `TZ` | `Europe/Zurich` | digest timezone |
