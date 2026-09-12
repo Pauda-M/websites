@@ -80,6 +80,66 @@ def passes_new_rule(
 
 
 @dataclass(frozen=True)
+class LockVerdict:
+    """Liquidity-lock proxy verdict.
+
+    The GeckoTerminal API exposes no LP-lock field (true lock state lives
+    on-chain: LP tokens burned to 0x0 or held by a locker contract), so this
+    infers it from the reserve history this service records itself. Liquidity
+    that holds near its running peak is behaving as locked; liquidity being
+    pulled is not. ``known`` is False until there is enough history to judge,
+    and an unknown verdict never counts as locked.
+    """
+
+    locked: bool
+    known: bool
+    drawdown: float | None  # worst observed drop from the running peak, 0..1
+    observed_min: float | None  # minutes of history observed
+    samples: int
+
+    @property
+    def label(self) -> str:
+        if not self.known:
+            return "unproven"
+        return "locked" if self.locked else "pulling"
+
+
+def lock_verdict(
+    history: list[tuple[datetime, float | None]],
+    cfg: Config,
+    current_reserve: float | None = None,
+) -> LockVerdict:
+    """Judge the liquidity-lock proxy from ``(timestamp, reserve)`` samples.
+
+    Drawdown is measured against the *running* peak, so an early liquidity pull
+    is never hidden by a later refill.
+    """
+    points = [(ts, r) for ts, r in history if r is not None and r > 0]
+    if len(points) < 2:
+        return LockVerdict(False, False, None, None, len(points))
+    points.sort(key=lambda p: p[0])
+    observed_min = (points[-1][0] - points[0][0]).total_seconds() / 60.0
+
+    peak = points[0][1]
+    worst = 0.0
+    for _ts, reserve in points:
+        if reserve > peak:
+            peak = reserve
+        elif peak > 0:
+            worst = max(worst, (peak - reserve) / peak)
+
+    known = len(points) >= cfg.lock_min_samples and observed_min >= cfg.lock_min_age_min
+    reserve_now = current_reserve if current_reserve is not None else points[-1][1]
+    locked = (
+        known
+        and worst <= cfg.lock_max_drawdown
+        and reserve_now is not None
+        and reserve_now >= cfg.min_liq
+    )
+    return LockVerdict(locked, known, worst, observed_min, len(points))
+
+
+@dataclass(frozen=True)
 class EscalationVerdict:
     fire: bool
     reason: str | None  # "liq_x2" or "vol_h1"
@@ -92,12 +152,17 @@ def escalation_verdict(
     escalated_ts: datetime | None,
     cfg: Config,
     now: datetime,
+    lock: LockVerdict | None = None,
 ) -> EscalationVerdict:
     """R3: reserve >= 2x first-alert reserve OR vol.h1 >= ESC_VOL_H1,
     at most once per esc_cooldown_h per address. Pools whose current
     liquidity is unknown or below cfg.min_liq never escalate (a volume
-    spike on a drained pool is exit noise, not growth)."""
+    spike on a drained pool is exit noise, not growth), and with
+    cfg.require_liq_lock the liquidity-lock proxy must also pass — an
+    unproven or pulling pool is held back rather than surfaced."""
     if pool.reserve_usd is None or pool.reserve_usd < cfg.min_liq:
+        return EscalationVerdict(False, None, None)
+    if cfg.require_liq_lock and lock is not None and not lock.locked:
         return EscalationVerdict(False, None, None)
     if escalated_ts is not None and now - escalated_ts < timedelta(hours=cfg.esc_cooldown_h):
         return EscalationVerdict(False, None, None)

@@ -38,7 +38,8 @@ def _pools(now: datetime) -> list[dict]:
 def _mk(tmp_path, start: datetime):
     clock = Clock(start)
     gecko = FakeGecko(top_items=_pools(start))
-    cfg = mk_cfg(tmp_path)  # real digest_hour=7
+    # real digest_hour=7; the liquidity-lock gate is covered in test_liq_lock.py
+    cfg = mk_cfg(tmp_path, require_liq_lock=False)
     return mk_app(tmp_path, gecko, clock=clock, cfg=cfg)
 
 
@@ -98,7 +99,9 @@ def test_digest_excludes_dust_and_unknown_liquidity(tmp_path):
         )
     )
     gecko = FakeGecko(top_items=items)
-    app, telegram, _ = mk_app(tmp_path, gecko, clock=clock, cfg=mk_cfg(tmp_path))
+    app, telegram, _ = mk_app(
+        tmp_path, gecko, clock=clock, cfg=mk_cfg(tmp_path, require_liq_lock=False)
+    )
     app.run_cycle()
     assert len(telegram.sent) == 1
     digest = telegram.sent[0]

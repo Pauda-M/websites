@@ -83,7 +83,7 @@ def test_collect_and_render(tmp_path):
     assert 0 <= pool["heat"] <= 100
     assert len(pool["spark"]) == 3
 
-    page = render_html(cfg.db_path, cfg, now)
+    page = render_html(cfg.db_path, cfg, now, show_all=True)
     assert "AAPLDOG / AAPL" in page
     assert "tracking" in page
     assert "<polyline" in page
@@ -95,7 +95,7 @@ def test_render_escapes_hostile_symbols(tmp_path):
     addr = "0x" + "dd" * 20
     store.upsert_seen(addr, '<script>alert(1)</script>', "WETH", "uniswap-v4", NOW, NOW, 200000.0, 1.0)
     store.mark_alerted(addr, NOW, 200000.0)
-    page = render_html(cfg.db_path, cfg, NOW)
+    page = render_html(cfg.db_path, cfg, NOW, show_all=True)
     assert "<script" not in page.lower()
     assert "&lt;script&gt;" in page.lower()
 
@@ -107,7 +107,7 @@ def test_http_endpoints(tmp_path):
     try:
         with httpx.Client(trust_env=False, timeout=5.0) as client:
             base = f"http://127.0.0.1:{port}"
-            page = client.get(f"{base}/")
+            page = client.get(f"{base}/?all=1")
             assert page.status_code == 200
             assert "AAPLDOG" in page.text
 
@@ -152,8 +152,9 @@ def test_rug_risk_bomb_badge(tmp_path):
     store.mark_alerted(addr, NOW, 200000.0)
     # latest snapshot: buyers/sellers 0.5 and liquidity down 60% vs first alert
     store.record_snapshot(addr, NOW + _td(minutes=5), 80000.0, 5000.0, 10, 20, 10, 20, -40.0)
-    page = render_html(cfg.db_path, cfg, NOW + _td(minutes=6))
-    assert "\U0001f4a3" in page and "rug risk" in page
+    page = render_html(cfg.db_path, cfg, NOW + _td(minutes=6), show_all=True)
+    assert "RUGGY" in page
+    assert page.count("\U0001f4a3") >= 2  # legend + the flagged row
 
 
 def test_burning_pool_gets_fire_and_red_bar(tmp_path):
@@ -166,6 +167,6 @@ def test_burning_pool_gets_fire_and_red_bar(tmp_path):
     store.mark_alerted(addr, NOW, 100000.0)
     # huge volume, strong buy flow, 3x liquidity -> heat 100
     store.record_snapshot(addr, NOW + _td(minutes=5), 300000.0, 600000.0, 400, 100, 400, 100, 50.0)
-    page = render_html(cfg.db_path, cfg, NOW + _td(minutes=6))
+    page = render_html(cfg.db_path, cfg, NOW + _td(minutes=6), show_all=True)
     assert "\U0001f525" in page
     assert "background:#e34948" in page

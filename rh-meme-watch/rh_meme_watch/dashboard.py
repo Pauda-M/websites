@@ -22,6 +22,7 @@ from pathlib import Path
 
 from .config import Config
 from .fmt import fmt_age, fmt_int, fmt_pct, fmt_usd
+from .rules import lock_verdict
 
 log = logging.getLogger("rh_meme_watch.dashboard")
 
@@ -38,6 +39,8 @@ _STATUS = {
     "seen": ("#c3c2b7", "seen"),
 }
 _DUMP_COLOR = "#d03b3b"
+_LOCK_COLOR = "#0ca30c"
+_UNPROVEN_COLOR = "#c3c2b7"
 
 # Thermal ramp for the heat bar: blue (cold) -> neutral -> burning red (hot).
 _HEAT_COLD = (0x39, 0x87, 0xE5)
@@ -138,6 +141,10 @@ def collect(db_path: Path, cfg: Config, now: datetime) -> dict:
                 and sellers > 0
                 and buyers / sellers < 0.7
             ) or bool(first_liq and last_liq is not None and last_liq < 0.5 * first_liq)
+            history = [(_parse_ts(s["ts"]), s["reserve"]) for s in snaps]
+            lock = lock_verdict(
+                [(ts, res) for ts, res in history if ts is not None], cfg, last_liq
+            )
             pools.append(
                 {
                     "address": row["address"],
@@ -154,6 +161,13 @@ def collect(db_path: Path, cfg: Config, now: datetime) -> dict:
                     "sellers_h1": sellers,
                     "pct_h1": latest["pct_h1"] if latest else None,
                     "dump_flag": dump,
+                    "liq_lock": lock.label,
+                    "liq_lock_drawdown": (
+                        round(lock.drawdown, 4) if lock.drawdown is not None else None
+                    ),
+                    "liq_lock_observed_min": (
+                        round(lock.observed_min) if lock.observed_min is not None else None
+                    ),
                     "heat": heat_score(vol_h1, buyers, sellers, liq_mult, cfg.esc_vol_h1),
                     "spark": [s["reserve"] for s in snaps if s["reserve"] is not None],
                 }
@@ -193,12 +207,21 @@ def _heartbeat_age(cfg: Config, now: datetime) -> float | None:
     return now.timestamp() - mtime
 
 
-def render_html(db_path: Path, cfg: Config, now: datetime) -> str:
+def qualifies(pool: dict, cfg: Config) -> bool:
+    """Default dashboard filter: liquidity-lock proxy passed AND liq >= MIN_LIQ."""
+    liq = pool.get("last_liq")
+    return pool.get("liq_lock") == "locked" and liq is not None and liq >= cfg.min_liq
+
+
+def render_html(db_path: Path, cfg: Config, now: datetime, show_all: bool = False) -> str:
     data = collect(db_path, cfg, now)
+    all_pools = data["pools"]
+    passing = [p for p in all_pools if qualifies(p, cfg)]
+    shown = all_pools if show_all else passing
     hb = _heartbeat_age(cfg, now)
     hb_text = f"{hb:.0f}s ago" if hb is not None else "never"
     hb_ok = hb is not None and hb < 300
-    hot = sum(1 for p in data["pools"] if p["heat"] >= HOT_THRESHOLD)
+    hot = sum(1 for p in shown if p["heat"] >= HOT_THRESHOLD)
 
     def tile(label: str, value: str) -> str:
         return (
@@ -207,7 +230,7 @@ def render_html(db_path: Path, cfg: Config, now: datetime) -> str:
         )
 
     rows_html = []
-    for p in data["pools"]:
+    for p in shown:
         name = html.escape(f"{p['symbol'] or '?'} / {p['quote'] or '?'}")
         url = html.escape(
             f"https://www.geckoterminal.com/robinhood/pools/{p['address']}", quote=True
@@ -216,6 +239,15 @@ def render_html(db_path: Path, cfg: Config, now: datetime) -> str:
         status = (
             f'<span class="dot" style="background:{color}"></span>{html.escape(label)}'
         )
+        lock_label = p.get("liq_lock", "unproven")
+        if lock_label == "locked":
+            status += f' <span style="color:{_LOCK_COLOR}">\U0001f512 locked</span>'
+        elif lock_label == "pulling":
+            dd = p.get("liq_lock_drawdown")
+            dd_txt = f" &minus;{dd * 100:.0f}%" if dd is not None else ""
+            status += f' <span style="color:{_DUMP_COLOR}">\U0001f513 pulling{dd_txt}</span>'
+        else:
+            status += f' <span style="color:{_UNPROVEN_COLOR}">⧖ unproven</span>'
         if p["dump_flag"]:
             status += ' <span class="rug">\U0001f4a3 rug risk</span>'
         alert_dt = _parse_ts(p["first_alert_ts"])
@@ -243,10 +275,17 @@ def render_html(db_path: Path, cfg: Config, now: datetime) -> str:
             "</tr>"
         )
     if not rows_html:
-        rows_html.append(
-            '<tr><td colspan="9" class="empty">no alerted pools yet - '
-            "rows appear after the first NEW alert</td></tr>"
+        msg = (
+            "no alerted pools yet - rows appear after the first NEW alert"
+            if not all_pools
+            else (
+                f"no pool currently passes the filters (liquidity lock + "
+                f"{html.escape(fmt_usd(cfg.min_liq))} min liquidity) - "
+                '<a style="color:%s" href="/?all=1">show all %d tracked</a>'
+                % (_ACCENT, len(all_pools))
+            )
         )
+        rows_html.append(f'<tr><td colspan="9" class="empty">{msg}</td></tr>')
 
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
@@ -287,9 +326,17 @@ def render_html(db_path: Path, cfg: Config, now: datetime) -> str:
 <div class="sub">robinhood chain pool radar &middot; heat = 45% vol1h/{html.escape(fmt_usd(cfg.esc_vol_h1))}
  + 25% buyer flow + 30% liq multiple &middot; bar color: blue = cooling &rarr; red = burning
  &middot; \U0001f4a3 rug risk = buyers/sellers &lt; 0.7 or liq &minus;50% vs first alert
- &middot; auto-refresh 60s</div>
+ &middot; auto-refresh 60s<br>
+filters: \U0001f512 liquidity lock (proxy: held within
+ {cfg.lock_max_drawdown * 100:.0f}% of its running peak over
+ &ge;{cfg.lock_min_age_min}min of history &mdash; the API exposes no on-chain LP lock)
+ + min liquidity {html.escape(fmt_usd(cfg.min_liq))}
+ &middot; <a style="color:{_ACCENT}" href="{'/' if show_all else '/?all=1'}">{
+   "showing all tracked - back to filtered" if show_all
+   else "show all tracked (unfiltered)"}</a></div>
 <div class="tiles">
-{tile("tracked pools", str(len(data["pools"])))}
+{tile("passing filters", str(len(passing)))}
+{tile("tracked pools", str(len(all_pools)))}
 {tile("alerts 24h", str(data["alerts_24h"]))}
 {tile("escalations 24h", str(data["escalations_24h"]))}
 {tile("hot now (heat >= " + str(HOT_THRESHOLD) + ")", str(hot))}
@@ -330,8 +377,13 @@ class _Handler(BaseHTTPRequestHandler):
                 ok = age is not None and age < 300
                 body = json.dumps({"ok": ok, "heartbeat_age_sec": age}).encode()
                 self._send(200 if ok else 503, "application/json", body)
-            elif self.path == "/" or self.path.startswith("/index"):
-                self._send(200, "text/html; charset=utf-8", render_html(cfg.db_path, cfg, now).encode())
+            elif self.path == "/" or self.path.startswith(("/index", "/?")):
+                show_all = "all=1" in self.path
+                self._send(
+                    200,
+                    "text/html; charset=utf-8",
+                    render_html(cfg.db_path, cfg, now, show_all=show_all).encode(),
+                )
             else:
                 self._send(404, "text/plain", b"not found")
         except BrokenPipeError:

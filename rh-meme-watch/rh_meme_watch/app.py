@@ -22,6 +22,15 @@ def utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def _snap_ts(ts: str | None) -> datetime | None:
+    if not ts:
+        return None
+    try:
+        return datetime.fromisoformat(ts).astimezone(timezone.utc)
+    except ValueError:
+        return None
+
+
 class App:
     def __init__(
         self,
@@ -171,18 +180,39 @@ class App:
         log.info("NEW alert sent: %s (%s)", pool.name, pool.address)
         return True
 
+    def _lock_for(self, pool: Pool, now: datetime) -> rules.LockVerdict:
+        """Liquidity-lock proxy from this pool's recorded reserve history."""
+        rows = self.store.snapshots(pool.address, now - timedelta(hours=24))
+        history = [(_snap_ts(r["ts"]), r["reserve"]) for r in rows]
+        history = [(ts, res) for ts, res in history if ts is not None]
+        return rules.lock_verdict(history, self.cfg, pool.reserve_usd)
+
     def _maybe_escalate(self, pool: Pool, now: datetime) -> None:
         row = self.store.get_pool(pool.address)
         if row is None or not row["first_alert_ts"]:
             return
+        lock = self._lock_for(pool, now)
         verdict = rules.escalation_verdict(
             pool,
             row["first_liq"],
             self.store.escalated_ts(pool.address),
             self.cfg,
             now,
+            lock=lock,
         )
         if not verdict.fire:
+            if (
+                self.cfg.require_liq_lock
+                and not lock.locked
+                and pool.reserve_usd is not None
+                and pool.reserve_usd >= self.cfg.min_liq
+            ):
+                log.debug(
+                    "escalation held back for %s: liquidity lock %s (drawdown=%s)",
+                    pool.name,
+                    lock.label,
+                    lock.drawdown,
+                )
             return
         cls = rules.classify(pool, self.cfg)
         warnings = rules.dump_warnings(pool, row["first_liq"])
@@ -214,7 +244,12 @@ class App:
         last = self.store.last_alert_ts("digest")
         if last is not None and last.astimezone(self.tzinfo).date() >= local.date():
             return
-        top = rules.digest_pools(pools, now, min_liq=self.cfg.min_liq)
+        candidates = rules.digest_pools(
+            pools, now, limit=100, min_liq=self.cfg.min_liq
+        )
+        if self.cfg.require_liq_lock:
+            candidates = [p for p in candidates if self._lock_for(p, now).locked]
+        top = candidates[:10]
         entries = []
         for pool in top:
             cls = rules.classify(pool, self.cfg)

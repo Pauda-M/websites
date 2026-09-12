@@ -20,8 +20,14 @@ def _new_item(reserve="118000", created=None, **kw):
 
 
 def _bootstrap(tmp_path):
+    # These cover R3 mechanics only, so the liquidity-lock gate is opted out of
+    # (a 2-cycle test has no reserve history to prove a lock with); the gate
+    # itself is covered in test_liq_lock.py.
+    from conftest import mk_cfg
+
+    cfg = mk_cfg(tmp_path, digest_hour=25, require_liq_lock=False)
     gecko = FakeGecko(new_items=[_new_item()])
-    app, telegram, clock = mk_app(tmp_path, gecko)
+    app, telegram, clock = mk_app(tmp_path, gecko, cfg=cfg)
     app.run_cycle()
     assert len(telegram.sent) == 1  # the NEW alert
     return app, telegram, clock, gecko
@@ -123,9 +129,9 @@ def test_no_escalation_below_min_liq(tmp_path):
     app.run_cycle()
     assert len(telegram.sent) == 1, "sub-MIN_LIQ pool must not escalate"
 
-    # back above the gate with the volume condition still true -> escalates
+    # back above the gate (MIN_LIQ is 20k) with the volume condition still true
     clock.advance(minutes=5)
-    gecko.top_items = [_new_item(reserve="12000", vol_h1="600000")]
+    gecko.top_items = [_new_item(reserve="25000", vol_h1="600000")]
     app.run_cycle()
     assert len(telegram.sent) == 2
 

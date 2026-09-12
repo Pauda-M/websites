@@ -33,6 +33,17 @@ def _i(name: str, default: int) -> int:
     return int(_f(name, float(default)))
 
 
+def _b(name: str, default: bool) -> bool:
+    raw = os.environ.get(name, "").strip().lower()
+    if not raw:
+        return default
+    if raw in ("1", "true", "yes", "on"):
+        return True
+    if raw in ("0", "false", "no", "off"):
+        return False
+    raise ConfigError(f"{name} must be a boolean (1/0/true/false), got {raw!r}")
+
+
 @dataclass(frozen=True)
 class Config:
     telegram_bot_token: str
@@ -42,7 +53,15 @@ class Config:
     liq_floor_stock: float = 75_000.0
     new_window_min: int = 180
     esc_vol_h1: float = 500_000.0
-    min_liq: float = 10_000.0  # pools below this never appear in digests/escalations
+    min_liq: float = 20_000.0  # pools below this never appear in digests/escalations
+    # Liquidity-lock proxy. True lock state is an on-chain property (LP burned or
+    # held by a locker) that the GeckoTerminal API does not expose, so it is
+    # inferred from observed reserve history: liquidity that holds near its
+    # running peak behaves like locked liquidity, liquidity being pulled does not.
+    require_liq_lock: bool = True  # gate escalations + digest entries on it
+    lock_max_drawdown: float = 0.25  # worst allowed drop from the running peak
+    lock_min_age_min: int = 30  # minutes of history needed before judging
+    lock_min_samples: int = 10  # snapshots needed before judging
     stock_symbols: frozenset[str] = field(
         default_factory=lambda: frozenset(s for s in DEFAULT_STOCK_SYMBOLS.split(",") if s)
     )
@@ -83,7 +102,11 @@ class Config:
             liq_floor_stock=_f("LIQ_FLOOR_STOCK", 75_000.0),
             new_window_min=_i("NEW_WINDOW_MIN", 180),
             esc_vol_h1=_f("ESC_VOL_H1", 500_000.0),
-            min_liq=_f("MIN_LIQ", 10_000.0),
+            min_liq=_f("MIN_LIQ", 20_000.0),
+            require_liq_lock=_b("REQUIRE_LIQ_LOCK", True),
+            lock_max_drawdown=_f("LOCK_MAX_DRAWDOWN", 0.25),
+            lock_min_age_min=_i("LOCK_MIN_AGE_MIN", 30),
+            lock_min_samples=_i("LOCK_MIN_SAMPLES", 10),
             stock_symbols=symbols,
             log_level=os.environ.get("LOG_LEVEL", "INFO").strip().upper() or "INFO",
             tz=os.environ.get("TZ", "Europe/Zurich").strip() or "Europe/Zurich",

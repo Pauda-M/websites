@@ -18,6 +18,7 @@ Host install path: `/opt/pbSolutions/rh-meme-watch/`.
 | R3 ESCALATE | previously alerted pool with reserve ≥ 2× first-alert reserve OR `volume.h1` ≥ `ESC_VOL_H1` ($500k) → `🔺 ESCALATE`, max once per 6 h per address |
 | R4 DUMP | info only: buyers/sellers h1 < 0.7 or reserve down > 50 % vs first alert → `⚠️` line inside escalations and digests |
 | Digest | daily 07:00 Europe/Zurich: top 10 pools by h24 volume created in the last 24 h |
+| Liquidity lock | escalations and digest entries additionally require the liquidity-lock proxy to pass (see below) and liquidity ≥ `MIN_LIQ` ($20k) |
 
 Dedupe is per pool address; additionally one meme symbol alerts at most once
 per 24 h (hot symbols spawn decoy pools — CLIPPY had ≥ 5), unless the decoy
@@ -69,7 +70,11 @@ If Telegram auth fails at startup the container exits non-zero (and
 | `LIQ_FLOOR_STOCK` | `75000` | USD, R2 floor |
 | `NEW_WINDOW_MIN` | `180` | max pool age for R1 |
 | `ESC_VOL_H1` | `500000` | USD, R3 volume trigger |
-| `MIN_LIQ` | `10000` | USD, pools below this never appear in digests or escalations |
+| `MIN_LIQ` | `20000` | USD, pools below this never appear in digests, escalations or the default dashboard view |
+| `REQUIRE_LIQ_LOCK` | `1` | gate escalations + digest entries on the liquidity-lock proxy (`0` disables) |
+| `LOCK_MAX_DRAWDOWN` | `0.25` | worst allowed drop from the running peak before liquidity counts as "pulling" |
+| `LOCK_MIN_AGE_MIN` | `30` | minutes of recorded history needed before a lock verdict is given |
+| `LOCK_MIN_SAMPLES` | `10` | snapshots needed before a lock verdict is given |
 | `DASHBOARD_PORT` | `8080` | in-container port of the web dashboard, `0` disables |
 | `STOCK_SYMBOLS` | AAPL,…,HOOD | CSV, see `.env.example` |
 | `LOG_LEVEL` | `INFO` | |
@@ -79,13 +84,38 @@ State lives in SQLite (`/data/state.db`, WAL) in the `rh_meme_watch_data`
 volume: `pools` (per-address lifecycle), `alerts` (audit log) and `snapshots`
 (per-cycle history for alerted pools, kept 14 days).
 
+## Liquidity lock (proxy, not on-chain proof)
+
+True lock state is an **on-chain** property — LP tokens burned to `0x0` or held
+by a locker contract — and the GeckoTerminal pool API exposes no such field, so
+this service does not claim to read it. Instead it infers the *observable
+consequence* of a lock from the reserve history it records itself every cycle:
+
+* liquidity that stays within `LOCK_MAX_DRAWDOWN` (25%) of its **running peak**
+  over at least `LOCK_MIN_AGE_MIN` (30 min) and `LOCK_MIN_SAMPLES` (10)
+  snapshots, while sitting at or above `MIN_LIQ` ($20k) → 🔒 **locked**
+* liquidity that dropped further than that → 🔓 **pulling** (drawdown shown)
+* not enough history yet → ⧖ **unproven**, which never counts as locked
+
+The drawdown is measured against the running peak, so an early pull can never
+be hidden by a later refill. With `REQUIRE_LIQ_LOCK=1` (default) only 🔒 pools
+reach escalations and the daily digest, and the dashboard's default view shows
+only them (`/?all=1` shows everything).
+
+**R1/R2 NEW alerts are deliberately NOT gated on this.** A pool minutes old has
+no history to judge, so gating new alerts would delay every one of them by at
+least half an hour and destroy the point of a 60-second watcher. New alerts stay
+fast; the lock filter governs what gets *promoted*.
+
 ## Dashboard
 
 The container serves a read-only web dashboard of every detected (alerted)
 pool, ranked by a transparent 0-100 **heat** score (45% h1 volume vs the
 escalation threshold, 25% buyer/seller flow, 30% liquidity multiple since the
-first alert), with a 24h liquidity sparkline per pool, status/dump badges and
-summary tiles. Routes: `/` (HTML, auto-refresh 60s), `/api/pools` (JSON),
+first alert), with a 24h liquidity sparkline per pool, 🔒/🔓/⧖ liquidity-lock
+badges, 💣 rug-risk flags and summary tiles. The default view is filtered to
+pools passing the liquidity-lock + `MIN_LIQ` filters; `/?all=1` lists every
+tracked pool. Routes: `/` (HTML, auto-refresh 60s), `/api/pools` (JSON),
 `/healthz`.
 
 `docker-compose.yml` maps it to **`127.0.0.1:8791`** on the host only - open
@@ -100,7 +130,7 @@ python3.12 -m venv .venv && .venv/bin/pip install -e ".[test]"
 .venv/bin/pytest
 ```
 
-62 tests run offline against `tests/fixture_robinhood_pools.json`
+86 tests run offline against `tests/fixture_robinhood_pools.json`
 (40 robinhood pools). **Fixture provenance:** the sandbox this project was
 authored in had no network egress to `api.geckoterminal.com`, so the fixture
 is materialized by CI on the first run: `scripts/refresh_fixture.py` pulls 40
