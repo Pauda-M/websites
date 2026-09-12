@@ -22,6 +22,14 @@ def utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def _token_address(token_id: str | None) -> str | None:
+    """"robinhood_0xabc..." -> "0xabc...". Token ids carry a network prefix."""
+    if not token_id:
+        return None
+    addr = token_id.split("_", 1)[1] if "_" in token_id else token_id
+    return addr if addr.startswith("0x") else None
+
+
 def _snap_ts(ts: str | None) -> datetime | None:
     if not ts:
         return None
@@ -270,7 +278,11 @@ class App:
         for _checked, pool in due[: self.cfg.onchain_lookups_per_cycle]:
             try:
                 custody = self.onchain.custody(pool.address)
-                reserve = self.onchain.reserve(pool.address, pool.quote_token_price_usd)
+                reserve = self.onchain.reserve(
+                    pool.address,
+                    pool.quote_token_price_usd,
+                    _token_address(pool.quote_token_id),
+                )
             except Exception:
                 log.exception("on-chain verification failed for %s", pool.address)
                 continue

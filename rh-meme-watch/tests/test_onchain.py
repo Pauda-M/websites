@@ -96,7 +96,7 @@ def test_32_byte_pool_id_is_not_applicable():
     assert c.kind == NOT_APPLICABLE
     assert "pool id" in c.note
     assert c.label == "n/a"
-    assert v.reserve(V4_ID, 1.0).ok is False
+    assert v.reserve(V4_ID, 1.0, TOKEN_WETH).ok is False
 
 
 @respx.mock
@@ -180,16 +180,58 @@ def test_reserve_read_from_chain_in_usd():
             (TOKEN_WETH, SEL_DECIMALS): _word(18),
         }
     )
-    r = v.reserve(POOL, 2500.0)
+    r = v.reserve(POOL, 2500.0, TOKEN_WETH)
     assert r.ok is True
     assert r.quote_units == 3.0
     assert r.reserve_usd == 15000.0  # 2 * 3 * 2500
 
 
 @respx.mock
+def test_reserve_uses_the_named_quote_token_not_token0_token1_order():
+    """v2 orders token0/token1 by address: guessing multiplies the MEME balance by
+    the quote price and yields nonsense (seen live: $38.6T for a $303k pool)."""
+    meme = "0x2222222222222222222222222222222222222222"
+    v = _verifier(
+        {
+            # token0 is the meme side here, token1 the quote side
+            (POOL, SEL_TOKEN0): _addr_word(meme),
+            (POOL, SEL_TOKEN1): _addr_word(TOKEN_WETH),
+            (meme, SEL_BALANCE_OF + _addr_word(POOL)[2:]): _word(15_000_000 * 10**18),
+            (meme, SEL_DECIMALS): _word(18),
+            (TOKEN_WETH, SEL_BALANCE_OF + _addr_word(POOL)[2:]): _word(60 * 10**18),
+            (TOKEN_WETH, SEL_DECIMALS): _word(18),
+        }
+    )
+    r = v.reserve(POOL, 2500.0, TOKEN_WETH)
+    assert r.quote_token == TOKEN_WETH
+    assert r.reserve_usd == 300_000.0  # 2 * 60 * 2500, not 15M * 2500
+
+
+@respx.mock
+def test_reserve_refuses_a_token_that_is_not_a_pool_side():
+    stranger = "0x3333333333333333333333333333333333333333"
+    v = _verifier(
+        {
+            (POOL, SEL_TOKEN0): _addr_word("0x2222222222222222222222222222222222222222"),
+            (POOL, SEL_TOKEN1): _addr_word(TOKEN_WETH),
+        }
+    )
+    r = v.reserve(POOL, 2500.0, stranger)
+    assert r.ok is False
+    assert "not a side" in r.note
+
+
+@respx.mock
+def test_reserve_without_a_known_quote_token_returns_not_ok():
+    """A wrong number is worse than no number."""
+    v = _verifier({(POOL, SEL_TOKEN1): _addr_word(TOKEN_WETH)})
+    assert v.reserve(POOL, 2500.0, None).ok is False
+
+
+@respx.mock
 def test_reserve_handles_unreadable_tokens():
     v = _verifier({(POOL, SEL_TOKEN1): _addr_word(TOKEN_WETH)})  # balanceOf reverts
-    assert v.reserve(POOL, 2500.0).ok is False
+    assert v.reserve(POOL, 2500.0, TOKEN_WETH).ok is False
 
 
 @respx.mock
@@ -198,7 +240,7 @@ def test_rpc_failure_degrades_without_raising():
     v = OnchainVerifier(RpcClient(RPC, http=httpx.Client(trust_env=False)), {})
     c = v.custody(POOL)
     assert c.kind == NOT_APPLICABLE  # unreadable supply is never treated as locked
-    assert v.reserve(POOL, 1.0).ok is False
+    assert v.reserve(POOL, 1.0, TOKEN_WETH).ok is False
 
 
 class FakeVerifier:
@@ -213,7 +255,7 @@ class FakeVerifier:
         self.calls += 1
         return item
 
-    def reserve(self, address: str, price):
+    def reserve(self, address: str, price, quote_token=None):
         from rh_meme_watch.onchain import OnchainReserve
 
         return OnchainReserve(True, quote_token=TOKEN_WETH, quote_units=1.0, reserve_usd=None)

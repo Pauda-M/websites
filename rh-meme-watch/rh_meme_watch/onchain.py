@@ -262,29 +262,37 @@ class OnchainVerifier:
             note=label_note,
         )
 
-    def reserve(self, pool_address: str, quote_price_usd: float | None) -> OnchainReserve:
+    def reserve(
+        self,
+        pool_address: str,
+        quote_price_usd: float | None,
+        quote_token: str | None = None,
+    ) -> OnchainReserve:
         """Pool liquidity in USD from the chain: 2 x quote-token balance x price.
 
-        The balance is trustless; only the quote price still comes from the API.
+        The quote token must be named explicitly (the API supplies it): in a v2
+        pool token0/token1 are ordered by address, NOT by base/quote, so guessing
+        multiplies the meme token's balance by the quote token's price and yields
+        nonsense. An unknown quote token returns not-ok rather than a wrong number.
         """
         if not _is_contract_address(pool_address):
             return OnchainReserve(False, note="32-byte pool id: no per-pool contract")
-        token1 = self.rpc.call_address(pool_address, SEL_TOKEN1)
-        token0 = self.rpc.call_address(pool_address, SEL_TOKEN0)
-        if token1 is None and token0 is None:
-            return OnchainReserve(False, note="pool exposes no token0/token1")
-
-        for token in (token1, token0):
-            if token is None:
-                continue
-            units_raw = self.rpc.balance_of(token, pool_address)
-            if units_raw is None:
-                continue
-            decimals = self.rpc.call_uint(token, SEL_DECIMALS)
-            decimals = 18 if decimals is None or decimals > 36 else decimals
-            units = units_raw / (10**decimals)
-            usd = 2.0 * units * quote_price_usd if quote_price_usd else None
+        if not _is_contract_address(quote_token or ""):
+            return OnchainReserve(False, note="quote token address unknown")
+        # Confirm the pool really holds this token as one of its sides.
+        sides = {
+            (self.rpc.call_address(pool_address, sel) or "").lower()
+            for sel in (SEL_TOKEN0, SEL_TOKEN1)
+        }
+        if sides and sides != {""} and quote_token.lower() not in sides:
             return OnchainReserve(
-                True, quote_token=token, quote_units=units, reserve_usd=usd
+                False, note="quote token is not a side of this pool"
             )
-        return OnchainReserve(False, note="token balances unreadable")
+        units_raw = self.rpc.balance_of(quote_token, pool_address)
+        if units_raw is None:
+            return OnchainReserve(False, note="quote balance unreadable")
+        decimals = self.rpc.call_uint(quote_token, SEL_DECIMALS)
+        decimals = 18 if decimals is None or decimals > 36 else decimals
+        units = units_raw / (10**decimals)
+        usd = 2.0 * units * quote_price_usd if quote_price_usd else None
+        return OnchainReserve(True, quote_token=quote_token, quote_units=units, reserve_usd=usd)
