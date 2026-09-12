@@ -76,6 +76,7 @@ class Pool:
     quote_token_id: str
     created_at: datetime | None
     base_token_price_usd: float | None
+    quote_token_price_usd: float | None
     fdv_usd: float | None
     market_cap_usd: float | None
     reserve_usd: float | None  # None == unknown (missing, unparseable, or <= 0)
@@ -121,6 +122,7 @@ class Pool:
             quote_token_id=_rel_id(item, "quote_token"),
             created_at=_dt(attrs.get("pool_created_at")),
             base_token_price_usd=_num(attrs.get("base_token_price_usd")),
+            quote_token_price_usd=_num(attrs.get("quote_token_price_usd")),
             fdv_usd=_pos_or_none(attrs.get("fdv_usd")),
             market_cap_usd=_pos_or_none(attrs.get("market_cap_usd")),
             reserve_usd=_pos_or_none(attrs.get("reserve_in_usd")),

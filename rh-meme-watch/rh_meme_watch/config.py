@@ -14,6 +14,14 @@ DEFAULT_STOCK_SYMBOLS = (
 # Symbols that are never the meme side of a pool but are not tokenized stocks either.
 NON_MEME_EXTRA = frozenset({"WETH", "USDG", "USDC", "USDT", "GLD"})
 
+# LP custodians observed on chain, as "address=label" pairs. Measured 2026-09-12:
+# this contract held 100% of the LP supply of every uniswap-v2-robinhood pool
+# sampled, is owner-controlled (owner(), transferOwnership(), no unlockTime())
+# and its owner is an EOA - so it is custody, not a time lock.
+DEFAULT_LP_CUSTODIANS = (
+    "0x2ac03e14cfe755426daaee0a4994184ce81482f8=v2 launchpad custodian"
+)
+
 
 class ConfigError(RuntimeError):
     pass
@@ -31,6 +39,20 @@ def _f(name: str, default: float) -> float:
 
 def _i(name: str, default: int) -> int:
     return int(_f(name, float(default)))
+
+
+def _custodians(csv: str) -> tuple[tuple[str, str], ...]:
+    """Parse "addr=label,addr=label" into pairs; a bare address gets an empty label."""
+    out: list[tuple[str, str]] = []
+    for chunk in csv.split(","):
+        chunk = chunk.strip()
+        if not chunk:
+            continue
+        addr, _, label = chunk.partition("=")
+        addr = addr.strip().lower()
+        if addr.startswith("0x") and len(addr) == 42:
+            out.append((addr, label.strip()))
+    return tuple(out)
 
 
 def _b(name: str, default: bool) -> bool:
@@ -73,6 +95,12 @@ class Config:
     digest_hour: int = 7
     fdv_cache_ttl_sec: int = 600
     fdv_lookups_per_cycle: int = 3
+    # On-chain verification (Robinhood Chain RPC). Empty url disables it.
+    rpc_url: str = ""
+    onchain_lookups_per_cycle: int = 4
+    onchain_cache_ttl_sec: int = 1800
+    custody_drop_pct: float = 10.0  # LP custodian balance drop that raises an alert
+    lp_custodians: tuple[tuple[str, str], ...] = ()
     dashboard_port: int = 8080  # 0 disables the dashboard HTTP server
     snapshot_keep_days: int = 14
 
@@ -114,5 +142,12 @@ class Config:
             esc_cooldown_h=_f("ESC_COOLDOWN_H", 6.0),
             symbol_cooldown_h=_f("SYMBOL_COOLDOWN_H", 24.0),
             digest_hour=_i("DIGEST_HOUR", 7),
+            rpc_url=os.environ.get("RPC_URL", "").strip(),
+            onchain_lookups_per_cycle=_i("ONCHAIN_LOOKUPS_PER_CYCLE", 4),
+            onchain_cache_ttl_sec=_i("ONCHAIN_CACHE_TTL_SEC", 1800),
+            custody_drop_pct=_f("CUSTODY_DROP_PCT", 10.0),
+            lp_custodians=_custodians(
+                os.environ.get("LP_CUSTODIANS", "").strip() or DEFAULT_LP_CUSTODIANS
+            ),
             dashboard_port=_i("DASHBOARD_PORT", 8080),
         )

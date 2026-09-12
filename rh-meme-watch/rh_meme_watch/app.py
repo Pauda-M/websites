@@ -38,6 +38,7 @@ class App:
         gecko: GeckoClient | None = None,
         telegram: TelegramClient | None = None,
         store: Store | None = None,
+        onchain=None,
         now_fn: Callable[[], datetime] = utc_now,
         sleep_fn: Callable[[float], None] = time.sleep,
     ) -> None:
@@ -48,6 +49,13 @@ class App:
         self.telegram = telegram or TelegramClient(cfg.telegram_bot_token, cfg.telegram_chat_id)
         self.store = store or Store(cfg.db_path)
         self.fdv = rules.FdvResolver(self.gecko.search_pools, cfg, now_fn)
+        self.onchain = onchain
+        if self.onchain is None and cfg.rpc_url:
+            from .onchain import OnchainVerifier, RpcClient
+
+            self.onchain = OnchainVerifier(
+                RpcClient(cfg.rpc_url), dict(cfg.lp_custodians)
+            )
         self.tzinfo = ZoneInfo(cfg.tz)
 
     # -- lifecycle -----------------------------------------------------------
@@ -133,6 +141,7 @@ class App:
                 continue
             self._maybe_escalate(pool, now)
 
+        self._verify_onchain(pools, now)
         self._maybe_digest(pools, now)
         self._heartbeat(now)
 
@@ -236,6 +245,94 @@ class App:
             },
         )
         log.info("ESCALATE alert sent: %s (%s)", pool.name, pool.address)
+
+    def _verify_onchain(self, pools: list[Pool], now: datetime) -> None:
+        """Read LP custody + true reserves from the chain for a few pools per cycle.
+
+        Budgeted (cfg.onchain_lookups_per_cycle) and cached
+        (cfg.onchain_cache_ttl_sec), oldest-checked first, alerted pools only.
+        A fall in the custodian's LP balance raises the LP MOVED alert - that is
+        the actual rug, rather than the price aftermath.
+        """
+        if self.onchain is None:
+            return
+        ttl = timedelta(seconds=self.cfg.onchain_cache_ttl_sec)
+        due: list[tuple[datetime, Pool]] = []
+        for pool in pools:
+            if not self.store.was_alerted(pool.address):
+                continue
+            checked = self.store.onchain_checked_at(pool.address)
+            if checked is not None and now - checked < ttl:
+                continue
+            due.append((checked or datetime.min.replace(tzinfo=timezone.utc), pool))
+        due.sort(key=lambda item: item[0])
+
+        for _checked, pool in due[: self.cfg.onchain_lookups_per_cycle]:
+            try:
+                custody = self.onchain.custody(pool.address)
+                reserve = self.onchain.reserve(pool.address, pool.quote_token_price_usd)
+            except Exception:
+                log.exception("on-chain verification failed for %s", pool.address)
+                continue
+            previous = self.store.get_onchain(pool.address)
+            self.store.upsert_onchain(
+                pool.address,
+                now,
+                custody.kind,
+                custody.total_supply,
+                custody.holder,
+                custody.holder_units,
+                custody.holder_pct,
+                custody.burned_pct,
+                reserve.reserve_usd,
+                custody.note or reserve.note,
+            )
+            self._maybe_lp_moved_alert(pool, previous, custody, now)
+
+    def _maybe_lp_moved_alert(self, pool: Pool, previous, custody, now: datetime) -> None:
+        if previous is None or custody.holder is None or custody.holder_units is None:
+            return
+        if (previous["holder"] or "").lower() != custody.holder.lower():
+            return
+        try:
+            before = int(previous["holder_units"] or 0)
+        except (TypeError, ValueError):
+            return
+        if before <= 0:
+            return
+        dropped_pct = 100.0 * (before - custody.holder_units) / before
+        if dropped_pct < self.cfg.custody_drop_pct:
+            return
+        text = messages.build_lp_moved(
+            pool,
+            custody.holder,
+            previous["holder_pct"],
+            custody.holder_pct,
+            before,
+            custody.holder_units,
+            custody.note or "",
+            now,
+        )
+        self.telegram.send(text)
+        self.store.record_alert(
+            pool.address,
+            "lp_moved",
+            now,
+            {
+                "name": pool.name,
+                "holder": custody.holder,
+                "units_before": str(before),
+                "units_after": str(custody.holder_units),
+                "dropped_pct": round(dropped_pct, 2),
+            },
+        )
+        log.warning(
+            "LP MOVED alert sent: %s (%s) custodian %s dropped %.1f%%",
+            pool.name,
+            pool.address,
+            custody.holder,
+            dropped_pct,
+        )
 
     def _maybe_digest(self, pools: list[Pool], now: datetime) -> None:
         local = now.astimezone(self.tzinfo)

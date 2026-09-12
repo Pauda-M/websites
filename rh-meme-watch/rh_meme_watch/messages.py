@@ -101,3 +101,28 @@ def build_digest(
             line += " · ⚠️ " + "; ".join(warnings)
         lines.append(line)
     return escape_md("\n".join(lines))
+
+
+def build_lp_moved(
+    pool: Pool,
+    holder: str,
+    pct_before: float | None,
+    pct_after: float | None,
+    units_before: int,
+    units_after: int,
+    note: str,
+    now: datetime,
+) -> str:
+    """LP custody moved: the on-chain rug event, seen at block level."""
+    dropped = 100.0 * (units_before - units_after) / units_before if units_before else 0.0
+    lines = [
+        f"\U0001f6a8 LP MOVED {pool.name}",
+        f"custodian {holder[:10]}...{holder[-6:]}" + (f" ({note})" if note else ""),
+        f"LP held {pct_before:.1f}% -> {pct_after:.1f}% of supply"
+        if pct_before is not None and pct_after is not None
+        else "LP balance fell",
+        f"{dropped:.1f}% of the custodied LP left the custodian",
+        f"liq {fmt_usd(pool.reserve_usd)} \u00b7 vol1h {fmt_usd(pool.vol_h1)}",
+        f"gecko: {pool.gecko_url}",
+    ]
+    return escape_md("\n".join(lines))

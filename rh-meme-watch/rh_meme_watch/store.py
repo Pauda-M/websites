@@ -40,6 +40,18 @@ CREATE TABLE IF NOT EXISTS alerts (
     payload_json TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_alerts_kind_ts ON alerts(kind, ts);
+CREATE TABLE IF NOT EXISTS onchain (
+    address TEXT PRIMARY KEY,
+    ts TEXT NOT NULL,
+    kind TEXT,
+    total_supply TEXT,
+    holder TEXT,
+    holder_units TEXT,
+    holder_pct REAL,
+    burned_pct REAL,
+    reserve_usd REAL,
+    note TEXT
+);
 CREATE TABLE IF NOT EXISTS snapshots (
     address TEXT NOT NULL,
     ts TEXT NOT NULL,
@@ -186,6 +198,52 @@ class Store:
 
     def prune_snapshots(self, cutoff: datetime) -> None:
         self.db.execute("DELETE FROM snapshots WHERE ts < ?", (_iso(cutoff),))
+
+    # -- on-chain verification cache -----------------------------------------
+
+    def get_onchain(self, address: str) -> sqlite3.Row | None:
+        cur = self.db.execute("SELECT * FROM onchain WHERE address = ?", (address,))
+        return cur.fetchone()
+
+    def upsert_onchain(
+        self,
+        address: str,
+        ts: datetime,
+        kind: str,
+        total_supply: int | None,
+        holder: str | None,
+        holder_units: int | None,
+        holder_pct: float | None,
+        burned_pct: float | None,
+        reserve_usd: float | None,
+        note: str,
+    ) -> None:
+        self.db.execute(
+            "INSERT INTO onchain (address, ts, kind, total_supply, holder, holder_units, "
+            "holder_pct, burned_pct, reserve_usd, note) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+            "ON CONFLICT(address) DO UPDATE SET ts=excluded.ts, kind=excluded.kind, "
+            "total_supply=excluded.total_supply, holder=excluded.holder, "
+            "holder_units=excluded.holder_units, holder_pct=excluded.holder_pct, "
+            "burned_pct=excluded.burned_pct, reserve_usd=excluded.reserve_usd, "
+            "note=excluded.note",
+            (
+                address,
+                _iso(ts),
+                kind,
+                str(total_supply) if total_supply is not None else None,
+                holder,
+                str(holder_units) if holder_units is not None else None,
+                holder_pct,
+                burned_pct,
+                reserve_usd,
+                note,
+            ),
+        )
+
+    def onchain_checked_at(self, address: str) -> datetime | None:
+        row = self.get_onchain(address)
+        return _parse(row["ts"]) if row else None
 
     # -- alerts --------------------------------------------------------------
 

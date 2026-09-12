@@ -84,6 +84,22 @@ def heat_score(
     return round(100 * (0.45 * vol_c + 0.25 * flow_c + 0.30 * liq_c))
 
 
+def _custody_label(row) -> str:
+    """Human label for on-chain LP custody (mirrors onchain.Custody.label)."""
+    if row is None:
+        return "unchecked"
+    if row["kind"] == "not_applicable":
+        return "n/a"
+    burned, pct = row["burned_pct"], row["holder_pct"]
+    if burned is not None and burned >= 99.0:
+        return "burned"
+    if pct is not None and pct >= 90.0:
+        return "single custodian"
+    if pct is not None:
+        return "dispersed"
+    return "unknown"
+
+
 def _ro_conn(db_path: Path) -> sqlite3.Connection:
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=5.0)
     conn.row_factory = sqlite3.Row
@@ -109,6 +125,7 @@ def collect(db_path: Path, cfg: Config, now: datetime) -> dict:
         return {"generated_at": now.isoformat(), "pools": [], **counts}
     try:
         since = (now - timedelta(hours=24)).isoformat()
+        onchain_rows = {r["address"]: r for r in conn.execute("SELECT * FROM onchain")}
         for row in conn.execute(
             "SELECT kind, COUNT(*) AS n FROM alerts WHERE ts >= ? GROUP BY kind", (since,)
         ):
@@ -141,6 +158,7 @@ def collect(db_path: Path, cfg: Config, now: datetime) -> dict:
                 and sellers > 0
                 and buyers / sellers < 0.7
             ) or bool(first_liq and last_liq is not None and last_liq < 0.5 * first_liq)
+            oc = onchain_rows.get(row["address"])
             history = [(_parse_ts(s["ts"]), s["reserve"]) for s in snaps]
             lock = lock_verdict(
                 [(ts, res) for ts, res in history if ts is not None], cfg, last_liq
@@ -162,6 +180,19 @@ def collect(db_path: Path, cfg: Config, now: datetime) -> dict:
                     "pct_h1": latest["pct_h1"] if latest else None,
                     "dump_flag": dump,
                     "liq_lock": lock.label,
+                    "custody": _custody_label(oc),
+                    "custody_holder": oc["holder"] if oc else None,
+                    "custody_pct": (
+                        round(oc["holder_pct"], 1)
+                        if oc and oc["holder_pct"] is not None
+                        else None
+                    ),
+                    "burned_pct": (
+                        round(oc["burned_pct"], 1)
+                        if oc and oc["burned_pct"] is not None
+                        else None
+                    ),
+                    "onchain_reserve_usd": oc["reserve_usd"] if oc else None,
                     "liq_lock_drawdown": (
                         round(lock.drawdown, 4) if lock.drawdown is not None else None
                     ),
@@ -248,6 +279,19 @@ def render_html(db_path: Path, cfg: Config, now: datetime, show_all: bool = Fals
             status += f' <span style="color:{_DUMP_COLOR}">\U0001f513 pulling{dd_txt}</span>'
         else:
             status += f' <span style="color:{_UNPROVEN_COLOR}">⧖ unproven</span>'
+        custody = p.get("custody", "unchecked")
+        if custody == "single custodian":
+            pct = p.get("custody_pct")
+            pct_txt = f" {pct:.0f}%" if pct is not None else ""
+            status += (
+                f' <span style="color:{_DUMP_COLOR}">\U0001f3e6 1 custodian'
+                + pct_txt
+                + "</span>"
+            )
+        elif custody == "burned":
+            status += f' <span style="color:{_LOCK_COLOR}">\U0001f525 LP burned</span>'
+        elif custody == "dispersed":
+            status += f' <span style="color:{_LOCK_COLOR}">\U0001f3e6 dispersed</span>'
         if p["dump_flag"]:
             status += ' <span class="rug">\U0001f4a3 rug risk</span>'
         alert_dt = _parse_ts(p["first_alert_ts"])
@@ -327,6 +371,10 @@ def render_html(db_path: Path, cfg: Config, now: datetime, show_all: bool = Fals
  + 25% buyer flow + 30% liq multiple &middot; bar color: blue = cooling &rarr; red = burning
  &middot; \U0001f4a3 rug risk = buyers/sellers &lt; 0.7 or liq &minus;50% vs first alert
  &middot; auto-refresh 60s<br>
+on-chain (chain 4663): \U0001f3e6 LP custody read from the RPC \u2014 &ldquo;1 custodian&rdquo;
+ means a single address holds &ge;90% of the pool&rsquo;s LP tokens (measured: nobody burns
+ LP on this chain, one owner-controlled contract custodies the v2 pools);
+ \U0001f6a8 LP MOVED alerts fire when that balance falls<br>
 filters: \U0001f512 liquidity lock (proxy: held within
  {cfg.lock_max_drawdown * 100:.0f}% of its running peak over
  &ge;{cfg.lock_min_age_min}min of history &mdash; the API exposes no on-chain LP lock)

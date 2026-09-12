@@ -75,14 +75,49 @@ If Telegram auth fails at startup the container exits non-zero (and
 | `LOCK_MAX_DRAWDOWN` | `0.25` | worst allowed drop from the running peak before liquidity counts as "pulling" |
 | `LOCK_MIN_AGE_MIN` | `30` | minutes of recorded history needed before a lock verdict is given |
 | `LOCK_MIN_SAMPLES` | `10` | snapshots needed before a lock verdict is given |
+| `RPC_URL` | — | Robinhood Chain JSON-RPC endpoint; empty disables all on-chain reads |
+| `ONCHAIN_LOOKUPS_PER_CYCLE` | `4` | pools verified on-chain per cycle (oldest-checked first) |
+| `ONCHAIN_CACHE_TTL_SEC` | `1800` | how long an on-chain result is reused |
+| `CUSTODY_DROP_PCT` | `10` | custodian LP-balance drop (%) that raises 🚨 LP MOVED |
+| `LP_CUSTODIANS` | measured default | `addr=label` pairs of known LP custodians |
 | `DASHBOARD_PORT` | `8080` | in-container port of the web dashboard, `0` disables |
 | `STOCK_SYMBOLS` | AAPL,…,HOOD | CSV, see `.env.example` |
 | `LOG_LEVEL` | `INFO` | |
 | `TZ` | `Europe/Zurich` | digest timezone |
 
 State lives in SQLite (`/data/state.db`, WAL) in the `rh_meme_watch_data`
-volume: `pools` (per-address lifecycle), `alerts` (audit log) and `snapshots`
-(per-cycle history for alerted pools, kept 14 days).
+volume: `pools` (per-address lifecycle), `alerts` (audit log), `snapshots`
+(per-cycle history for alerted pools, kept 14 days) and `onchain` (cached
+LP-custody and reserve reads).
+
+## On-chain verification (chain 4663)
+
+With `RPC_URL` set, a few pools per cycle are read directly from the chain
+(cached `ONCHAIN_CACHE_TTL_SEC`, oldest-checked first, alerted pools only):
+
+* **LP custody** — for v2-style pools, the LP token's `totalSupply()` plus the
+  balances at the burn addresses and at known custodians; unknown holders are
+  discovered from the LP token's `Transfer` logs. Stored per pool and shown on
+  the dashboard as 🔥 `LP burned`, 🏦 `1 custodian <pct>%`, or 🏦 `dispersed`.
+* **🚨 LP MOVED alert** — when a custodian's LP balance falls by more than
+  `CUSTODY_DROP_PCT`, which is the actual rug event rather than its price
+  aftermath.
+* **Reserve verification** — the quote-token balance the pool contract really
+  holds (`balanceOf(pool)`), so liquidity can be checked against the chain
+  instead of trusted from the API.
+
+### What was measured on 2026-09-12, and why there is no "LP locked" filter
+
+| Finding | Consequence |
+| --- | --- |
+| **No pool burns LP.** All 12 largest `uniswap-v2-robinhood` pools hold 0.00% of LP at `0x0` and `0xdEaD`. | A "LP burned ≥ X%" filter would match zero pools, permanently. |
+| **One contract held 100% of the LP** of every v2 pool sampled (`0x2ac03e14…82f8`). | LP custody does not discriminate between these tokens; they share one custodian. |
+| **That custodian is owner-controlled, not time-locked** — its bytecode exposes `owner()` / `transferOwnership()` and no `unlockTime()`; its owner is an EOA. | Liquidity is revocable by a single keyholder, so "locked" would be a false label. |
+| **`uniswap-v4` / `bankr` pools use 32-byte pool ids**, and v3 pools hold liquidity as NFT positions. | No fungible LP exists to check; these report `n/a` rather than a guess. |
+
+So this service reports *who custodies the LP and whether that balance moves*,
+and never claims liquidity is locked. Note that the RPC rejects requests sent
+with Python's default urllib User-Agent, so a real one is always sent.
 
 ## Liquidity lock (proxy, not on-chain proof)
 
@@ -130,7 +165,7 @@ python3.12 -m venv .venv && .venv/bin/pip install -e ".[test]"
 .venv/bin/pytest
 ```
 
-86 tests run offline against `tests/fixture_robinhood_pools.json`
+100 tests run offline against `tests/fixture_robinhood_pools.json`
 (40 robinhood pools). **Fixture provenance:** the sandbox this project was
 authored in had no network egress to `api.geckoterminal.com`, so the fixture
 is materialized by CI on the first run: `scripts/refresh_fixture.py` pulls 40
