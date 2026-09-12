@@ -8,6 +8,9 @@ services:
       DATA_DIR: /data
     volumes:
       - rh_meme_watch_data:/data
+    ports:
+      # dashboard, host-local only; front it with nginx/tailscale to expose it
+      - "127.0.0.1:8087:8080"
     mem_limit: 128m
 
 volumes:

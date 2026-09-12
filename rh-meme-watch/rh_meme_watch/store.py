@@ -40,6 +40,18 @@ CREATE TABLE IF NOT EXISTS alerts (
     payload_json TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_alerts_kind_ts ON alerts(kind, ts);
+CREATE TABLE IF NOT EXISTS snapshots (
+    address TEXT NOT NULL,
+    ts TEXT NOT NULL,
+    reserve REAL,
+    vol_h1 REAL,
+    buys INTEGER,
+    sells INTEGER,
+    buyers INTEGER,
+    sellers INTEGER,
+    pct_h1 REAL,
+    PRIMARY KEY (address, ts)
+);
 """
 
 
@@ -143,6 +155,37 @@ class Store:
         )
         row = cur.fetchone()
         return _parse(row["ts"]) if row else None
+
+    # -- snapshots (per-cycle history for alerted pools, feeds the dashboard) --
+
+    def record_snapshot(
+        self,
+        address: str,
+        ts: datetime,
+        reserve: float | None,
+        vol_h1: float | None,
+        buys: int,
+        sells: int,
+        buyers: int,
+        sellers: int,
+        pct_h1: float | None,
+    ) -> None:
+        self.db.execute(
+            "INSERT OR REPLACE INTO snapshots "
+            "(address, ts, reserve, vol_h1, buys, sells, buyers, sellers, pct_h1) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (address, _iso(ts), reserve, vol_h1, buys, sells, buyers, sellers, pct_h1),
+        )
+
+    def snapshots(self, address: str, since: datetime) -> list[sqlite3.Row]:
+        cur = self.db.execute(
+            "SELECT * FROM snapshots WHERE address = ? AND ts >= ? ORDER BY ts",
+            (address, _iso(since)),
+        )
+        return cur.fetchall()
+
+    def prune_snapshots(self, cutoff: datetime) -> None:
+        self.db.execute("DELETE FROM snapshots WHERE ts < ?", (_iso(cutoff),))
 
     # -- alerts --------------------------------------------------------------
 

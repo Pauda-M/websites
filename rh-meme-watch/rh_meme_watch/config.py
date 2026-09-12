@@ -54,6 +54,8 @@ class Config:
     digest_hour: int = 7
     fdv_cache_ttl_sec: int = 600
     fdv_lookups_per_cycle: int = 3
+    dashboard_port: int = 8080  # 0 disables the dashboard HTTP server
+    snapshot_keep_days: int = 14
 
     @property
     def db_path(self) -> Path:
@@ -89,4 +91,5 @@ class Config:
             esc_cooldown_h=_f("ESC_COOLDOWN_H", 6.0),
             symbol_cooldown_h=_f("SYMBOL_COOLDOWN_H", 24.0),
             digest_hour=_i("DIGEST_HOUR", 7),
+            dashboard_port=_i("DASHBOARD_PORT", 8080),
         )

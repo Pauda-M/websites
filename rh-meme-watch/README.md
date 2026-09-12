@@ -70,12 +70,28 @@ If Telegram auth fails at startup the container exits non-zero (and
 | `NEW_WINDOW_MIN` | `180` | max pool age for R1 |
 | `ESC_VOL_H1` | `500000` | USD, R3 volume trigger |
 | `MIN_LIQ` | `10000` | USD, pools below this never appear in digests or escalations |
+| `DASHBOARD_PORT` | `8080` | in-container port of the web dashboard, `0` disables |
 | `STOCK_SYMBOLS` | AAPL,…,HOOD | CSV, see `.env.example` |
 | `LOG_LEVEL` | `INFO` | |
 | `TZ` | `Europe/Zurich` | digest timezone |
 
 State lives in SQLite (`/data/state.db`, WAL) in the `rh_meme_watch_data`
-volume: `pools` (per-address lifecycle) and `alerts` (audit log).
+volume: `pools` (per-address lifecycle), `alerts` (audit log) and `snapshots`
+(per-cycle history for alerted pools, kept 14 days).
+
+## Dashboard
+
+The container serves a read-only web dashboard of every detected (alerted)
+pool, ranked by a transparent 0-100 **heat** score (45% h1 volume vs the
+escalation threshold, 25% buyer/seller flow, 30% liquidity multiple since the
+first alert), with a 24h liquidity sparkline per pool, status/dump badges and
+summary tiles. Routes: `/` (HTML, auto-refresh 60s), `/api/pools` (JSON),
+`/healthz`.
+
+`docker-compose.yml` maps it to **`127.0.0.1:8087`** on the host only - open
+`http://localhost:8087` on the host, or front it with nginx/tailscale to reach
+it remotely (the page is unauthenticated by design, so do not map it to a
+public interface directly).
 
 ## Development
 

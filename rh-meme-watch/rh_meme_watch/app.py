@@ -51,6 +51,10 @@ class App:
         self.telegram.send(messages.build_startup(self.cfg))
 
     def run(self) -> None:
+        if self.cfg.dashboard_port:
+            from .dashboard import start_dashboard
+
+            start_dashboard(self.cfg)
         log.info(
             "watching robinhood pools: floor=%s stock_floor=%s window=%smin poll=%ss",
             self.cfg.liq_floor,
@@ -102,6 +106,18 @@ class App:
             )
             if self._maybe_new_alert(pool, cls, now):
                 alerted_now.add(pool.address)
+            if self.store.was_alerted(pool.address):
+                self.store.record_snapshot(
+                    pool.address,
+                    now,
+                    pool.reserve_usd,
+                    pool.vol_h1,
+                    pool.buys_h1,
+                    pool.sells_h1,
+                    pool.buyers_h1,
+                    pool.sellers_h1,
+                    pool.price_change_h1,
+                )
 
         for pool in pools:
             if pool.address in alerted_now:
@@ -209,6 +225,7 @@ class App:
         self.store.record_alert(
             "", "digest", now, {"pools": [p.address for p in top]}
         )
+        self.store.prune_snapshots(now - timedelta(days=self.cfg.snapshot_keep_days))
         log.info("daily digest sent (%d pools)", len(top))
 
     def _heartbeat(self, now: datetime) -> None:
