@@ -367,3 +367,40 @@ def test_pool_no_longer_in_the_api_window_is_still_custody_checked(tmp_path):
     assert "LP MOVED" in body
     assert "MAPLE / WETH" in body  # name reconstructed from the store
     assert "90.0% of the custodied LP left" in body
+
+
+def test_onchain_due_prefers_unchecked_then_newest_alerts(tmp_path):
+    """Oldest-alerted pools are dead dust; the newest alerts are the live meta.
+
+    A pool checked inside the TTL is not due at all; once its check goes stale it
+    re-enters the list behind every never-checked pool.
+    """
+    from datetime import timedelta as _td
+
+    from rh_meme_watch.store import Store
+
+    store = Store(tmp_path / "due.db")
+    for i, minutes_ago in enumerate([600, 5, 120]):  # old, newest, middle
+        addr = f"0x{i:040x}"
+        ts = NOW - _td(minutes=minutes_ago)
+        store.upsert_seen(addr, f"SYM{i}", "WETH", "uniswap-v2", ts, ts, 100.0, 1.0)
+        store.mark_alerted(addr, ts, 100.0)
+
+    # nothing checked yet -> newest alert first
+    assert [r["symbol"] for r in store.onchain_due(NOW, 5)] == ["SYM1", "SYM2", "SYM0"]
+
+    # a fresh check drops that pool out of the due list entirely
+    store.upsert_onchain(
+        f"0x{1:040x}", NOW, "fungible_lp", 1, None, None, None, None, None, ""
+    )
+    assert [r["symbol"] for r in store.onchain_due(NOW - _td(minutes=1), 5)] == [
+        "SYM2",
+        "SYM0",
+    ]
+
+    # once stale, it comes back - but behind the never-checked ones
+    assert [r["symbol"] for r in store.onchain_due(NOW + _td(minutes=1), 5)] == [
+        "SYM2",
+        "SYM0",
+        "SYM1",
+    ]

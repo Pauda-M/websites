@@ -254,7 +254,10 @@ class Store:
             "FROM pools p LEFT JOIN onchain o ON o.address = p.address "
             "WHERE p.first_alert_ts IS NOT NULL "
             "  AND (o.ts IS NULL OR o.ts < ?) "
-            "ORDER BY COALESCE(o.ts, '') ASC LIMIT ?",
+            # never-checked pools first, newest alert first within each group:
+            # the newest alerts are the live meta (and what the dashboard shows),
+            # while the oldest alerted pools are long-dead dust.
+            "ORDER BY (o.ts IS NOT NULL), p.first_alert_ts DESC LIMIT ?",
             (_iso(cutoff), limit),
         )
         return cur.fetchall()
