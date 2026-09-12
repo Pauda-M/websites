@@ -255,40 +255,41 @@ class App:
         log.info("ESCALATE alert sent: %s (%s)", pool.name, pool.address)
 
     def _verify_onchain(self, pools: list[Pool], now: datetime) -> None:
-        """Read LP custody + true reserves from the chain for a few pools per cycle.
+        """Read LP custody + true reserves from the chain, cheapest-first.
 
-        Budgeted (cfg.onchain_lookups_per_cycle) and cached
-        (cfg.onchain_cache_ttl_sec), oldest-checked first, alerted pools only.
-        A fall in the custodian's LP balance raises the LP MOVED alert - that is
-        the actual rug, rather than the price aftermath.
+        The due list comes from the store, not from this cycle's API response: a
+        pool that has dropped out of the API windows is exactly when its LP is
+        most likely to be pulled, and custody is a pure chain read. Reserve
+        verification additionally needs the quote token and its price, so it only
+        runs for pools present in this cycle's response.
         """
         if self.onchain is None:
             return
-        ttl = timedelta(seconds=self.cfg.onchain_cache_ttl_sec)
-        due: list[tuple[datetime, Pool]] = []
-        for pool in pools:
-            if not self.store.was_alerted(pool.address):
-                continue
-            checked = self.store.onchain_checked_at(pool.address)
-            if checked is not None and now - checked < ttl:
-                continue
-            due.append((checked or datetime.min.replace(tzinfo=timezone.utc), pool))
-        due.sort(key=lambda item: item[0])
+        cutoff = now - timedelta(seconds=self.cfg.onchain_cache_ttl_sec)
+        due = self.store.onchain_due(cutoff, self.cfg.onchain_lookups_per_cycle)
+        if not due:
+            return
+        visible = {p.address: p for p in pools}
 
-        for _checked, pool in due[: self.cfg.onchain_lookups_per_cycle]:
+        for row in due:
+            address = row["address"]
+            pool = visible.get(address)
             try:
-                custody = self.onchain.custody(pool.address)
-                reserve = self.onchain.reserve(
-                    pool.address,
-                    pool.quote_token_price_usd,
-                    _token_address(pool.quote_token_id),
-                )
+                custody = self.onchain.custody(address)
+                reserve_usd = None
+                if pool is not None:
+                    reserve = self.onchain.reserve(
+                        address,
+                        pool.quote_token_price_usd,
+                        _token_address(pool.quote_token_id),
+                    )
+                    reserve_usd = reserve.reserve_usd
             except Exception:
-                log.exception("on-chain verification failed for %s", pool.address)
+                log.exception("on-chain verification failed for %s", address)
                 continue
-            previous = self.store.get_onchain(pool.address)
+            previous = self.store.get_onchain(address)
             self.store.upsert_onchain(
-                pool.address,
+                address,
                 now,
                 custody.kind,
                 custody.total_supply,
@@ -296,12 +297,12 @@ class App:
                 custody.holder_units,
                 custody.holder_pct,
                 custody.burned_pct,
-                reserve.reserve_usd,
-                custody.note or reserve.note,
+                reserve_usd,
+                custody.note,
             )
-            self._maybe_lp_moved_alert(pool, previous, custody, now)
+            self._maybe_lp_moved_alert(row, pool, previous, custody, now)
 
-    def _maybe_lp_moved_alert(self, pool: Pool, previous, custody, now: datetime) -> None:
+    def _maybe_lp_moved_alert(self, row, pool, previous, custody, now: datetime) -> None:
         if previous is None or custody.holder is None or custody.holder_units is None:
             return
         if (previous["holder"] or "").lower() != custody.holder.lower():
@@ -315,23 +316,27 @@ class App:
         dropped_pct = 100.0 * (before - custody.holder_units) / before
         if dropped_pct < self.cfg.custody_drop_pct:
             return
+        address = row["address"]
+        name = pool.name if pool is not None else f"{row['symbol']} / {row['quote']}"
         text = messages.build_lp_moved(
-            pool,
+            name,
+            address,
             custody.holder,
             previous["holder_pct"],
             custody.holder_pct,
             before,
             custody.holder_units,
             custody.note or "",
-            now,
+            pool.reserve_usd if pool is not None else row["last_liq"],
+            pool.vol_h1 if pool is not None else row["last_vol_h1"],
         )
         self.telegram.send(text)
         self.store.record_alert(
-            pool.address,
+            address,
             "lp_moved",
             now,
             {
-                "name": pool.name,
+                "name": name,
                 "holder": custody.holder,
                 "units_before": str(before),
                 "units_after": str(custody.holder_units),
@@ -340,8 +345,8 @@ class App:
         )
         log.warning(
             "LP MOVED alert sent: %s (%s) custodian %s dropped %.1f%%",
-            pool.name,
-            pool.address,
+            name,
+            address,
             custody.holder,
             dropped_pct,
         )

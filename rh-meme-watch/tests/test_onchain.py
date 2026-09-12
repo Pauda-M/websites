@@ -339,3 +339,31 @@ def test_onchain_disabled_without_rpc_url(tmp_path):
     assert app.onchain is None
     app.run_cycle()
     assert len(telegram.sent) == 1
+
+
+def test_pool_no_longer_in_the_api_window_is_still_custody_checked(tmp_path):
+    """The rug moment: a pool drops out of the API's top-40, LP is then pulled.
+
+    Custody is a pure chain read, so the sweep is driven from the store and the
+    alert still fires with details reconstructed from stored pool state.
+    """
+    full = Custody(FUNGIBLE_LP, 1000, CUSTODIAN, 1000, 100.0, 0.0, "v2 launchpad custodian")
+    drained = Custody(FUNGIBLE_LP, 1000, CUSTODIAN, 100, 10.0, 0.0, "v2 launchpad custodian")
+    verifier = FakeVerifier([full, drained])
+    app, telegram, clock = _alerting_app(tmp_path, verifier)
+
+    app.run_cycle()  # pool visible: alerts + baseline custody read
+    assert len(telegram.sent) == 1
+
+    # the pool now vanishes from both API windows
+    app.gecko.new_items = []
+    app.gecko.top_items = []
+    clock.advance(minutes=1)
+    app.run_cycle()
+
+    assert verifier.calls == 2, "custody must still be read for an invisible pool"
+    assert len(telegram.sent) == 2
+    body = telegram.sent[1].replace("\\", "")
+    assert "LP MOVED" in body
+    assert "MAPLE / WETH" in body  # name reconstructed from the store
+    assert "90.0% of the custodied LP left" in body

@@ -241,6 +241,24 @@ class Store:
             ),
         )
 
+    def onchain_due(self, cutoff: datetime, limit: int) -> list[sqlite3.Row]:
+        """Alerted pools whose on-chain check is missing or older than cutoff.
+
+        Driven from the store rather than the current API response: a pool that
+        has dropped out of the API's windows is exactly when its LP is most
+        likely to be pulled, and custody is a pure chain read that needs no API.
+        """
+        cur = self.db.execute(
+            "SELECT p.address, p.symbol, p.quote, p.dex, p.last_liq, p.last_vol_h1, "
+            "       o.ts AS checked_ts "
+            "FROM pools p LEFT JOIN onchain o ON o.address = p.address "
+            "WHERE p.first_alert_ts IS NOT NULL "
+            "  AND (o.ts IS NULL OR o.ts < ?) "
+            "ORDER BY COALESCE(o.ts, '') ASC LIMIT ?",
+            (_iso(cutoff), limit),
+        )
+        return cur.fetchall()
+
     def onchain_checked_at(self, address: str) -> datetime | None:
         row = self.get_onchain(address)
         return _parse(row["ts"]) if row else None
