@@ -88,8 +88,8 @@ first alert), with a 24h liquidity sparkline per pool, status/dump badges and
 summary tiles. Routes: `/` (HTML, auto-refresh 60s), `/api/pools` (JSON),
 `/healthz`.
 
-`docker-compose.yml` maps it to **`127.0.0.1:8087`** on the host only - open
-`http://localhost:8087` on the host, or front it with nginx/tailscale to reach
+`docker-compose.yml` maps it to **`127.0.0.1:8791`** on the host only - open
+`http://localhost:8791` on the host, or front it with nginx/tailscale to reach
 it remotely (the page is unauthenticated by design, so do not map it to a
 public interface directly).
 
