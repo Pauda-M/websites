@@ -9,7 +9,11 @@ services:
     volumes:
       - rh_meme_watch_data:/data
     ports:
-      # dashboard, host-local only; front it with nginx (proxy_pass http://127.0.0.1:8791)
+      # dashboard, host-local by default; add a private LAN binding and/or a
+      # reverse-proxy network to expose it beyond the host (keep it off
+      # public interfaces - the page is unauthenticated). Deployed example:
+      #   - "192.168.50.88:8791:8080"        # direct LAN
+      #   plus an external nginx network for http://robinhood.pb-solutions.local
       - "127.0.0.1:8791:8080"
     mem_limit: 128m
 
