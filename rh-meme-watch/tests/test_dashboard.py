@@ -127,3 +127,45 @@ def test_http_endpoints(tmp_path):
     finally:
         server.shutdown()
         server.server_close()
+
+
+def test_thermal_color_endpoints_and_direction():
+    from rh_meme_watch.dashboard import thermal_color
+
+    assert thermal_color(0) == "#3987e5"    # cold = blue
+    assert thermal_color(100) == "#e34948"  # burning = red
+    assert thermal_color(50) == "#8a8984"   # neutral midpoint
+    assert thermal_color(-5) == thermal_color(0)
+    assert thermal_color(999) == thermal_color(100)
+    # red channel rises monotonically with heat
+    reds = [int(thermal_color(h)[1:3], 16) for h in (0, 25, 50, 75, 100)]
+    assert reds == sorted(reds)
+
+
+def test_rug_risk_bomb_badge(tmp_path):
+    from datetime import timedelta as _td
+
+    cfg = mk_cfg(tmp_path)
+    store = Store(cfg.db_path)
+    addr = "0x" + "ee" * 20
+    store.upsert_seen(addr, "RUGGY", "WETH", "uniswap-v4", NOW, NOW, 200000.0, 5000.0)
+    store.mark_alerted(addr, NOW, 200000.0)
+    # latest snapshot: buyers/sellers 0.5 and liquidity down 60% vs first alert
+    store.record_snapshot(addr, NOW + _td(minutes=5), 80000.0, 5000.0, 10, 20, 10, 20, -40.0)
+    page = render_html(cfg.db_path, cfg, NOW + _td(minutes=6))
+    assert "\U0001f4a3" in page and "rug risk" in page
+
+
+def test_burning_pool_gets_fire_and_red_bar(tmp_path):
+    from datetime import timedelta as _td
+
+    cfg = mk_cfg(tmp_path)
+    store = Store(cfg.db_path)
+    addr = "0x" + "ff" * 20
+    store.upsert_seen(addr, "MOON", "AAPL", "uniswap-v4", NOW, NOW, 100000.0, 500000.0)
+    store.mark_alerted(addr, NOW, 100000.0)
+    # huge volume, strong buy flow, 3x liquidity -> heat 100
+    store.record_snapshot(addr, NOW + _td(minutes=5), 300000.0, 600000.0, 400, 100, 400, 100, 50.0)
+    page = render_html(cfg.db_path, cfg, NOW + _td(minutes=6))
+    assert "\U0001f525" in page
+    assert "background:#e34948" in page

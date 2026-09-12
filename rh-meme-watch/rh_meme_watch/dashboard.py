@@ -39,7 +39,23 @@ _STATUS = {
 }
 _DUMP_COLOR = "#d03b3b"
 
+# Thermal ramp for the heat bar: blue (cold) -> neutral -> burning red (hot).
+_HEAT_COLD = (0x39, 0x87, 0xE5)
+_HEAT_MID = (0x8A, 0x89, 0x84)
+_HEAT_HOT = (0xE3, 0x49, 0x48)
+
 HOT_THRESHOLD = 60
+BURNING_THRESHOLD = 80
+
+
+def thermal_color(heat: int) -> str:
+    """Interpolated heat color: 0 = blue, 50 = neutral gray, 100 = burning red."""
+    h = min(max(heat, 0), 100)
+    if h <= 50:
+        a, b, t = _HEAT_COLD, _HEAT_MID, h / 50.0
+    else:
+        a, b, t = _HEAT_MID, _HEAT_HOT, (h - 50) / 50.0
+    return "#%02x%02x%02x" % tuple(round(a[i] + (b[i] - a[i]) * t) for i in range(3))
 
 
 def heat_score(
@@ -201,14 +217,13 @@ def render_html(db_path: Path, cfg: Config, now: datetime) -> str:
             f'<span class="dot" style="background:{color}"></span>{html.escape(label)}'
         )
         if p["dump_flag"]:
-            status += (
-                f' <span class="dot" style="background:{_DUMP_COLOR}"></span>'
-                f'<span style="color:{_DUMP_COLOR}">dump</span>'
-            )
+            status += ' <span class="rug">\U0001f4a3 rug risk</span>'
         alert_dt = _parse_ts(p["first_alert_ts"])
         age = fmt_age((now - alert_dt).total_seconds() / 60 if alert_dt else None)
         mult = f'x{p["liq_mult"]}' if p["liq_mult"] is not None else "n/a"
         heat = p["heat"]
+        heat_color = thermal_color(heat)
+        fire = " \U0001f525" if heat >= BURNING_THRESHOLD else ""
         rows_html.append(
             "<tr>"
             f'<td class="sym"><a href="{url}" target="_blank" rel="noopener">{name}</a>'
@@ -223,7 +238,8 @@ def render_html(db_path: Path, cfg: Config, now: datetime) -> str:
             f'<td class="num">{html.escape(fmt_pct(p["pct_h1"]))}</td>'
             f"<td>{_spark_svg(p['spark'])}</td>"
             f'<td class="heat"><div class="bar"><div class="fill" '
-            f'style="width:{heat}%"></div></div><span class="score">{heat}</span></td>'
+            f'style="width:{heat}%;background:{heat_color}"></div></div>'
+            f'<span class="score">{heat}{fire}</span></td>'
             "</tr>"
         )
     if not rows_html:
@@ -261,14 +277,17 @@ def render_html(db_path: Path, cfg: Config, now: datetime) -> str:
   .heat {{ white-space:nowrap; }}
   .bar {{ display:inline-block; width:90px; height:8px; background:{_BORDER};
           border-radius:4px; overflow:hidden; vertical-align:middle; }}
-  .fill {{ height:100%; background:{_ACCENT}; border-radius:4px; }}
+  .fill {{ height:100%; border-radius:4px; }}
+  .rug {{ color:{_DUMP_COLOR}; font-weight:600; white-space:nowrap; }}
   .score {{ margin-left:8px; font-variant-numeric:tabular-nums; }}
   .empty {{ color:{_TEXT_2}; text-align:center; padding:24px; }}
   .foot {{ color:{_TEXT_2}; font-size:12px; margin-top:14px; }}
 </style></head><body>
 <h1>rh-meme-watch</h1>
 <div class="sub">robinhood chain pool radar &middot; heat = 45% vol1h/{html.escape(fmt_usd(cfg.esc_vol_h1))}
- + 25% buyer flow + 30% liq multiple &middot; auto-refresh 60s</div>
+ + 25% buyer flow + 30% liq multiple &middot; bar color: blue = cooling &rarr; red = burning
+ &middot; \U0001f4a3 rug risk = buyers/sellers &lt; 0.7 or liq &minus;50% vs first alert
+ &middot; auto-refresh 60s</div>
 <div class="tiles">
 {tile("tracked pools", str(len(data["pools"])))}
 {tile("alerts 24h", str(data["alerts_24h"]))}
