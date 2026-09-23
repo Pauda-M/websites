@@ -105,6 +105,12 @@ class Config:
     min_txns_h1: int = 50  # not a dead pool
     min_age_min: int = 10  # skip the instant-rug window
     min_pct_h1: float = -15.0  # "already crashed? skip it"
+    # Social gate. A NEW pool's meme side must expose at least one project
+    # social. AND-ed with the liquidity floor, never traded off against it.
+    require_socials: bool = True
+    social_lookups_per_cycle: int = 6  # bounded so the 30 req/min limit is safe
+    social_cache_ttl_sec: int = 21_600  # a found social set is stable
+    social_miss_ttl_sec: int = 300  # projects add socials after deploy; recheck
     # On-chain verification (Robinhood Chain RPC). Empty url disables it.
     rpc_url: str = ""
     onchain_lookups_per_cycle: int = 4
@@ -159,6 +165,10 @@ class Config:
             min_txns_h1=_i("MIN_TXNS_H1", 50),
             min_age_min=_i("MIN_AGE_MIN", 10),
             min_pct_h1=_f("MIN_PCT_H1", -15.0),
+            require_socials=_b("REQUIRE_SOCIALS", True),
+            social_lookups_per_cycle=_i("SOCIAL_LOOKUPS_PER_CYCLE", 6),
+            social_cache_ttl_sec=_i("SOCIAL_CACHE_TTL_SEC", 21_600),
+            social_miss_ttl_sec=_i("SOCIAL_MISS_TTL_SEC", 300),
             rpc_url=os.environ.get("RPC_URL", "").strip(),
             onchain_lookups_per_cycle=_i("ONCHAIN_LOOKUPS_PER_CYCLE", 4),
             onchain_cache_ttl_sec=_i("ONCHAIN_CACHE_TTL_SEC", 1800),

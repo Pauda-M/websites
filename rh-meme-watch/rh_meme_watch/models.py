@@ -2,10 +2,13 @@
 
 API quirks handled here:
 - reserve_in_usd can be negative (seen on bankr-robinhood pools) -> treated as
-  unknown (None), so it can never pass a liquidity floor.
+  unknown (None).
 - pool names arrive as "BASE / QUOTE" and sometimes carry a trailing fee tag
   ("MEME / AAPL 0.3%") which is stripped.
 - numeric attributes are strings or null; anything unparseable becomes None.
+- the Gecko client may attach ``_socials_by_token`` from the pool-info endpoint;
+  these values are kept separately for base and quote so the rule engine can
+  require a social on the actual meme side rather than on the paired asset.
 """
 
 from __future__ import annotations
@@ -65,6 +68,16 @@ def _rel_id(item: dict, key: str) -> str:
         return ""
 
 
+def _socials(item: dict, token_id: str) -> tuple[str, ...]:
+    raw = item.get("_socials_by_token") or {}
+    if not isinstance(raw, dict):
+        return ()
+    values = raw.get(token_id) or ()
+    if not isinstance(values, (list, tuple)):
+        return ()
+    return tuple(str(v) for v in values if str(v).strip())
+
+
 @dataclass
 class Pool:
     address: str
@@ -74,6 +87,8 @@ class Pool:
     dex: str
     base_token_id: str
     quote_token_id: str
+    base_socials: tuple[str, ...]
+    quote_socials: tuple[str, ...]
     created_at: datetime | None
     base_token_price_usd: float | None
     quote_token_price_usd: float | None
@@ -101,6 +116,8 @@ class Pool:
         address = pool_id.split("_", 1)[1] if "_" in pool_id else pool_id
         name = str(attrs.get("name") or "")
         base_symbol, quote_symbol = split_pool_name(name)
+        base_token_id = _rel_id(item, "base_token")
+        quote_token_id = _rel_id(item, "quote_token")
 
         volume = attrs.get("volume_usd") or {}
         pct = attrs.get("price_change_percentage") or {}
@@ -118,8 +135,10 @@ class Pool:
             base_symbol=base_symbol,
             quote_symbol=quote_symbol,
             dex=_rel_id(item, "dex"),
-            base_token_id=_rel_id(item, "base_token"),
-            quote_token_id=_rel_id(item, "quote_token"),
+            base_token_id=base_token_id,
+            quote_token_id=quote_token_id,
+            base_socials=_socials(item, base_token_id),
+            quote_socials=_socials(item, quote_token_id),
             created_at=_dt(attrs.get("pool_created_at")),
             base_token_price_usd=_num(attrs.get("base_token_price_usd")),
             quote_token_price_usd=_num(attrs.get("quote_token_price_usd")),

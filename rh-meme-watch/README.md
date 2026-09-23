@@ -13,11 +13,12 @@ Host install path: `/opt/pbSolutions/rh-meme-watch/`.
 
 | Rule | Behavior |
 | --- | --- |
-| R1 NEW | pool age ≤ `NEW_WINDOW_MIN` (180 min) AND `reserve_in_usd` ≥ `LIQ_FLOOR` ($150k) AND address never alerted → one alert |
-| R2 STOCK-PAIRED | base or quote symbol ∈ `STOCK_SYMBOLS` → `📈 NEW STOCK-PAIRED` prefix, floor drops to `LIQ_FLOOR_STOCK` ($75k) |
+| R1 NEW | `MIN_AGE_MIN` ≤ pool age ≤ `NEW_WINDOW_MIN` (10–180 min) AND `reserve_in_usd` ≥ `LIQ_FLOOR` ($150k) AND the meme side has ≥ 1 public social AND address never alerted → one alert |
+| R2 STOCK-PAIRED | base or quote symbol ∈ `STOCK_SYMBOLS` → `📈 NEW STOCK-PAIRED` prefix, floor drops to `LIQ_FLOOR_STOCK` ($75k); the social requirement is unchanged |
 | R3 ESCALATE | previously alerted pool with reserve ≥ 2× first-alert reserve OR `volume.h1` ≥ `ESC_VOL_H1` ($500k) → `🔺 ESCALATE`, max once per 6 h per address |
 | R4 DUMP | info only: buyers/sellers h1 < 0.7 or reserve down > 50 % vs first alert → `⚠️` line inside escalations and digests |
 | Digest | daily 07:00 Europe/Zurich: top 10 pools by h24 volume created in the last 24 h |
+| Social gate | the **meme side** of a NEW pool must carry at least one project social (X, Telegram, Discord, Farcaster, Zora) from `/pools/{addr}/info`. Socials and liquidity are AND-ed: a funded anonymous launch and a loud empty one are both rejected. Missing metadata fails closed |
 | New-coin filter | NEW alerts additionally require: meme FDV ≤ `MAX_FDV`, liquidity/FDV ≥ `MIN_LIQ_FDV_RATIO`, ≥ `MIN_BUYERS_H1` unique buyers, buys/sells ≥ `MIN_BUY_SELL_RATIO`, ≥ `MIN_TXNS_H1` trades, age ≥ `MIN_AGE_MIN`, Δ1h ≥ `MIN_PCT_H1` |
 | Liquidity lock | escalations and digest entries additionally require the liquidity-lock proxy to pass (see below) and liquidity ≥ `MIN_LIQ` ($20k) |
 
@@ -83,6 +84,10 @@ If Telegram auth fails at startup the container exits non-zero (and
 | `MIN_TXNS_H1` | `50` | buys + sells in the last hour |
 | `MIN_AGE_MIN` | `10` | minimum pool age; skips the instant-rug window |
 | `MIN_PCT_H1` | `-15` | skip what is already dumping |
+| `REQUIRE_SOCIALS` | `1` | escape hatch; 0 drops the social requirement, never the liquidity floor |
+| `SOCIAL_LOOKUPS_PER_CYCLE` | `6` | max `/info` requests per cycle |
+| `SOCIAL_CACHE_TTL_SEC` | `21600` | cache TTL for a pool that has socials |
+| `SOCIAL_MISS_TTL_SEC` | `300` | recheck TTL for a pool that has none yet |
 | `RPC_URL` | — | Robinhood Chain JSON-RPC endpoint; empty disables all on-chain reads |
 | `ONCHAIN_LOOKUPS_PER_CYCLE` | `4` | pools verified on-chain per cycle (oldest-checked first) |
 | `ONCHAIN_CACHE_TTL_SEC` | `1800` | how long an on-chain result is reused |
@@ -100,8 +105,9 @@ LP-custody and reserve reads).
 
 ## New-coin filter and momentum
 
-`R1`/`R2` gate on age and liquidity only, which is a size test, not a quality
-test. Every NEW alert additionally passes the gates in the config table above:
+`R1`/`R2` gate on age, liquidity and socials, which is a size-and-identity test,
+not a quality test. Every NEW alert additionally passes the gates in the config
+table above:
 size sanity (`MAX_FDV`), price supportability (`MIN_LIQ_FDV_RATIO`), real
 participation (`MIN_BUYERS_H1`, `MIN_TXNS_H1`, `MIN_BUY_SELL_RATIO`), and not
 already falling over (`MIN_AGE_MIN`, `MIN_PCT_H1`). Rejections are logged with
@@ -116,9 +122,34 @@ entire stock-paired meta.
 The dashboard additionally shows **momentum** — 📈 accelerating when both h1
 volume and unique buyers are rising across the recorded window, 📉 fading when
 neither is. This is the "is it still picking up speed?" confirmation step.
-Holder counts and social engagement have no source on this chain, so unique
-buyers is the closest real proxy for "holders rising" and there is no
-hype-source signal at all.
+Holder counts have no source on this chain, so unique buyers is the closest real
+proxy for "holders rising".
+
+## Social gate
+
+GeckoTerminal's `/networks/robinhood/pools/{address}/info` endpoint returns the
+pool's token metadata, including `twitter_handle`, `telegram_handle`,
+`discord_url`, `farcaster_url` and `zora_url`. A NEW pool qualifies only if the
+**meme side** carries at least one of them. On "AAPL / MEME" the tokenized
+stock's own socials must not count — `meme_socials()` picks the side the
+classifier identified as the meme.
+
+Socials and liquidity are **both** required, not traded off against each other.
+A well-funded anonymous launch and a loud empty one are each rejected.
+
+Enrichment is deliberately cheap and cannot destabilise the poll loop:
+
+* at most `social_lookups_per_cycle` (6) info requests per cycle, so the
+  30 req/min public limit is never approached;
+* a single attempt per lookup — optional metadata never triggers the
+  20/40/80 s market-data backoff, which would otherwise stall a cycle for
+  minutes per pool;
+* a **found** social set is cached for `social_cache_ttl_sec` (6 h) because it
+  is stable; an **empty or failed** result is cached for only
+  `social_miss_ttl_sec` (5 min), because projects routinely deploy first and
+  add their socials minutes later — a 6 h negative cache would suppress those
+  for the entire 180 min alert window;
+* a failed lookup fails closed: no socials, no alert.
 
 ## On-chain verification (chain 4663)
 

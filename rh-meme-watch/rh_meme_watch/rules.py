@@ -62,13 +62,29 @@ def classify(pool: Pool, cfg: Config) -> Classification:
 
 
 def liquidity_floor(cls: Classification, cfg: Config) -> float:
+    """Minimum reserve a NEW pool must hold, relaxed for stock-paired pools."""
     return cfg.liq_floor_stock if cls.is_stock_paired else cfg.liq_floor
+
+
+def meme_socials(pool: Pool, cls: Classification) -> tuple[str, ...]:
+    """Social profiles belonging to the actual meme side of the pool."""
+    if cls.meme_symbol is None:
+        return ()
+    return pool.base_socials if cls.meme_is_base else pool.quote_socials
 
 
 def passes_new_rule(
     pool: Pool, cls: Classification, cfg: Config, now: datetime
 ) -> bool:
-    """R1/R2 gate, without dedupe/cooldown (the caller checks the store)."""
+    """R1/R2 gate, without dedupe/cooldown (the caller checks the store).
+
+    Four independent bars, all mandatory: the pool is inside the new-pool age
+    window, it is past the instant-rug window, it holds at least the
+    classification's liquidity floor, and the meme side carries at least one
+    public project social profile. Socials and liquidity are deliberately AND-ed
+    rather than traded off - a well-funded anonymous launch and a loud empty one
+    are each rejected. Missing social metadata fails closed.
+    """
     if cls.meme_symbol is None:
         return False
     age = pool.age_minutes(now)
@@ -78,7 +94,11 @@ def passes_new_rule(
         return False
     if pool.reserve_usd is None:  # unknown liquidity (missing or <= 0) never passes
         return False
-    return pool.reserve_usd >= liquidity_floor(cls, cfg)
+    if pool.reserve_usd < liquidity_floor(cls, cfg):
+        return False
+    if not cfg.require_socials:  # operational escape hatch if the info API breaks
+        return True
+    return bool(meme_socials(pool, cls))
 
 
 @dataclass(frozen=True)

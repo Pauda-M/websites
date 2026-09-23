@@ -34,13 +34,21 @@ def api_item(
     pct_h1: str | float | None = "10.0",
     pct_h24: str | float | None = "20.0",
     tx_h1: dict | None = None,
+    socials: bool = True,
 ) -> dict:
-    """Build a GeckoTerminal-shaped pool item for synthetic tests."""
+    """Build a GeckoTerminal-shaped pool item for synthetic tests.
+
+    Synthetic candidates carry social metadata by default because production
+    NEW-token qualification now requires at least one project social profile.
+    Set ``socials=False`` to exercise the fail-closed social gate.
+    """
     if address is None:
         address = "0x" + f"{abs(hash(name)) % (16**40):040x}"
     if isinstance(created_at, datetime):
         created_at = created_at.strftime("%Y-%m-%dT%H:%M:%SZ")
-    return {
+    base_id = f"robinhood_0xbase{address[-8:]}"
+    quote_id = f"robinhood_0xquote{address[-8:]}"
+    item = {
         "id": f"robinhood_{address}",
         "type": "pool",
         "attributes": {
@@ -59,11 +67,17 @@ def api_item(
             "reserve_in_usd": reserve,
         },
         "relationships": {
-            "base_token": {"data": {"id": f"robinhood_0xbase{address[-8:]}", "type": "token"}},
-            "quote_token": {"data": {"id": f"robinhood_0xquote{address[-8:]}", "type": "token"}},
+            "base_token": {"data": {"id": base_id, "type": "token"}},
+            "quote_token": {"data": {"id": quote_id, "type": "token"}},
             "dex": {"data": {"id": dex, "type": "dex"}},
         },
     }
+    if socials:
+        item["_socials_by_token"] = {
+            base_id: ["https://x.com/test_project"],
+            quote_id: ["https://x.com/test_project"],
+        }
+    return item
 
 
 def mk_cfg(tmp_path: Path, **overrides) -> Config:

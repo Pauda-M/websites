@@ -53,7 +53,12 @@ class App:
         self.cfg = cfg
         self.now_fn = now_fn
         self.sleep_fn = sleep_fn
-        self.gecko = gecko or GeckoClient(sleep=sleep_fn)
+        self.gecko = gecko or GeckoClient(
+            sleep=sleep_fn,
+            social_lookups_per_cycle=cfg.social_lookups_per_cycle,
+            social_cache_ttl_sec=cfg.social_cache_ttl_sec,
+            social_miss_ttl_sec=cfg.social_miss_ttl_sec,
+        )
         self.telegram = telegram or TelegramClient(cfg.telegram_bot_token, cfg.telegram_chat_id)
         self.store = store or Store(cfg.db_path)
         self.fdv = rules.FdvResolver(self.gecko.search_pools, cfg, now_fn)
@@ -77,7 +82,7 @@ class App:
 
     def run(self) -> None:
         if self.cfg.dashboard_port:
-            from .dashboard import start_dashboard
+            from .dashboard_ui import start_dashboard
 
             start_dashboard(self.cfg)
         log.info(

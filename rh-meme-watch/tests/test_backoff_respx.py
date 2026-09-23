@@ -14,6 +14,7 @@ from conftest import NOW, FakeGecko, api_item, mk_app
 
 NEW_POOLS_URL = f"{BASE_URL}/networks/robinhood/new_pools"
 TOP_POOLS_URL = f"{BASE_URL}/networks/robinhood/pools"
+INFO_URL_RE = r"/networks/robinhood/pools/0x[0-9a-f]+/info$"
 
 
 def _client_with_sleep_recorder():
@@ -30,6 +31,10 @@ def test_429_backoff_then_success():
             httpx.Response(429),
             httpx.Response(200, json={"data": [api_item()]}),
         ]
+    )
+    # Returned pools trigger the bounded social-info enrichment lookup.
+    respx.get(url__regex=rf"{INFO_URL_RE}").mock(
+        return_value=httpx.Response(200, json={"data": []})
     )
     client, sleeps = _client_with_sleep_recorder()
     items = client.new_pools(pages=1)
