@@ -74,9 +74,122 @@ def passes_new_rule(
     age = pool.age_minutes(now)
     if age is None or age < 0 or age > cfg.new_window_min:
         return False
+    if age < cfg.min_age_min:  # the instant-rug window
+        return False
     if pool.reserve_usd is None:  # unknown liquidity (missing or <= 0) never passes
         return False
     return pool.reserve_usd >= liquidity_floor(cls, cfg)
+
+
+@dataclass(frozen=True)
+class QualityVerdict:
+    """Why a new pool was, or was not, worth an alert.
+
+    These are single-pool checks, so they can run on a pool minutes old - unlike
+    the momentum and liquidity-lock checks, which need recorded history.
+    """
+
+    passes: bool
+    failed: tuple[str, ...] = ()
+
+    @property
+    def reason(self) -> str:
+        return ", ".join(self.failed) if self.failed else "ok"
+
+
+def quality_verdict(
+    pool: Pool, cfg: Config, meme_fdv: float | None = None
+) -> QualityVerdict:
+    """New-coin quality gate: size sanity, real participation, not already dumping.
+
+    ``meme_fdv`` must be the MEME side's FDV. ``pool.fdv_usd`` is the BASE
+    token's, so on a stock-as-base pool ("AMZN / WADDLES") it is the tokenized
+    stock's multi-billion valuation - gating on that would reject every
+    stock-paired pool. When the meme FDV is unknown the two FDV-based gates are
+    skipped rather than guessed at.
+    """
+    failed: list[str] = []
+
+    if cfg.max_fdv > 0 and meme_fdv is not None and meme_fdv > cfg.max_fdv:
+        failed.append(f"fdv {meme_fdv:,.0f} > {cfg.max_fdv:,.0f}")
+
+    if cfg.min_liq_fdv_ratio > 0 and meme_fdv and pool.reserve_usd is not None:
+        ratio = pool.reserve_usd / meme_fdv
+        if ratio < cfg.min_liq_fdv_ratio:
+            failed.append(f"liq/fdv {ratio:.3f} < {cfg.min_liq_fdv_ratio}")
+
+    if cfg.min_buyers_h1 > 0 and pool.buyers_h1 < cfg.min_buyers_h1:
+        failed.append(f"buyers {pool.buyers_h1} < {cfg.min_buyers_h1}")
+
+    if cfg.min_buy_sell_ratio > 0:
+        ratio = pool.buys_h1 / pool.sells_h1 if pool.sells_h1 else float(pool.buys_h1 > 0)
+        if pool.sells_h1 and ratio < cfg.min_buy_sell_ratio:
+            failed.append(f"buy/sell {ratio:.2f} < {cfg.min_buy_sell_ratio}")
+
+    if cfg.min_txns_h1 > 0 and (pool.buys_h1 + pool.sells_h1) < cfg.min_txns_h1:
+        failed.append(f"txns {pool.buys_h1 + pool.sells_h1} < {cfg.min_txns_h1}")
+
+    if (
+        cfg.min_pct_h1 is not None
+        and pool.price_change_h1 is not None
+        and pool.price_change_h1 < cfg.min_pct_h1
+    ):
+        failed.append(f"dumping {pool.price_change_h1:.0f}% < {cfg.min_pct_h1:.0f}%")
+
+    return QualityVerdict(not failed, tuple(failed))
+
+
+@dataclass(frozen=True)
+class Momentum:
+    """Rate-of-change confirmation from recorded history.
+
+    Mirrors the "is it still picking up speed?" pre-entry check: volume rising
+    rather than falling, and unique buyers still arriving. Holder counts are not
+    available from the API, so unique buyers is the closest real proxy.
+    """
+
+    known: bool
+    vol_rising: bool = False
+    buyers_rising: bool = False
+    vol_change_pct: float | None = None
+    buyers_change: int | None = None
+
+    @property
+    def label(self) -> str:
+        if not self.known:
+            return "unproven"
+        if self.vol_rising and self.buyers_rising:
+            return "accelerating"
+        if self.vol_rising or self.buyers_rising:
+            return "mixed"
+        return "fading"
+
+
+def momentum(
+    history: list[tuple[float | None, int | None]], min_samples: int = 6
+) -> Momentum:
+    """Compare the latest third of ``(vol_h1, buyers_h1)`` samples with the earlier ones."""
+    points = [(v, b) for v, b in history if v is not None or b is not None]
+    if len(points) < min_samples:
+        return Momentum(False)
+    split = max(1, len(points) // 3)
+    early, late = points[:-split], points[-split:]
+
+    def avg(rows, idx):
+        vals = [row[idx] for row in rows if row[idx] is not None]
+        return sum(vals) / len(vals) if vals else None
+
+    v0, v1 = avg(early, 0), avg(late, 0)
+    b0, b1 = avg(early, 1), avg(late, 1)
+    vol_change = (100.0 * (v1 - v0) / v0) if v0 else None
+    buyers_change = int(b1 - b0) if b0 is not None and b1 is not None else None
+    return Momentum(
+        True,
+        vol_rising=bool(vol_change is not None and vol_change > 0),
+        buyers_rising=bool(buyers_change is not None and buyers_change > 0),
+        vol_change_pct=round(vol_change, 1) if vol_change is not None else None,
+        buyers_change=buyers_change,
+    )
 
 
 @dataclass(frozen=True)

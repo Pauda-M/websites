@@ -177,7 +177,16 @@ class App:
             )
             return False
 
+        # Resolve the meme side's FDV before gating: pool.fdv_usd belongs to the
+        # base token, which on a stock-as-base pool is the tokenized stock.
         fdv_meme = self.fdv.fdv_for(pool, cls)
+        quality = rules.quality_verdict(pool, self.cfg, fdv_meme)
+        if not quality.passes:
+            log.info(
+                "filtered out %s (%s): %s", pool.name, pool.address, quality.reason
+            )
+            return False
+
         text = messages.build_new_alert(pool, cls, fdv_meme, now)
         self.telegram.send(text)
         self.store.mark_alerted(pool.address, now, pool.reserve_usd)

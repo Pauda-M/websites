@@ -95,6 +95,16 @@ class Config:
     digest_hour: int = 7
     fdv_cache_ttl_sec: int = 600
     fdv_lookups_per_cycle: int = 3
+    # New-coin quality filter, applied to R1/R2 NEW alerts on top of the
+    # age + liquidity gates. Each threshold can be disabled with 0 (or a very
+    # negative value for min_pct_h1).
+    max_fdv: float = 5_000_000.0  # already too big to multiply
+    min_liq_fdv_ratio: float = 0.02  # huge FDV on thin liquidity = pushable price
+    min_buyers_h1: int = 25  # real participation, not a handful of wash wallets
+    min_buy_sell_ratio: float = 1.0  # more buys than sells at the entry moment
+    min_txns_h1: int = 50  # not a dead pool
+    min_age_min: int = 10  # skip the instant-rug window
+    min_pct_h1: float = -15.0  # "already crashed? skip it"
     # On-chain verification (Robinhood Chain RPC). Empty url disables it.
     rpc_url: str = ""
     onchain_lookups_per_cycle: int = 4
@@ -142,6 +152,13 @@ class Config:
             esc_cooldown_h=_f("ESC_COOLDOWN_H", 6.0),
             symbol_cooldown_h=_f("SYMBOL_COOLDOWN_H", 24.0),
             digest_hour=_i("DIGEST_HOUR", 7),
+            max_fdv=_f("MAX_FDV", 5_000_000.0),
+            min_liq_fdv_ratio=_f("MIN_LIQ_FDV_RATIO", 0.02),
+            min_buyers_h1=_i("MIN_BUYERS_H1", 25),
+            min_buy_sell_ratio=_f("MIN_BUY_SELL_RATIO", 1.0),
+            min_txns_h1=_i("MIN_TXNS_H1", 50),
+            min_age_min=_i("MIN_AGE_MIN", 10),
+            min_pct_h1=_f("MIN_PCT_H1", -15.0),
             rpc_url=os.environ.get("RPC_URL", "").strip(),
             onchain_lookups_per_cycle=_i("ONCHAIN_LOOKUPS_PER_CYCLE", 4),
             onchain_cache_ttl_sec=_i("ONCHAIN_CACHE_TTL_SEC", 1800),

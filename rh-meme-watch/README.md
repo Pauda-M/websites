@@ -18,6 +18,7 @@ Host install path: `/opt/pbSolutions/rh-meme-watch/`.
 | R3 ESCALATE | previously alerted pool with reserve ≥ 2× first-alert reserve OR `volume.h1` ≥ `ESC_VOL_H1` ($500k) → `🔺 ESCALATE`, max once per 6 h per address |
 | R4 DUMP | info only: buyers/sellers h1 < 0.7 or reserve down > 50 % vs first alert → `⚠️` line inside escalations and digests |
 | Digest | daily 07:00 Europe/Zurich: top 10 pools by h24 volume created in the last 24 h |
+| New-coin filter | NEW alerts additionally require: meme FDV ≤ `MAX_FDV`, liquidity/FDV ≥ `MIN_LIQ_FDV_RATIO`, ≥ `MIN_BUYERS_H1` unique buyers, buys/sells ≥ `MIN_BUY_SELL_RATIO`, ≥ `MIN_TXNS_H1` trades, age ≥ `MIN_AGE_MIN`, Δ1h ≥ `MIN_PCT_H1` |
 | Liquidity lock | escalations and digest entries additionally require the liquidity-lock proxy to pass (see below) and liquidity ≥ `MIN_LIQ` ($20k) |
 
 Dedupe is per pool address; additionally one meme symbol alerts at most once
@@ -75,6 +76,13 @@ If Telegram auth fails at startup the container exits non-zero (and
 | `LOCK_MAX_DRAWDOWN` | `0.25` | worst allowed drop from the running peak before liquidity counts as "pulling" |
 | `LOCK_MIN_AGE_MIN` | `30` | minutes of recorded history needed before a lock verdict is given |
 | `LOCK_MIN_SAMPLES` | `10` | snapshots needed before a lock verdict is given |
+| `MAX_FDV` | `5000000` | USD, skip tokens already too big to multiply (meme-side FDV) |
+| `MIN_LIQ_FDV_RATIO` | `0.02` | liquidity ÷ meme FDV floor; kills huge-valuation/thin-liquidity setups |
+| `MIN_BUYERS_H1` | `25` | unique buyers in the last hour |
+| `MIN_BUY_SELL_RATIO` | `1.0` | buys ÷ sells at the entry moment |
+| `MIN_TXNS_H1` | `50` | buys + sells in the last hour |
+| `MIN_AGE_MIN` | `10` | minimum pool age; skips the instant-rug window |
+| `MIN_PCT_H1` | `-15` | skip what is already dumping |
 | `RPC_URL` | — | Robinhood Chain JSON-RPC endpoint; empty disables all on-chain reads |
 | `ONCHAIN_LOOKUPS_PER_CYCLE` | `4` | pools verified on-chain per cycle (oldest-checked first) |
 | `ONCHAIN_CACHE_TTL_SEC` | `1800` | how long an on-chain result is reused |
@@ -89,6 +97,28 @@ State lives in SQLite (`/data/state.db`, WAL) in the `rh_meme_watch_data`
 volume: `pools` (per-address lifecycle), `alerts` (audit log), `snapshots`
 (per-cycle history for alerted pools, kept 14 days) and `onchain` (cached
 LP-custody and reserve reads).
+
+## New-coin filter and momentum
+
+`R1`/`R2` gate on age and liquidity only, which is a size test, not a quality
+test. Every NEW alert additionally passes the gates in the config table above:
+size sanity (`MAX_FDV`), price supportability (`MIN_LIQ_FDV_RATIO`), real
+participation (`MIN_BUYERS_H1`, `MIN_TXNS_H1`, `MIN_BUY_SELL_RATIO`), and not
+already falling over (`MIN_AGE_MIN`, `MIN_PCT_H1`). Rejections are logged with
+the failing gate, so tightening or loosening a threshold is a one-line `.env`
+change with evidence behind it.
+
+**The FDV gates use the MEME side's FDV**, resolved via `/search/pools` when the
+meme is the quote token. `pool.fdv_usd` is the *base* token's: on "AMZN /
+WADDLES" it is Amazon's ~$245B valuation, and gating on it would reject the
+entire stock-paired meta.
+
+The dashboard additionally shows **momentum** — 📈 accelerating when both h1
+volume and unique buyers are rising across the recorded window, 📉 fading when
+neither is. This is the "is it still picking up speed?" confirmation step.
+Holder counts and social engagement have no source on this chain, so unique
+buyers is the closest real proxy for "holders rising" and there is no
+hype-source signal at all.
 
 ## On-chain verification (chain 4663)
 
@@ -165,7 +195,7 @@ python3.12 -m venv .venv && .venv/bin/pip install -e ".[test]"
 .venv/bin/pytest
 ```
 
-100 tests run offline against `tests/fixture_robinhood_pools.json`
+120 tests run offline against `tests/fixture_robinhood_pools.json`
 (40 robinhood pools). **Fixture provenance:** the sandbox this project was
 authored in had no network egress to `api.geckoterminal.com`, so the fixture
 is materialized by CI on the first run: `scripts/refresh_fixture.py` pulls 40

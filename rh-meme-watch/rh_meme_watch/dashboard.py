@@ -22,7 +22,7 @@ from pathlib import Path
 
 from .config import Config
 from .fmt import fmt_age, fmt_int, fmt_pct, fmt_usd
-from .rules import lock_verdict
+from .rules import lock_verdict, momentum
 
 log = logging.getLogger("rh_meme_watch.dashboard")
 
@@ -163,6 +163,7 @@ def collect(db_path: Path, cfg: Config, now: datetime) -> dict:
             lock = lock_verdict(
                 [(ts, res) for ts, res in history if ts is not None], cfg, last_liq
             )
+            mom = momentum([(s["vol_h1"], s["buyers"]) for s in snaps])
             pools.append(
                 {
                     "address": row["address"],
@@ -180,6 +181,9 @@ def collect(db_path: Path, cfg: Config, now: datetime) -> dict:
                     "pct_h1": latest["pct_h1"] if latest else None,
                     "dump_flag": dump,
                     "liq_lock": lock.label,
+                    "momentum": mom.label,
+                    "vol_change_pct": mom.vol_change_pct,
+                    "buyers_change": mom.buyers_change,
                     "custody": _custody_label(oc),
                     "custody_holder": oc["holder"] if oc else None,
                     "custody_pct": (
@@ -279,6 +283,13 @@ def render_html(db_path: Path, cfg: Config, now: datetime, show_all: bool = Fals
             status += f' <span style="color:{_DUMP_COLOR}">\U0001f513 pulling{dd_txt}</span>'
         else:
             status += f' <span style="color:{_UNPROVEN_COLOR}">⧖ unproven</span>'
+        mom_label = p.get("momentum", "unproven")
+        if mom_label == "accelerating":
+            vc = p.get("vol_change_pct")
+            vc_txt = f" vol {vc:+.0f}%" if vc is not None else ""
+            status += f' <span style="color:{_LOCK_COLOR}">\U0001f4c8 accelerating{vc_txt}</span>'
+        elif mom_label == "fading":
+            status += f' <span style="color:{_UNPROVEN_COLOR}">\U0001f4c9 fading</span>'
         custody = p.get("custody", "unchecked")
         if custody == "single custodian":
             pct = p.get("custody_pct")
@@ -371,6 +382,8 @@ def render_html(db_path: Path, cfg: Config, now: datetime, show_all: bool = Fals
  + 25% buyer flow + 30% liq multiple &middot; bar color: blue = cooling &rarr; red = burning
  &middot; \U0001f4a3 rug risk = buyers/sellers &lt; 0.7 or liq &minus;50% vs first alert
  &middot; auto-refresh 60s<br>
+momentum: \U0001f4c8 accelerating = h1 volume and unique buyers both rising over the
+ recorded window (holder counts are not in the API; unique buyers is the proxy)<br>
 on-chain (chain 4663): \U0001f3e6 LP custody read from the RPC \u2014 &ldquo;1 custodian&rdquo;
  means a single address holds &ge;90% of the pool&rsquo;s LP tokens (measured: nobody burns
  LP on this chain, one owner-controlled contract custodies the v2 pools);
