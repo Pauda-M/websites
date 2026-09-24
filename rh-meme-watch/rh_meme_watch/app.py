@@ -199,7 +199,7 @@ class App:
         return list(seen.values())
 
     def _maybe_new_alert(self, pool: Pool, cls: rules.Classification, now: datetime) -> bool:
-        if not rules.passes_new_rule(pool, cls, self.cfg, now):
+        if not rules.passes_pre_social_gates(pool, cls, self.cfg, now):
             return False
         if self.store.was_alerted(pool.address):
             return False
@@ -224,6 +224,24 @@ class App:
                 "filtered out %s (%s): %s", pool.name, pool.address, quality.reason
             )
             return False
+
+        # Socials are established last, and only here. Every check above is free
+        # to evaluate; this one costs a request, and the budget for those is far
+        # below the candidate stream. Enriching discovery blindly spent it on the
+        # newest pools - too young to alert - and left real candidates failing
+        # closed with no data. By this line the pool has cleared everything else,
+        # so a lookup here is a lookup that decides an alert.
+        if self.cfg.require_socials:
+            pool = pool.with_socials(self.gecko.socials_for(pool.address))
+            socials = rules.meme_socials(pool, cls)
+            if not socials:
+                log.info(
+                    "filtered out %s (%s): no social on the meme side",
+                    pool.name,
+                    pool.address,
+                )
+                return False
+            self.store.set_socials(pool.address, socials)
 
         text = messages.build_new_alert(pool, cls, fdv_meme, now)
         self.telegram.send(text)

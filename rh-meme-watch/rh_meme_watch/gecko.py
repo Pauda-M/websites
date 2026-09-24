@@ -185,6 +185,18 @@ class GeckoClient:
             if now - entry[0] < entry[2]
         }
 
+    def socials_for(
+        self, pool_address: str, network: str = "robinhood"
+    ) -> dict[str, tuple[str, ...]]:
+        """Token-id -> socials for one pool, cached and budgeted.
+
+        Called only for pools that have already cleared the free gates, so the
+        scarce budget is spent where the answer decides the outcome.
+        """
+        if not pool_address:
+            return {}
+        return self._pool_socials(network, pool_address)
+
     def _enrich_new_pool_socials(self, items: list[dict], network: str) -> list[dict]:
         for item in items:
             if not isinstance(item, dict):
@@ -196,14 +208,18 @@ class GeckoClient:
         return items
 
     def new_pools(self, network: str = "robinhood", pages: int = 3) -> list[dict]:
-        # A new polling cycle starts here; top_pools follows and shares the same
-        # bounded enrichment budget.
+        # A new polling cycle starts here. Discovery no longer enriches socials
+        # blindly: it returned ~60 pools per cycle against a budget of 3, so the
+        # budget was spent on the newest pools - which are below the minimum age
+        # and cannot alert anyway - while every real candidate reached the social
+        # gate with no data and failed closed. Socials are now fetched on demand,
+        # by the caller, only for pools that have cleared every free check.
         self._social_lookups_this_cycle = 0
         items: list[dict] = []
         for page in range(1, pages + 1):
             payload = self._get(f"/networks/{network}/new_pools", {"page": page})
             items.extend(payload.get("data") or [])
-        return self._enrich_new_pool_socials(items, network)
+        return items
 
     def pools_by_address(
         self, addresses: list[str], network: str = "robinhood"

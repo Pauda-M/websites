@@ -95,17 +95,16 @@ def meme_socials(pool: Pool, cls: Classification) -> tuple[str, ...]:
     return pool.base_socials if cls.meme_is_base else pool.quote_socials
 
 
-def passes_new_rule(
+def passes_pre_social_gates(
     pool: Pool, cls: Classification, cfg: Config, now: datetime
 ) -> bool:
-    """R1/R2 gate, without dedupe/cooldown (the caller checks the store).
+    """Everything a NEW pool must clear that costs nothing to evaluate.
 
-    Four independent bars, all mandatory: the pool is inside the new-pool age
-    window, it is past the instant-rug window, it holds at least the
-    classification's liquidity floor, and the meme side carries at least one
-    public project social profile. Socials and liquidity are deliberately AND-ed
-    rather than traded off - a well-funded anonymous launch and a loud empty one
-    are each rejected. Missing social metadata fails closed.
+    Age window, instant-rug window and liquidity floor are all read straight off
+    the discovery response. Socials are checked separately and afterwards,
+    because establishing them costs a request and the budget for those is far
+    smaller than the candidate stream - so it must only be spent on pools that
+    have already cleared every free check.
     """
     if cls.meme_symbol is None:
         return False
@@ -116,7 +115,19 @@ def passes_new_rule(
         return False
     if pool.reserve_usd is None:  # unknown liquidity (missing or <= 0) never passes
         return False
-    if pool.reserve_usd < liquidity_floor(cls, cfg):
+    return pool.reserve_usd >= liquidity_floor(cls, cfg)
+
+
+def passes_new_rule(
+    pool: Pool, cls: Classification, cfg: Config, now: datetime
+) -> bool:
+    """Full R1/R2 gate, for callers holding a pool whose socials are already known.
+
+    Socials and liquidity are deliberately AND-ed rather than traded off - a
+    well-funded anonymous launch and a loud empty one are each rejected. Missing
+    social metadata fails closed.
+    """
+    if not passes_pre_social_gates(pool, cls, cfg, now):
         return False
     if not cfg.require_socials:  # operational escape hatch if the info API breaks
         return True

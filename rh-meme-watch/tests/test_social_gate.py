@@ -98,3 +98,84 @@ def test_kill_switch_drops_the_social_requirement_but_not_liquidity(tmp_path):
         api_item(name="THIN / WETH", created_at=aged, reserve="2500", socials=False)
     )
     assert not passes_new_rule(thin, classify(thin, cfg), cfg, NOW)
+
+
+# --- where the lookup budget gets spent -------------------------------------
+
+def test_a_lookup_is_only_spent_on_a_pool_that_cleared_everything_else(tmp_path):
+    """The bug this guards: enriching discovery blindly spent the whole budget
+    on pools too young to alert, so real candidates hit the social gate with no
+    data and failed closed - zero alerts, and nothing in the log to say why."""
+    from conftest import FakeGecko, mk_app
+
+    too_young = api_item(
+        name="NEWBORN / WETH", address="0x" + "11" * 20,
+        created_at=NOW - timedelta(minutes=1), reserve="500000", socials=True,
+    )
+    too_thin = api_item(
+        name="THIN / WETH", address="0x" + "22" * 20,
+        created_at=NOW - timedelta(minutes=45), reserve="9000", socials=True,
+    )
+    candidate = api_item(
+        name="REAL / WETH", address="0x" + "33" * 20,
+        created_at=NOW - timedelta(minutes=45), reserve="500000", socials=True,
+        tx_h1={"buys": 140, "sells": 70, "buyers": 90, "sellers": 45},
+    )
+
+    gecko = FakeGecko(new_items=[too_young, too_thin, candidate])
+    cfg = mk_cfg(tmp_path, digest_hour=25, liq_floor=150_000.0, require_socials=True)
+    app, telegram, clock = mk_app(tmp_path, gecko, cfg=cfg)
+
+    app.run_cycle()
+
+    assert gecko.social_calls == ["0x" + "33" * 20], (
+        "exactly one lookup, on the only pool whose socials decide the outcome"
+    )
+
+
+def test_a_candidate_without_socials_is_rejected_and_says_so(tmp_path, caplog):
+    """Failing closed is correct; failing closed silently is what hid the bug.
+
+    The live symptom was zero alerts with an empty rejection log, because the
+    social check sat inside passes_new_rule, which logs nothing. It is now a
+    named, logged rejection like every other gate.
+    """
+    import logging
+
+    from conftest import FakeGecko, mk_app
+
+    anon = api_item(
+        name="ANON / WETH", address="0x" + "44" * 20,
+        created_at=NOW - timedelta(minutes=45), reserve="500000", socials=False,
+        tx_h1={"buys": 140, "sells": 70, "buyers": 90, "sellers": 45},
+    )
+    gecko = FakeGecko(new_items=[anon])
+    cfg = mk_cfg(tmp_path, digest_hour=25, liq_floor=150_000.0, require_socials=True)
+    app, telegram, clock = mk_app(tmp_path, gecko, cfg=cfg)
+
+    with caplog.at_level(logging.INFO, logger="rh_meme_watch.app"):
+        app.run_cycle()
+
+    assert telegram.sent == [], "no alert without a social"
+    assert "no social" in caplog.text, "and the reason is logged"
+    assert "ANON" in caplog.text, "naming the pool it rejected"
+
+
+def test_socials_found_during_the_alert_are_persisted(tmp_path):
+    """Fetched once, then available to the dashboard without refetching."""
+    from conftest import FakeGecko, mk_app
+
+    good = api_item(
+        name="GOOD / WETH", address="0x" + "55" * 20,
+        created_at=NOW - timedelta(minutes=45), reserve="500000", socials=True,
+        tx_h1={"buys": 140, "sells": 70, "buyers": 90, "sellers": 45},
+    )
+    gecko = FakeGecko(new_items=[good])
+    cfg = mk_cfg(tmp_path, digest_hour=25, liq_floor=150_000.0, require_socials=True)
+    app, telegram, clock = mk_app(tmp_path, gecko, cfg=cfg)
+
+    app.run_cycle()
+
+    from rh_meme_watch.store import Store
+    row = app.store.get_pool("0x" + "55" * 20)
+    assert Store.socials_of(row), "written to the store, not just used and dropped"

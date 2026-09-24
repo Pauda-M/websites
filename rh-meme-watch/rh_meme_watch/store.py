@@ -194,6 +194,16 @@ class Store:
         )
         return [r["address"] for r in cur]
 
+    def set_socials(self, address: str, socials: Sequence[str]) -> None:
+        """Persist socials fetched after the pool was first seen. An empty list
+        is not written: it means "not established", not "has none"."""
+        if not socials:
+            return
+        self.db.execute(
+            "UPDATE pools SET socials = ? WHERE address = ?",
+            (json.dumps(list(socials)), address),
+        )
+
     def get_pool(self, address: str) -> sqlite3.Row | None:
         cur = self.db.execute("SELECT * FROM pools WHERE address = ?", (address,))
         return cur.fetchone()

@@ -14,7 +14,7 @@ API quirks handled here:
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from typing import Any
 
@@ -113,6 +113,20 @@ class Pool:
     sells_h24: int
     buyers_h24: int
     sellers_h24: int
+
+    def with_socials(self, by_token: dict) -> "Pool":
+        """Return a copy carrying socials fetched after construction.
+
+        Discovery does not include social metadata, so it is attached later for
+        the few pools worth spending a lookup on.
+        """
+        if not by_token:
+            return self
+        return replace(
+            self,
+            base_socials=tuple(by_token.get(self.base_token_id) or ()),
+            quote_socials=tuple(by_token.get(self.quote_token_id) or ()),
+        )
 
     @classmethod
     def from_api(cls, item: dict) -> "Pool":

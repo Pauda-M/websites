@@ -132,6 +132,7 @@ class FakeGecko:
         self.raise_on_top: Exception | None = None
         self.search_calls: list[str] = []
         self.watchlist_calls: list[list[str]] = []
+        self.social_calls: list[str] = []
 
     def new_pools(self, network: str = "robinhood", pages: int = 3) -> list[dict]:
         if self.raise_on_new is not None:
@@ -148,6 +149,27 @@ class FakeGecko:
     ) -> list[dict]:
         self.watchlist_calls.append(list(addresses))
         return [self.watchlist_items[a] for a in addresses if a in self.watchlist_items]
+
+    def socials_for(
+        self, pool_address: str, network: str = "robinhood"
+    ) -> dict[str, tuple[str, ...]]:
+        """On-demand social lookup, served from whichever item carries the pool.
+
+        Mirrors production: discovery does not include socials, so they are
+        fetched per pool. Items built with ``api_item(socials=True)`` supply
+        them; ``socials=False`` yields nothing, which is the fail-closed case.
+        """
+        self.social_calls.append(pool_address)
+        for source in (self.new_items, self.top_items, list(self.watchlist_items.values())):
+            for item in source:
+                pool_id = str(item.get("id") or "")
+                addr = pool_id.split("_", 1)[1] if "_" in pool_id else pool_id
+                if addr.lower() == (pool_address or "").lower():
+                    return {
+                        k: tuple(v)
+                        for k, v in (item.get("_socials_by_token") or {}).items()
+                    }
+        return {}
 
     def search_pools(self, query: str, network: str = "robinhood") -> list[dict]:
         self.search_calls.append(query)
