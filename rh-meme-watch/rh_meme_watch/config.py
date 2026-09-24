@@ -122,6 +122,14 @@ class Config:
     # Social gate. A NEW pool's meme side must expose at least one project
     # social. AND-ed with the liquidity floor, never traded off against it.
     require_socials: bool = True
+    # Social engagement flags. "Green" needs MEASURED engagement at or above the
+    # threshold; "red" fires on having no socials at all, which is always
+    # knowable. Engagement that could not be measured is never treated as zero -
+    # that would red-flag every token on this chain, since no free source for X
+    # post views exists. See socials.py.
+    social_green_engagement: int = 1000
+    social_engagement_ttl_sec: int = 3600
+    x_bearer_token: str = ""  # optional; without it X engagement is unmeasured
     social_lookups_per_cycle: int = 6  # bounded so the 30 req/min limit is safe
     social_cache_ttl_sec: int = 21_600  # a found social set is stable
     social_miss_ttl_sec: int = 300  # projects add socials after deploy; recheck
@@ -185,6 +193,9 @@ class Config:
             retrace_h1_pct=_f("RETRACE_H1_PCT", 20.0),
             retrace_m15_pct=_f("RETRACE_M15_PCT", -3.0),
             require_socials=_b("REQUIRE_SOCIALS", True),
+            social_green_engagement=_i("SOCIAL_GREEN_ENGAGEMENT", 1000),
+            social_engagement_ttl_sec=_i("SOCIAL_ENGAGEMENT_TTL_SEC", 3600),
+            x_bearer_token=os.environ.get("X_BEARER_TOKEN", "").strip(),
             social_lookups_per_cycle=_i("SOCIAL_LOOKUPS_PER_CYCLE", 6),
             social_cache_ttl_sec=_i("SOCIAL_CACHE_TTL_SEC", 21_600),
             social_miss_ttl_sec=_i("SOCIAL_MISS_TTL_SEC", 300),

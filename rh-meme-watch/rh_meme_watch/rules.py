@@ -11,10 +11,13 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Callable
+from typing import TYPE_CHECKING, Callable, Mapping, Sequence
 
 from .config import NON_MEME_EXTRA, Config
 from .models import Pool, parse_pools
+
+if TYPE_CHECKING:  # avoids a runtime import purely for an annotation
+    from .socials import LinkCheck
 
 log = logging.getLogger("rh_meme_watch.rules")
 
@@ -193,6 +196,85 @@ def quality_verdict(
         )
 
     return QualityVerdict(not failed, tuple(failed))
+
+
+@dataclass(frozen=True)
+class SocialVerdict:
+    """Red / green / amber on a pool's social presence.
+
+    RED means something was positively established: the pool has no socials at
+    all, or every social it lists is a confirmed dead link. GREEN means a link
+    was confirmed live AND carried measured engagement at or above the floor.
+    AMBER is everything in between, including "links are live but nobody could
+    measure the audience".
+
+    The absence of a measurement is never scored as a bad measurement. There is
+    no free source for X post views, so if unmeasured engagement counted as
+    zero, every token on this chain would sit permanently at RED and the flag
+    would carry no information.
+    """
+
+    flag: str  # "red" | "green" | "amber"
+    live: int = 0
+    dead: int = 0
+    unknown: int = 0
+    engagement: int | None = None  # best measured audience, None if unmeasured
+    reason: str = ""
+
+    @property
+    def is_red(self) -> bool:
+        return self.flag == "red"
+
+    @property
+    def is_green(self) -> bool:
+        return self.flag == "green"
+
+
+def social_verdict(
+    socials: Sequence[str], checks: Mapping[str, "LinkCheck"], cfg: Config
+) -> SocialVerdict:
+    """Score a pool's socials from whatever link checks are available."""
+    if not socials:
+        return SocialVerdict("red", reason="no socials")
+
+    live = dead = unknown = 0
+    best: int | None = None
+    for url in socials:
+        check = checks.get(url)
+        if check is None or check.state == "unknown":
+            unknown += 1
+            continue
+        if check.state == "dead":
+            dead += 1
+            continue
+        live += 1
+        if check.engagement is not None:
+            best = check.engagement if best is None else max(best, check.engagement)
+
+    # Every listed social confirmed dead is as bad as having none - the link
+    # exists only to look legitimate.
+    if dead and not live and not unknown:
+        return SocialVerdict(
+            "red", live, dead, unknown, best, f"all {dead} social link(s) dead"
+        )
+
+    floor = cfg.social_green_engagement
+    if live and best is not None and floor > 0 and best >= floor:
+        return SocialVerdict(
+            "green", live, dead, unknown, best, f"{best:,} engaged, link live"
+        )
+
+    if live and best is not None:
+        return SocialVerdict(
+            "amber", live, dead, unknown, best, f"only {best:,} engaged"
+        )
+    if live:
+        return SocialVerdict(
+            "amber", live, dead, unknown, best, "link live, audience unmeasured"
+        )
+    return SocialVerdict(
+        "amber", live, dead, unknown, best, "links not yet verified"
+    )
 
 
 @dataclass(frozen=True)
