@@ -53,6 +53,7 @@ class App:
         self.cfg = cfg
         self.now_fn = now_fn
         self.sleep_fn = sleep_fn
+        self._watchlist_cursor = 0
         self.gecko = gecko or GeckoClient(
             sleep=sleep_fn,
             social_lookups_per_cycle=cfg.social_lookups_per_cycle,
@@ -126,12 +127,30 @@ class App:
         # observed. Re-read the watchlist explicitly: without it no pool ever
         # accumulates the history a retention verdict needs, and escalations are
         # blind to anything that has dropped out of the rankings.
-        seen = {p.address for p in pools}
-        stale = [a for a in self.store.watchlist(self.cfg.watchlist_size) if a not in seen]
-        if stale:
-            refreshed = parse_pools({"data": self.gecko.pools_by_address(stale)})
-            pools = pools + self._dedupe(refreshed)
-            log.debug("watchlist refresh: %d stale, %d returned", len(stale), len(refreshed))
+        # One batch per cycle, walking the watchlist in rotation. Refreshing the
+        # whole set at once meant seven requests, all rate-limited, and the loop
+        # starved before it could finish; a batch costs one request and the set is
+        # covered every watchlist_size/watchlist_batch cycles.
+        batch = max(0, self.cfg.watchlist_batch)
+        size = max(0, self.cfg.watchlist_size)
+        if batch and size:
+            if self._watchlist_cursor >= size:
+                self._watchlist_cursor = 0
+            tracked = self.store.watchlist(batch, self._watchlist_cursor)
+            self._watchlist_cursor = (
+                0 if len(tracked) < batch else self._watchlist_cursor + batch
+            )
+            seen = {p.address for p in pools}
+            stale = [a for a in tracked if a not in seen]
+            if stale:
+                refreshed = parse_pools({"data": self.gecko.pools_by_address(stale)})
+                pools = pools + self._dedupe(refreshed)
+                log.debug(
+                    "watchlist refresh: asked %d, got %d, cursor now %d",
+                    len(stale),
+                    len(refreshed),
+                    self._watchlist_cursor,
+                )
 
         alerted_now: set[str] = set()
         for pool in pools:

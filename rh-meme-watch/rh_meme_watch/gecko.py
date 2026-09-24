@@ -225,8 +225,11 @@ class GeckoClient:
             if not batch:
                 continue
             try:
+                # One attempt, no sleeping. A rate-limited refresh must cost a
+                # cycle of history, never the cycle: seven batches each backing
+                # off 20s exceeds the whole poll interval and the loop starves.
                 payload = self._get(
-                    f"/networks/{network}/pools/multi/{','.join(batch)}", retries=1
+                    f"/networks/{network}/pools/multi/{','.join(batch)}", retries=0
                 )
             except GeckoUnavailable as exc:
                 # Re-reading the watchlist is maintenance, not discovery. Losing a

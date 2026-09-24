@@ -180,7 +180,7 @@ class Store:
             return ()
         return tuple(str(v) for v in values if str(v).strip())
 
-    def watchlist(self, limit: int) -> list[str]:
+    def watchlist(self, limit: int, offset: int = 0) -> list[str]:
         """Alerted pools to keep observing, most recently alerted first.
 
         Discovery drops a pool from view within minutes, so without re-reading
@@ -189,8 +189,8 @@ class Store:
         """
         cur = self.db.execute(
             "SELECT address FROM pools WHERE first_alert_ts IS NOT NULL "
-            "ORDER BY first_alert_ts DESC LIMIT ?",
-            (max(0, limit),),
+            "ORDER BY first_alert_ts DESC LIMIT ? OFFSET ?",
+            (max(0, limit), max(0, offset)),
         )
         return [r["address"] for r in cur]
 

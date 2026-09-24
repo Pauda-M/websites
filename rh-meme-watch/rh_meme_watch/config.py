@@ -140,9 +140,14 @@ class Config:
     custody_drop_pct: float = 10.0  # LP custodian balance drop that raises an alert
     lp_custodians: tuple[tuple[str, str], ...] = ()
     dashboard_port: int = 8080  # 0 disables the dashboard HTTP server
-    # Alerted pools re-read each cycle so their history keeps accumulating after
-    # they drop out of discovery. Costs one request per 30, so 200 is 7 requests.
+    # Alerted pools re-read so their history keeps accumulating after they drop
+    # out of discovery. watchlist_size is the set covered; watchlist_batch is how
+    # much of it is refreshed per cycle, rotating. Refreshing all 200 at once cost
+    # 7 requests, every one of them rate-limited, and starved the loop - so the
+    # set is walked a batch at a time instead: 1 extra request per cycle, a full
+    # pass every watchlist_size/watchlist_batch cycles.
     watchlist_size: int = 200
+    watchlist_batch: int = 30  # the /multi/ endpoint's per-request maximum
     snapshot_keep_days: int = 14
 
     @property
@@ -210,5 +215,6 @@ class Config:
                 os.environ.get("LP_CUSTODIANS", "").strip() or DEFAULT_LP_CUSTODIANS
             ),
             watchlist_size=_i("WATCHLIST_SIZE", 200),
+            watchlist_batch=_i("WATCHLIST_BATCH", 30),
             dashboard_port=_i("DASHBOARD_PORT", 8080),
         )
