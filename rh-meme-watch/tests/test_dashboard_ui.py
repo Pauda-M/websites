@@ -199,3 +199,62 @@ def test_coin_without_socials_is_skipped_from_the_filtered_view(tmp_path):
     by_symbol = {p["symbol"]: p for p in data["pools"]}
     assert not qualifies(by_symbol["NOSOCIAL"], cfg), "no social -> skipped"
     assert by_symbol["HASSOCIAL"]["socials"] == ["https://t.me/c"]
+
+
+def test_mcap_block_shows_detection_baseline_now_and_multiple():
+    block = dashboard_ui._mcap_block(
+        {"first_mcap": 500_000.0, "last_mcap": 1_750_000.0, "mcap_mult": 3.5}
+    )
+    assert "MCAP AT ALERT" in block
+    assert "3.50x" in block
+    assert "positive" in block
+
+
+def test_mcap_block_marks_a_pool_that_shrank():
+    block = dashboard_ui._mcap_block(
+        {"first_mcap": 2_000_000.0, "last_mcap": 400_000.0, "mcap_mult": 0.2}
+    )
+    assert "0.20x" in block
+    assert "negative" in block
+
+
+def test_mcap_block_survives_a_pool_with_no_readings():
+    block = dashboard_ui._mcap_block({})
+    assert "MCAP AT ALERT" in block
+    assert "—" in block, "em dash, not a crash or a fake zero"
+
+
+def test_mcap_since_detection_appears_on_the_rendered_page(tmp_path):
+    from rh_meme_watch.store import Store
+
+    cfg = mk_cfg(tmp_path)
+    store = Store(cfg.db_path)
+    addr = "0x" + "9c" * 20
+    store.upsert_seen(
+        addr, "RUNNER", "WETH", "uniswap-v2", NOW, NOW, 200_000.0, 50_000.0,
+        socials=["https://t.me/runner"], mcap=3_000_000.0,
+    )
+    store.mark_alerted(addr, NOW, 200_000.0, first_mcap=600_000.0)
+    page = dashboard_ui.render_html(cfg.db_path, cfg, NOW + timedelta(minutes=5), True)
+    assert "RUNNER" in page
+    assert "MCAP AT ALERT" in page
+    assert "5.00x" in page, "3.0M now vs 600k at alert"
+
+
+def test_table_header_and_body_column_counts_agree(tmp_path):
+    """A stray <th> without its <td> silently shears the whole table."""
+    from rh_meme_watch.store import Store
+
+    cfg = mk_cfg(tmp_path)
+    store = Store(cfg.db_path)
+    addr = "0x" + "7d" * 20
+    store.upsert_seen(
+        addr, "COLS", "WETH", "uniswap-v2", NOW, NOW, 200_000.0, 10_000.0,
+        socials=["https://t.me/c"], mcap=1_000_000.0,
+    )
+    store.mark_alerted(addr, NOW, 200_000.0, first_mcap=500_000.0)
+    page = dashboard_ui.render_html(cfg.db_path, cfg, NOW + timedelta(minutes=5), True)
+
+    header = page.split("<thead>")[1].split("</thead>")[0]
+    body_row = page.split("<tbody>")[1].split("</tr>")[0]
+    assert header.count("<th>") == body_row.count("<td"), "header/body column mismatch"

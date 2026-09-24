@@ -159,6 +159,13 @@ def collect(db_path: Path, cfg: Config, now: datetime) -> dict:
                 and sellers > 0
                 and buyers / sellers < 0.7
             ) or bool(first_liq and last_liq is not None and last_liq < 0.5 * first_liq)
+            first_mcap = row["first_mcap"]
+            last_mcap = row["last_mcap"]
+            mcap_mult = (
+                last_mcap / first_mcap
+                if first_mcap and first_mcap > 0 and last_mcap
+                else None
+            )
             oc = onchain_rows.get(row["address"])
             history = [(_parse_ts(s["ts"]), s["reserve"]) for s in snaps]
             lock = lock_verdict(
@@ -186,6 +193,9 @@ def collect(db_path: Path, cfg: Config, now: datetime) -> dict:
                     "vol_change_pct": mom.vol_change_pct,
                     "buyers_change": mom.buyers_change,
                     "socials": list(Store.socials_of(row)),
+                    "first_mcap": first_mcap,
+                    "last_mcap": last_mcap,
+                    "mcap_mult": round(mcap_mult, 2) if mcap_mult is not None else None,
                     "custody": _custody_label(oc),
                     "custody_holder": oc["holder"] if oc else None,
                     "custody_pct": (

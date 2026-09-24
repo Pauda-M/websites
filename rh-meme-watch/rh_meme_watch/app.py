@@ -134,6 +134,7 @@ class App:
                 pool.reserve_usd,
                 pool.vol_h1,
                 socials=rules.meme_socials(pool, cls),
+                mcap=rules.meme_mcap(pool, cls),
             )
             if self._maybe_new_alert(pool, cls, now):
                 alerted_now.add(pool.address)
@@ -195,7 +196,8 @@ class App:
 
         text = messages.build_new_alert(pool, cls, fdv_meme, now)
         self.telegram.send(text)
-        self.store.mark_alerted(pool.address, now, pool.reserve_usd)
+        # fdv_meme was resolved just above; it is the detection baseline.
+        self.store.mark_alerted(pool.address, now, pool.reserve_usd, fdv_meme)
         kind = "new_stock" if cls.is_stock_paired else "new"
         self.store.record_alert(
             pool.address,

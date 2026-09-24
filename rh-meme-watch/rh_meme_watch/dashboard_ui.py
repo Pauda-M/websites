@@ -88,6 +88,33 @@ def _social_links(pool: dict) -> str:
     return "".join(chips)
 
 
+def _mcap_since_detection(pool: dict) -> tuple[str, str, str]:
+    """(at detection, now, multiple) - the "what has it done since I found it"
+    number. Both readings are the meme side's FDV, so the multiple is real."""
+    first = pool.get("first_mcap")
+    last = pool.get("last_mcap")
+    mult = pool.get("mcap_mult")
+    if mult is None:
+        mult_txt = "\u2014"
+    elif mult >= 1:
+        mult_txt = f"{mult:.2f}x"
+    else:
+        mult_txt = f"{mult:.2f}x"
+    return fmt_usd(first), fmt_usd(last), mult_txt
+
+
+def _mcap_block(pool: dict) -> str:
+    at, now_, mult = _mcap_since_detection(pool)
+    value = pool.get("mcap_mult")
+    cls = "positive" if value and value >= 1 else ("negative" if value else "")
+    return (
+        f'<span class="mcap-leg"><i>MCAP AT ALERT</i><b>{html.escape(at)}</b></span>'
+        f'<span class="mcap-arrow">\u2192</span>'
+        f'<span class="mcap-leg"><i>NOW</i><b>{html.escape(now_)}</b></span>'
+        f'<span class="mcap-mult {cls}">{html.escape(mult)}</span>'
+    )
+
+
 def _risk_badges(pool: dict) -> str:
     badges: list[str] = []
     status = str(pool.get("status") or "seen")
@@ -168,6 +195,7 @@ def _hero_card(pool: dict, now: datetime, rank: int) -> str:
     <div><span>Volume 1h</span><b>{html.escape(_money(pool.get('vol_h1')))}</b><small>{buyers}/{sellers} buyers/sellers</small></div>
     <div><span>Move 1h</span><b class="{change_cls}">{html.escape(change_txt)}</b><small>flow {flow:.2f}x</small></div>
   </div>
+  <div class="mcap-row">{_mcap_block(pool)}</div>
   <div class="mini-chart">{_spark(pool.get('spark') or [])}</div>
   <div class="actions">
     <a class="btn btn-primary" href="{FOMO_URL}" target="_blank" rel="noopener noreferrer">Open Fomo ↗</a>
@@ -198,6 +226,7 @@ def _table_row(pool: dict, now: datetime) -> str:
   <td><div class="badges">{_risk_badges(pool)}</div><div class="socials">{_social_links(pool)}</div></td>
   <td class="mono">{html.escape(_age(pool.get('first_alert_ts'), now))}</td>
   <td class="mono"><strong>{html.escape(_money(pool.get('last_liq')))}</strong><span class="secondary">{mult} vs alert</span></td>
+  <td class="mono"><strong>{html.escape(_money(pool.get('last_mcap')))}</strong><span class="secondary">{html.escape(_money(pool.get('first_mcap')))} at alert \u00b7 {html.escape(_mcap_since_detection(pool)[2])}</span></td>
   <td class="mono"><strong>{html.escape(_money(pool.get('vol_h1')))}</strong><span class="secondary">{buyers}/{sellers}</span></td>
   <td class="mono {change_cls}">{html.escape(fmt_pct(change))}</td>
   <td>{_spark(pool.get('spark') or [], 130, 42)}</td>
@@ -224,7 +253,7 @@ def render_html(db_path, cfg: Config, now: datetime, show_all: bool = False) -> 
 
     rows = "".join(_table_row(pool, now) for pool in shown)
     if not rows:
-        rows = '<tr><td colspan="9" class="zero">No qualifying pools. Switch to All tracked to inspect the full watchlist.</td></tr>'
+        rows = '<tr><td colspan="10" class="zero">No qualifying pools. Switch to All tracked to inspect the full watchlist.</td></tr>'
 
     mode_href = "/" if show_all else "/?all=1"
     mode_text = "Filtered radar" if show_all else f"All tracked ({len(all_pools)})"
@@ -246,6 +275,7 @@ h1{{font-size:22px;letter-spacing:-.02em;margin:0}} .kicker{{color:var(--muted);
 .op-grid-wrap{{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}} .opportunity{{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(17,23,34,.98),rgba(10,14,21,.98));border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow)}} .opportunity:before{{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--blue);opacity:.8}} .opportunity.warm:before{{background:var(--amber)}} .opportunity.hot:before{{background:var(--red);box-shadow:0 0 24px var(--red)}} .op-top{{display:flex;align-items:center;gap:10px}} .rank{{color:var(--muted);font-weight:800}} .token-mark{{width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,#26334a,#182132);display:grid;place-items:center;color:#dce6ff;font-weight:800;border:1px solid #32405a}} .token-mark.small{{width:30px;height:30px;border-radius:9px;font-size:11px}} .op-name{{min-width:0;flex:1}} .op-name strong{{font-size:17px}} .op-name span,.asset span{{display:block;color:var(--muted);font-size:10px}} .heat-ring{{--heat:0;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--red) calc(var(--heat)*1%),#202938 0);position:relative}} .heat-ring:after{{content:"";position:absolute;inset:5px;background:#0c1119;border-radius:50%}} .heat-ring b,.heat-ring small{{z-index:1;position:absolute}} .heat-ring b{{font-size:16px;top:10px}} .heat-ring small{{font-size:7px;bottom:9px;color:var(--muted);letter-spacing:.12em}}
 .op-badges,.badges{{display:flex;flex-wrap:wrap;gap:5px;margin:12px 0}} .pill{{border:1px solid #2d3646;color:#9ba7b8;background:#151b25;border-radius:999px;padding:3px 7px;font-size:8px;font-weight:800;letter-spacing:.06em}} .pill-green{{color:var(--green);border-color:rgba(71,209,140,.25);background:rgba(71,209,140,.07)}} .pill-amber{{color:var(--amber);border-color:rgba(255,191,90,.25);background:rgba(255,191,90,.07)}} .pill-red{{color:var(--red);border-color:rgba(255,98,109,.25);background:rgba(255,98,109,.07)}}
 .socials{{display:flex;flex-wrap:wrap;gap:5px;margin:-6px 0 10px}} .social{{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:20px;padding:0 6px;border:1px solid #2f3a4c;border-radius:6px;background:#141b26;color:#c3d0e2;font-size:9px;font-weight:800;text-decoration:none;letter-spacing:.04em}} .social:hover{{border-color:var(--blue);color:#fff}} .social-none{{color:var(--red);border-color:rgba(255,98,109,.3);background:rgba(255,98,109,.06)}}
+.mcap-row{{display:flex;align-items:center;gap:8px;margin-top:8px;padding:8px 10px;background:#0a0e15;border:1px solid #1c2533;border-radius:11px}} .mcap-leg{{display:flex;flex-direction:column;min-width:0}} .mcap-leg i{{font-style:normal;color:var(--muted);font-size:8px;text-transform:uppercase;letter-spacing:.09em}} .mcap-leg b{{font-size:13px;margin-top:2px}} .mcap-arrow{{color:var(--muted)}} .mcap-mult{{margin-left:auto;font-weight:800;font-size:13px}}
 .op-grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}} .op-grid>div{{background:#0a0e15;border:1px solid #1c2533;border-radius:11px;padding:9px}} .op-grid span{{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.07em}} .op-grid b{{display:block;margin-top:3px;font-size:14px}} .op-grid small{{color:var(--muted);font-size:9px}} .positive{{color:var(--green)!important}} .negative{{color:var(--red)!important}} .mini-chart{{height:58px;margin:10px 0 6px}} .spark{{width:100%;height:100%;display:block}}
 .actions{{display:flex;gap:7px}} .btn,.row-actions a,.copy-icon{{appearance:none;text-decoration:none;border:1px solid var(--line);background:#111722;color:#dbe3ef;border-radius:8px;padding:8px 10px;font:inherit;font-weight:700;cursor:pointer}} .btn-primary{{background:linear-gradient(135deg,#6f8fff,#4763df);border-color:#6f8fff;color:white;flex:1;text-align:center}} .op-foot{{display:flex;justify-content:space-between;gap:12px;margin-top:9px;color:var(--muted);font-size:9px}}
 .table-card{{background:rgba(11,15,22,.92);border:1px solid var(--line);border-radius:16px;overflow:hidden}} .table-scroll{{overflow:auto}} table{{border-collapse:collapse;width:100%;min-width:1180px}} th{{text-align:left;padding:10px 12px;color:#788499;font-size:9px;text-transform:uppercase;letter-spacing:.1em;border-bottom:1px solid var(--line);background:#0b1018;position:sticky;top:0}} td{{padding:10px 12px;border-bottom:1px solid rgba(32,41,56,.72);vertical-align:middle}} tbody tr:hover{{background:rgba(92,126,255,.055)}} .asset{{display:flex;align-items:center;gap:8px}} .asset strong{{font-size:12px}} .mono{{font-variant-numeric:tabular-nums;white-space:nowrap}} .secondary{{display:block;color:var(--muted);font-size:9px;margin-top:2px}} .heat-cell{{display:flex;align-items:center;gap:7px}} .heat-cell>span{{font-weight:800;width:22px}} .heat-cell>div{{width:72px;height:6px;border-radius:9px;background:#202938;overflow:hidden}} .heat-cell i{{display:block;height:100%;background:linear-gradient(90deg,#5f8aff,#ffbf5a,#ff626d)}} .row-actions{{display:flex;gap:5px}} .row-actions a,.copy-icon{{padding:5px 7px;font-size:10px}}
@@ -264,7 +294,7 @@ h1{{font-size:22px;letter-spacing:-.02em;margin:0}} .kicker{{color:var(--muted);
 <div class="section-head"><div><h2>Top opportunities</h2><p>Highest heat among pools that pass the active liquidity controls.</p></div><a class="toggle" href="{mode_href}">{mode_text}</a></div>
 <section class="op-grid-wrap">{hero}</section>
 <div class="section-head"><div><h2>Radar</h2><p>Heat blends 45% volume, 25% buyer flow and 30% liquidity expansion. Red risk badges are warnings, not trade signals.</p></div></div>
-<section class="table-card"><div class="table-scroll"><table><thead><tr><th>Asset</th><th>State & risk</th><th>Age</th><th>Liquidity</th><th>Volume / flow</th><th>1h</th><th>Liquidity 24h</th><th>Heat</th><th>Actions</th></tr></thead><tbody>{rows}</tbody></table></div></section>
+<section class="table-card"><div class="table-scroll"><table><thead><tr><th>Asset</th><th>State & risk</th><th>Age</th><th>Liquidity</th><th>Market cap</th><th>Volume / flow</th><th>1h</th><th>Liquidity 24h</th><th>Heat</th><th>Actions</th></tr></thead><tbody>{rows}</tbody></table></div></section>
 <div class="meta"><span>Generated {generated} · snapshots kept 14 days · <a href="/api/pools">JSON API</a></span><span>Fomo supports Robinhood Chain; the button opens Fomo Web because no stable public token deep-link format is documented.</span></div>
 </div><div id="toast" class="toast">Pool address copied</div>
 <script>

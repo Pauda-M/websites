@@ -69,6 +69,25 @@ def liquidity_floor(cls: Classification, cfg: Config) -> float:
     return cfg.liq_floor_stock if cls.is_stock_paired else cfg.liq_floor
 
 
+def meme_mcap(pool: Pool, cls: Classification) -> float | None:
+    """The MEME side's market cap, or None when it cannot be read safely.
+
+    ``market_cap_usd`` and ``fdv_usd`` both describe the BASE token. When the
+    meme is the quote side ("AMZN / WADDLES") they are the tokenized stock's
+    valuation, so returning them would put Amazon's market cap on a meme card.
+    In that case this returns None and the caller keeps the last known value
+    rather than writing a wrong one.
+
+    FDV is used rather than ``market_cap_usd`` - which is frequently null here -
+    because the detection baseline is resolved through ``FdvResolver``. Baseline
+    and current must be the same metric or the multiple between them is
+    meaningless.
+    """
+    if cls.meme_symbol is None or not cls.meme_is_base:
+        return None
+    return pool.fdv_usd
+
+
 def meme_socials(pool: Pool, cls: Classification) -> tuple[str, ...]:
     """Social profiles belonging to the actual meme side of the pool."""
     if cls.meme_symbol is None:

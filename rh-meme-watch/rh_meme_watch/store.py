@@ -31,7 +31,9 @@ CREATE TABLE IF NOT EXISTS pools (
     last_vol_h1 REAL,
     escalated_ts TEXT,
     status TEXT NOT NULL DEFAULT 'seen',
-    socials TEXT
+    socials TEXT,
+    first_mcap REAL,
+    last_mcap REAL
 );
 CREATE INDEX IF NOT EXISTS idx_pools_symbol ON pools(symbol);
 CREATE TABLE IF NOT EXISTS alerts (
@@ -101,7 +103,11 @@ class Store:
         production is the only one that matters.
         """
         have = {row["name"] for row in self.db.execute("PRAGMA table_info(pools)")}
-        for column, ddl in (("socials", "TEXT"),):
+        for column, ddl in (
+            ("socials", "TEXT"),
+            ("first_mcap", "REAL"),
+            ("last_mcap", "REAL"),
+        ):
             if column not in have:
                 self.db.execute(f"ALTER TABLE pools ADD COLUMN {column} {ddl}")
 
@@ -121,6 +127,7 @@ class Store:
         reserve: float | None,
         vol_h1: float | None,
         socials: Sequence[str] | None = None,
+        mcap: float | None = None,
     ) -> None:
         # An empty list means "not enriched this cycle", not "socials removed":
         # the per-cycle lookup budget routinely leaves a pool unenriched. Only a
@@ -130,15 +137,17 @@ class Store:
         self.db.execute(
             """
             INSERT INTO pools (address, symbol, quote, dex, created_at, first_seen,
-                               last_liq, last_vol_h1, status, socials)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'seen', ?)
+                               last_liq, last_vol_h1, status, socials, last_mcap)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'seen', ?, ?)
             ON CONFLICT(address) DO UPDATE SET
                 symbol = excluded.symbol,
                 quote = excluded.quote,
                 dex = excluded.dex,
                 last_liq = excluded.last_liq,
                 last_vol_h1 = excluded.last_vol_h1,
-                socials = COALESCE(excluded.socials, pools.socials)
+                socials = COALESCE(excluded.socials, pools.socials),
+                -- an unreadable meme-side mcap keeps the last known value
+                last_mcap = COALESCE(excluded.last_mcap, pools.last_mcap)
             """,
             (
                 address,
@@ -150,6 +159,7 @@ class Store:
                 reserve,
                 vol_h1,
                 socials_json,
+                mcap,
             ),
         )
 
@@ -178,11 +188,19 @@ class Store:
         row = self.get_pool(address)
         return bool(row and row["first_alert_ts"])
 
-    def mark_alerted(self, address: str, ts: datetime, first_liq: float | None) -> None:
+    def mark_alerted(
+        self,
+        address: str,
+        ts: datetime,
+        first_liq: float | None,
+        first_mcap: float | None = None,
+    ) -> None:
+        """Stamp the detection moment. first_mcap is the baseline every later
+        reading is compared against, so it is written once and never updated."""
         self.db.execute(
-            "UPDATE pools SET first_alert_ts = ?, first_liq = ?, status = 'alerted' "
-            "WHERE address = ?",
-            (_iso(ts), first_liq, address),
+            "UPDATE pools SET first_alert_ts = ?, first_liq = ?, status = 'alerted', "
+            "first_mcap = COALESCE(?, first_mcap, last_mcap) WHERE address = ?",
+            (_iso(ts), first_liq, first_mcap, address),
         )
 
     def mark_escalated(self, address: str, ts: datetime) -> None:

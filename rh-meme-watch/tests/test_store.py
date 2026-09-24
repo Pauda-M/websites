@@ -18,7 +18,7 @@ def test_wal_mode_and_schema(tmp_path):
     assert pool_cols == {
         "address", "symbol", "quote", "dex", "created_at", "first_seen",
         "first_alert_ts", "first_liq", "last_liq", "last_vol_h1",
-        "escalated_ts", "status", "socials",
+        "escalated_ts", "status", "socials", "first_mcap", "last_mcap",
     }
     alert_cols = {r["name"] for r in store.db.execute("PRAGMA table_info(alerts)")}
     assert alert_cols == {"id", "address", "kind", "ts", "payload_json"}
@@ -92,7 +92,8 @@ def test_socials_column_is_migrated_onto_an_existing_database(tmp_path):
 
     store = Store(path)
     cols = {r["name"] for r in store.db.execute("PRAGMA table_info(pools)")}
-    assert "socials" in cols, "existing database must gain the column"
+    for column in ("socials", "first_mcap", "last_mcap"):
+        assert column in cols, f"existing database must gain {column}"
 
     row = store.get_pool("0xold")
     assert row["symbol"] == "OLD", "existing rows survive the migration"
@@ -121,3 +122,36 @@ def test_socials_decoding_tolerates_garbage(tmp_path):
     assert Store.socials_of(store.get_pool("0xb")) == ()
     store.db.execute("UPDATE pools SET socials = ? WHERE address = '0xb'", ('{"a":1}',))
     assert Store.socials_of(store.get_pool("0xb")) == ()
+
+
+def test_mcap_baseline_is_stamped_once_and_current_keeps_moving(tmp_path):
+    """first_mcap is the detection baseline; it must never drift."""
+    store = Store(tmp_path / "state.db")
+    addr = "0xm"
+    store.upsert_seen(addr, "M", "WETH", "d", NOW, NOW, 200_000.0, 1.0, mcap=500_000.0)
+    store.mark_alerted(addr, NOW, 200_000.0, first_mcap=500_000.0)
+
+    store.upsert_seen(addr, "M", "WETH", "d", NOW, NOW, 260_000.0, 2.0, mcap=1_750_000.0)
+    row = store.get_pool(addr)
+    assert row["first_mcap"] == 500_000.0, "baseline frozen at detection"
+    assert row["last_mcap"] == 1_750_000.0, "current keeps updating"
+
+
+def test_unreadable_meme_mcap_keeps_the_last_known_value(tmp_path):
+    """On a stock-as-base pool the meme-side mcap is unreadable that cycle;
+    writing None would blank a good number."""
+    store = Store(tmp_path / "state.db")
+    addr = "0xq"
+    store.upsert_seen(addr, "M", "AAPL", "d", NOW, NOW, 200_000.0, 1.0, mcap=900_000.0)
+    store.upsert_seen(addr, "M", "AAPL", "d", NOW, NOW, 210_000.0, 2.0, mcap=None)
+    row = store.get_pool(addr)
+    assert row["last_mcap"] == 900_000.0, "kept, not blanked"
+    assert row["last_liq"] == 210_000.0, "the rest still updates"
+
+
+def test_baseline_falls_back_to_last_seen_when_alert_has_no_reading(tmp_path):
+    store = Store(tmp_path / "state.db")
+    addr = "0xf"
+    store.upsert_seen(addr, "M", "WETH", "d", NOW, NOW, 200_000.0, 1.0, mcap=420_000.0)
+    store.mark_alerted(addr, NOW, 200_000.0, first_mcap=None)
+    assert store.get_pool(addr)["first_mcap"] == 420_000.0
