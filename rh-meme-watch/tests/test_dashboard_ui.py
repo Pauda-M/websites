@@ -133,8 +133,9 @@ def test_social_chips_render_one_link_per_platform():
     assert 'rel="noopener noreferrer nofollow"' in chips
 
 
-def test_card_without_socials_says_so_loudly():
-    chips = dashboard_ui._social_links({"socials": []})
+def test_card_for_a_pool_checked_and_found_bare_says_so_loudly():
+    """Only after an actual lookup. Before one, see the SOCIAL ? case below."""
+    chips = dashboard_ui._social_links({"socials": [], "socials_checked": True})
     assert "NO SOCIAL" in chips
     assert "<a " not in chips
 
@@ -258,3 +259,23 @@ def test_table_header_and_body_column_counts_agree(tmp_path):
     header = page.split("<thead>")[1].split("</thead>")[0]
     body_row = page.split("<tbody>")[1].split("</tr>")[0]
     assert header.count("<th>") == body_row.count("<td"), "header/body column mismatch"
+
+
+def test_a_pool_nobody_checked_does_not_claim_to_have_no_social():
+    """Both states stored NULL, so the board read NO SOCIAL on pools it had
+    never examined - a finding the system did not have."""
+    unchecked = dashboard_ui._social_links({"socials": [], "socials_checked": False})
+    assert "SOCIAL ?" in unchecked
+    assert "NO SOCIAL" not in unchecked
+
+    checked = dashboard_ui._social_links({"socials": [], "socials_checked": True})
+    assert "NO SOCIAL" in checked
+    assert "SOCIAL ?" not in checked
+
+
+def test_a_pool_with_socials_shows_links_regardless_of_the_flag():
+    chips = dashboard_ui._social_links(
+        {"socials": ["https://t.me/c"], "socials_checked": True}
+    )
+    assert 'href="https://t.me/c"' in chips
+    assert "NO SOCIAL" not in chips and "SOCIAL ?" not in chips

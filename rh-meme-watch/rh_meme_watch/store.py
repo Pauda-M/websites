@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS pools (
     escalated_ts TEXT,
     status TEXT NOT NULL DEFAULT 'seen',
     socials TEXT,
+    socials_checked_ts TEXT,
     first_mcap REAL,
     last_mcap REAL
 );
@@ -105,6 +106,7 @@ class Store:
         have = {row["name"] for row in self.db.execute("PRAGMA table_info(pools)")}
         for column, ddl in (
             ("socials", "TEXT"),
+            ("socials_checked_ts", "TEXT"),
             ("first_mcap", "REAL"),
             ("last_mcap", "REAL"),
         ):
@@ -194,15 +196,36 @@ class Store:
         )
         return [r["address"] for r in cur]
 
-    def set_socials(self, address: str, socials: Sequence[str]) -> None:
-        """Persist socials fetched after the pool was first seen. An empty list
-        is not written: it means "not established", not "has none"."""
-        if not socials:
-            return
-        self.db.execute(
-            "UPDATE pools SET socials = ? WHERE address = ?",
-            (json.dumps(list(socials)), address),
+    def set_socials(
+        self, address: str, socials: Sequence[str], now: datetime | None = None
+    ) -> None:
+        """Record the outcome of a social lookup, including a negative one.
+
+        A pool that was checked and has none is a finding; a pool nobody has
+        looked at is not. Both previously stored NULL, so the dashboard showed
+        "NO SOCIAL" on hundreds of pools it had never examined - asserting a
+        result it did not have. The timestamp is what separates them.
+        """
+        stamp = _iso(now) if now is not None else _iso(datetime.now(timezone.utc))
+        if socials:
+            self.db.execute(
+                "UPDATE pools SET socials = ?, socials_checked_ts = ? WHERE address = ?",
+                (json.dumps(list(socials)), stamp, address),
+            )
+        else:
+            self.db.execute(
+                "UPDATE pools SET socials_checked_ts = ? WHERE address = ?",
+                (stamp, address),
+            )
+
+    def socials_unchecked(self, limit: int) -> list[str]:
+        """Alerted pools nobody has looked at yet, newest alert first."""
+        cur = self.db.execute(
+            "SELECT address FROM pools WHERE first_alert_ts IS NOT NULL "
+            "AND socials_checked_ts IS NULL ORDER BY first_alert_ts DESC LIMIT ?",
+            (max(0, limit),),
         )
+        return [r["address"] for r in cur]
 
     def get_pool(self, address: str) -> sqlite3.Row | None:
         cur = self.db.execute("SELECT * FROM pools WHERE address = ?", (address,))

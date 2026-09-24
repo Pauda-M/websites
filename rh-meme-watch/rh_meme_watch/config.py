@@ -133,6 +133,10 @@ class Config:
     social_lookups_per_cycle: int = 6  # bounded so the 30 req/min limit is safe
     social_cache_ttl_sec: int = 21_600  # a found social set is stable
     social_miss_ttl_sec: int = 300  # projects add socials after deploy; recheck
+    # Lookups spent per cycle establishing socials for already-alerted pools, so
+    # the dashboard stops claiming "no social" about pools nobody examined. Runs
+    # after the alert path, which has first claim on the budget.
+    social_backfill_per_cycle: int = 2
     # On-chain verification (Robinhood Chain RPC). Empty url disables it.
     rpc_url: str = ""
     onchain_lookups_per_cycle: int = 4
@@ -207,6 +211,7 @@ class Config:
             social_lookups_per_cycle=_i("SOCIAL_LOOKUPS_PER_CYCLE", 6),
             social_cache_ttl_sec=_i("SOCIAL_CACHE_TTL_SEC", 21_600),
             social_miss_ttl_sec=_i("SOCIAL_MISS_TTL_SEC", 300),
+            social_backfill_per_cycle=_i("SOCIAL_BACKFILL_PER_CYCLE", 2),
             rpc_url=os.environ.get("RPC_URL", "").strip(),
             onchain_lookups_per_cycle=_i("ONCHAIN_LOOKUPS_PER_CYCLE", 4),
             onchain_cache_ttl_sec=_i("ONCHAIN_CACHE_TTL_SEC", 1800),

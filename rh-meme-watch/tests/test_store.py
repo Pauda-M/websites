@@ -18,7 +18,8 @@ def test_wal_mode_and_schema(tmp_path):
     assert pool_cols == {
         "address", "symbol", "quote", "dex", "created_at", "first_seen",
         "first_alert_ts", "first_liq", "last_liq", "last_vol_h1",
-        "escalated_ts", "status", "socials", "first_mcap", "last_mcap",
+        "escalated_ts", "status", "socials", "socials_checked_ts",
+        "first_mcap", "last_mcap",
     }
     alert_cols = {r["name"] for r in store.db.execute("PRAGMA table_info(alerts)")}
     assert alert_cols == {"id", "address", "kind", "ts", "payload_json"}
@@ -92,7 +93,7 @@ def test_socials_column_is_migrated_onto_an_existing_database(tmp_path):
 
     store = Store(path)
     cols = {r["name"] for r in store.db.execute("PRAGMA table_info(pools)")}
-    for column in ("socials", "first_mcap", "last_mcap"):
+    for column in ("socials", "socials_checked_ts", "first_mcap", "last_mcap"):
         assert column in cols, f"existing database must gain {column}"
 
     row = store.get_pool("0xold")
@@ -155,3 +156,46 @@ def test_baseline_falls_back_to_last_seen_when_alert_has_no_reading(tmp_path):
     store.upsert_seen(addr, "M", "WETH", "d", NOW, NOW, 200_000.0, 1.0, mcap=420_000.0)
     store.mark_alerted(addr, NOW, 200_000.0, first_mcap=None)
     assert store.get_pool(addr)["first_mcap"] == 420_000.0
+
+
+def test_never_looked_is_distinct_from_looked_and_found_none(tmp_path):
+    """The dashboard showed NO SOCIAL on hundreds of pools it never examined,
+    because both states stored NULL. The timestamp separates them."""
+    store = Store(tmp_path / "state.db")
+    for addr in ("0xnever", "0xnone", "0xhas"):
+        store.upsert_seen(addr, "S", "WETH", "d", NOW, NOW, 1.0, 1.0)
+        store.mark_alerted(addr, NOW, 1.0)
+
+    store.set_socials("0xnone", [], now=NOW)
+    store.set_socials("0xhas", ["https://t.me/c"], now=NOW)
+
+    never = store.get_pool("0xnever")
+    none_found = store.get_pool("0xnone")
+    has = store.get_pool("0xhas")
+
+    assert never["socials_checked_ts"] is None, "nobody looked"
+    assert none_found["socials_checked_ts"] is not None, "looked, found nothing"
+    assert Store.socials_of(none_found) == ()
+    assert Store.socials_of(has) == ("https://t.me/c",)
+    assert has["socials_checked_ts"] is not None
+
+
+def test_unchecked_queue_only_returns_pools_nobody_looked_at(tmp_path):
+    store = Store(tmp_path / "state.db")
+    for i, addr in enumerate(("0xa", "0xb", "0xc")):
+        store.upsert_seen(addr, "S", "WETH", "d", NOW, NOW, 1.0, 1.0)
+        store.mark_alerted(addr, NOW + timedelta(seconds=i), 1.0)
+    store.set_socials("0xb", [], now=NOW)
+
+    pending = store.socials_unchecked(10)
+    assert set(pending) == {"0xa", "0xc"}, "checked-and-empty is not re-queued"
+    assert pending[0] == "0xc", "newest alert first"
+
+
+def test_a_negative_result_is_not_rechecked_forever(tmp_path):
+    store = Store(tmp_path / "state.db")
+    store.upsert_seen("0xz", "S", "WETH", "d", NOW, NOW, 1.0, 1.0)
+    store.mark_alerted("0xz", NOW, 1.0)
+    assert store.socials_unchecked(10) == ["0xz"]
+    store.set_socials("0xz", [], now=NOW)
+    assert store.socials_unchecked(10) == []

@@ -188,8 +188,40 @@ class App:
             self._maybe_escalate(pool, now)
 
         self._verify_onchain(pools, now)
+        self._backfill_socials(pools, now)
         self._maybe_digest(pools, now)
         self._heartbeat(now)
+
+    def _backfill_socials(self, pools: list[Pool], now: datetime) -> None:
+        """Establish socials for already-alerted pools nobody has examined.
+
+        Runs after the alert path so candidates get first claim on the lookup
+        budget. Without this the dashboard labels every pool alerted before the
+        social gate existed "NO SOCIAL" - asserting a result it never obtained.
+        Pools already in hand from discovery or the watchlist refresh are used,
+        so this costs lookups but no extra pool fetches.
+        """
+        budget = max(0, self.cfg.social_backfill_per_cycle)
+        if not budget or not self.cfg.require_socials:
+            return
+        pending = set(self.store.socials_unchecked(budget * 10))
+        if not pending:
+            return
+        for pool in pools:
+            if budget <= 0:
+                return
+            if pool.address not in pending:
+                continue
+            cls = rules.classify(pool, self.cfg)
+            if cls.meme_symbol is None:
+                continue
+            enriched = pool.with_socials(self.gecko.socials_for(pool.address))
+            # Recorded either way: "checked, none found" is a result, and storing
+            # it is what stops the pool being re-queued every cycle forever.
+            self.store.set_socials(
+                pool.address, rules.meme_socials(enriched, cls), now
+            )
+            budget -= 1
 
     def _dedupe(self, pools: list[Pool]) -> list[Pool]:
         seen: dict[str, Pool] = {}
@@ -241,7 +273,7 @@ class App:
                     pool.address,
                 )
                 return False
-            self.store.set_socials(pool.address, socials)
+            self.store.set_socials(pool.address, socials, now)
 
         text = messages.build_new_alert(pool, cls, fdv_meme, now)
         self.telegram.send(text)

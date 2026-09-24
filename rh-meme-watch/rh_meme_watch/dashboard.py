@@ -193,6 +193,7 @@ def collect(db_path: Path, cfg: Config, now: datetime) -> dict:
                     "vol_change_pct": mom.vol_change_pct,
                     "buyers_change": mom.buyers_change,
                     "socials": list(Store.socials_of(row)),
+                    "socials_checked": row["socials_checked_ts"] is not None,
                     "first_mcap": first_mcap,
                     "last_mcap": last_mcap,
                     "mcap_mult": round(mcap_mult, 2) if mcap_mult is not None else None,
