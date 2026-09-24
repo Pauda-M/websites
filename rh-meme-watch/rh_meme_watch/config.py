@@ -71,8 +71,8 @@ class Config:
     telegram_bot_token: str
     telegram_chat_id: str = "5182460904"
     poll_sec: int = 60
-    liq_floor: float = 150_000.0
-    liq_floor_stock: float = 75_000.0
+    liq_floor: float = 20_000.0  # [USER] "at least 20 000 liquidity"
+    liq_floor_stock: float = 20_000.0  # [USER]
     new_window_min: int = 180
     esc_vol_h1: float = 500_000.0
     min_liq: float = 20_000.0  # pools below this never appear in digests/escalations
@@ -95,30 +95,35 @@ class Config:
     digest_hour: int = 7
     fdv_cache_ttl_sec: int = 600
     fdv_lookups_per_cycle: int = 3
-    # New-coin quality filter, applied to R1/R2 NEW alerts on top of the
-    # age + liquidity gates. Each threshold can be disabled with 0 (or a very
-    # negative value for min_pct_h1).
-    max_fdv: float = 5_000_000.0  # already too big to multiply
-    min_liq_fdv_ratio: float = 0.02  # huge FDV on thin liquidity = pushable price
-    min_buyers_h1: int = 25  # real participation, not a handful of wash wallets
-    min_buy_sell_ratio: float = 1.0  # more buys than sells at the entry moment
-    min_txns_h1: int = 50  # not a dead pool
-    min_age_min: int = 10  # skip the instant-rug window
-    min_pct_h1: float = -15.0  # "already crashed? skip it"
-    min_vol_h1: float = 5_000.0  # dead-pool floor; sits under every real pool seen
-    # Volume that is not backed by a real valuation. A token can be priced at
-    # anything; paying to trade it costs money, so turnover is the harder number
-    # to fake. 0 disables.
-    min_vol_fdv_ratio: float = 0.01
-    # Wash-trade detector. One wallet round-tripping itself inflates volume and
-    # txn counts at fee cost only; what it cannot cheaply fake is distinct
-    # wallets. Real pools run a few trades per buyer. 0 disables.
-    max_trades_per_buyer: float = 20.0
-    # "Already ran and came back down" - a pool up hard over the hour but
-    # falling over the last quarter of it has put in its top. Both must be set;
-    # 0 on either disables.
-    retrace_h1_pct: float = 20.0
-    retrace_m15_pct: float = -3.0
+    # ------------------------------------------------------------------
+    # EVERY threshold below carries its source. Nothing here is invented.
+    #   [VIDEO] = on the filter panel in the source video
+    #   [USER]  = explicitly ordered
+    # A gate with no source does not belong in this file. An earlier revision
+    # carried ten invented thresholds; one of them (a buy/sell ratio that
+    # appears nowhere in the video and was never asked for) rejected 100% of
+    # candidates and produced zero alerts for hours.
+    # ------------------------------------------------------------------
+    # [VIDEO] Market cap minimum, 6000. His panel sets a floor, not a ceiling.
+    min_fdv: float = 6_000.0
+    # [VIDEO] Volume minimum, 3000.
+    min_vol_h1: float = 3_000.0
+    # [VIDEO] Liquidity, Buys and Sells were left BLANK on his panel. The
+    # liquidity floor below is [USER], not his.
+    #
+    # Disabled by default (0): no source. Retained as switches rather than
+    # deleted so they can be turned on deliberately, never by drifting back in.
+    max_fdv: float = 0.0
+    min_liq_fdv_ratio: float = 0.0
+    min_buyers_h1: int = 0
+    min_buy_sell_ratio: float = 0.0
+    min_txns_h1: int = 0
+    min_age_min: int = 0
+    min_pct_h1: float = -1e9
+    min_vol_fdv_ratio: float = 0.0
+    max_trades_per_buyer: float = 0.0
+    retrace_h1_pct: float = 0.0
+    retrace_m15_pct: float = 0.0
     # Social gate. A NEW pool's meme side must expose at least one project
     # social. AND-ed with the liquidity floor, never traded off against it.
     require_socials: bool = True
@@ -176,8 +181,8 @@ class Config:
             telegram_chat_id=os.environ.get("TELEGRAM_CHAT_ID", "5182460904").strip()
             or "5182460904",
             poll_sec=_i("POLL_SEC", 60),
-            liq_floor=_f("LIQ_FLOOR", 150_000.0),
-            liq_floor_stock=_f("LIQ_FLOOR_STOCK", 75_000.0),
+            liq_floor=_f("LIQ_FLOOR", 20_000.0),
+            liq_floor_stock=_f("LIQ_FLOOR_STOCK", 20_000.0),
             new_window_min=_i("NEW_WINDOW_MIN", 180),
             esc_vol_h1=_f("ESC_VOL_H1", 500_000.0),
             min_liq=_f("MIN_LIQ", 20_000.0),
@@ -192,18 +197,19 @@ class Config:
             esc_cooldown_h=_f("ESC_COOLDOWN_H", 6.0),
             symbol_cooldown_h=_f("SYMBOL_COOLDOWN_H", 24.0),
             digest_hour=_i("DIGEST_HOUR", 7),
-            max_fdv=_f("MAX_FDV", 5_000_000.0),
-            min_liq_fdv_ratio=_f("MIN_LIQ_FDV_RATIO", 0.02),
-            min_buyers_h1=_i("MIN_BUYERS_H1", 25),
-            min_buy_sell_ratio=_f("MIN_BUY_SELL_RATIO", 1.0),
-            min_txns_h1=_i("MIN_TXNS_H1", 50),
-            min_age_min=_i("MIN_AGE_MIN", 10),
-            min_pct_h1=_f("MIN_PCT_H1", -15.0),
-            min_vol_h1=_f("MIN_VOL_H1", 5_000.0),
-            min_vol_fdv_ratio=_f("MIN_VOL_FDV_RATIO", 0.01),
-            max_trades_per_buyer=_f("MAX_TRADES_PER_BUYER", 20.0),
-            retrace_h1_pct=_f("RETRACE_H1_PCT", 20.0),
-            retrace_m15_pct=_f("RETRACE_M15_PCT", -3.0),
+            max_fdv=_f("MAX_FDV", 0.0),
+            min_liq_fdv_ratio=_f("MIN_LIQ_FDV_RATIO", 0.0),
+            min_buyers_h1=_i("MIN_BUYERS_H1", 0),
+            min_buy_sell_ratio=_f("MIN_BUY_SELL_RATIO", 0.0),
+            min_txns_h1=_i("MIN_TXNS_H1", 0),
+            min_age_min=_i("MIN_AGE_MIN", 0),
+            min_pct_h1=_f("MIN_PCT_H1", -1e9),
+            min_fdv=_f("MIN_FDV", 6_000.0),
+            min_vol_h1=_f("MIN_VOL_H1", 3_000.0),
+            min_vol_fdv_ratio=_f("MIN_VOL_FDV_RATIO", 0.0),
+            max_trades_per_buyer=_f("MAX_TRADES_PER_BUYER", 0.0),
+            retrace_h1_pct=_f("RETRACE_H1_PCT", 0.0),
+            retrace_m15_pct=_f("RETRACE_M15_PCT", 0.0),
             require_socials=_b("REQUIRE_SOCIALS", True),
             social_green_engagement=_i("SOCIAL_GREEN_ENGAGEMENT", 1000),
             social_engagement_ttl_sec=_i("SOCIAL_ENGAGEMENT_TTL_SEC", 3600),

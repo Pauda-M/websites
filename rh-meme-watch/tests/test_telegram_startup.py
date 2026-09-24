@@ -74,5 +74,5 @@ def test_startup_announcement_sent(tmp_path, monkeypatch):
     app.startup()
     body = json.loads(send_route.calls[0].request.content)
     assert body["text"].replace("\\", "") == (
-        "rh-meme-watch up · floor $150k / stock $75k · poll 60s"
+        "rh-meme-watch up · floor $20k / stock $20k · poll 60s"
     )

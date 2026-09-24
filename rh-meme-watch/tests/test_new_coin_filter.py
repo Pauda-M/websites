@@ -13,7 +13,7 @@ from datetime import timedelta
 from rh_meme_watch.models import Pool
 from rh_meme_watch.rules import momentum, quality_verdict
 
-from conftest import NOW, FakeGecko, api_item, mk_app, mk_cfg
+from conftest import mk_cfg_optional as _mk_opt, NOW, FakeGecko, api_item, mk_app, mk_cfg
 
 GOOD = dict(
     name="MEME / WETH",
@@ -34,20 +34,20 @@ def _meme_fdv(pool: Pool) -> float | None:
 
 
 def test_healthy_new_coin_passes(tmp_path):
-    v = quality_verdict(_pool(), mk_cfg(tmp_path), _meme_fdv(_pool()))
+    v = quality_verdict(_pool(), _mk_opt(tmp_path), _meme_fdv(_pool()))
     assert v.passes is True
     assert v.reason == "ok"
 
 
 def test_too_big_to_multiply_is_rejected(tmp_path):
-    v = quality_verdict(_pool(fdv="50000000"), mk_cfg(tmp_path), _meme_fdv(_pool(fdv="50000000")))
+    v = quality_verdict(_pool(fdv="50000000"), _mk_opt(tmp_path), _meme_fdv(_pool(fdv="50000000")))
     assert v.passes is False
     assert "fdv" in v.reason
 
 
 def test_thin_liquidity_against_huge_fdv_is_rejected(tmp_path):
     """The classic rug shape: $50k of liquidity supporting a $20M valuation."""
-    v = quality_verdict(_pool(reserve="50000", fdv="4500000"), mk_cfg(tmp_path), _meme_fdv(_pool(reserve="50000", fdv="4500000")))
+    v = quality_verdict(_pool(reserve="50000", fdv="4500000"), _mk_opt(tmp_path), _meme_fdv(_pool(reserve="50000", fdv="4500000")))
     assert v.passes is False
     assert "liq/fdv" in v.reason
 
@@ -55,7 +55,7 @@ def test_thin_liquidity_against_huge_fdv_is_rejected(tmp_path):
 def test_too_few_unique_buyers_is_rejected(tmp_path):
     v = quality_verdict(
         _pool(tx_h1={"buys": 200, "sells": 10, "buyers": 4, "sellers": 3}),
-        mk_cfg(tmp_path),
+        _mk_opt(tmp_path),
     )
     assert v.passes is False
     assert "buyers" in v.reason
@@ -64,7 +64,7 @@ def test_too_few_unique_buyers_is_rejected(tmp_path):
 def test_more_sellers_than_buyers_is_rejected(tmp_path):
     v = quality_verdict(
         _pool(tx_h1={"buys": 40, "sells": 90, "buyers": 30, "sellers": 60}),
-        mk_cfg(tmp_path),
+        _mk_opt(tmp_path),
     )
     assert v.passes is False
     assert "buy/sell" in v.reason
@@ -73,7 +73,7 @@ def test_more_sellers_than_buyers_is_rejected(tmp_path):
 def test_dead_pool_is_rejected(tmp_path):
     v = quality_verdict(
         _pool(tx_h1={"buys": 20, "sells": 5, "buyers": 26, "sellers": 4}),
-        mk_cfg(tmp_path),
+        _mk_opt(tmp_path),
     )
     assert v.passes is False
     assert "txns" in v.reason
@@ -81,7 +81,7 @@ def test_dead_pool_is_rejected(tmp_path):
 
 def test_already_crashed_is_rejected(tmp_path):
     """'Zoom out the chart - already crashed? Skip it.'"""
-    v = quality_verdict(_pool(pct_h1="-62.0"), mk_cfg(tmp_path), _meme_fdv(_pool(pct_h1="-62.0")))
+    v = quality_verdict(_pool(pct_h1="-62.0"), _mk_opt(tmp_path), _meme_fdv(_pool(pct_h1="-62.0")))
     assert v.passes is False
     assert "dumping" in v.reason
 
@@ -119,7 +119,10 @@ def test_new_alert_is_filtered_and_logged(tmp_path):
         fdv="80000000",  # far over MAX_FDV
         created_at=NOW - timedelta(minutes=41),
     )
-    app, telegram, clock = mk_app(tmp_path, FakeGecko(new_items=[junk]))
+    app, telegram, clock = mk_app(
+        tmp_path, FakeGecko(new_items=[junk]),
+        cfg=_mk_opt(tmp_path, digest_hour=25),
+    )
     app.run_cycle()
     assert telegram.sent == []
     assert app.store.was_alerted("0x" + "7a" * 20) is False
@@ -140,7 +143,7 @@ def test_instant_rug_window_is_skipped_then_alerts(tmp_path):
         )
 
     gecko = FakeGecko(new_items=[item(3)])
-    app, telegram, clock = mk_app(tmp_path, gecko)
+    app, telegram, clock = mk_app(tmp_path, gecko, cfg=_mk_opt(tmp_path, digest_hour=25))
     app.run_cycle()
     assert telegram.sent == [], "3 minutes old: inside the instant-rug window"
 
@@ -187,7 +190,7 @@ def test_dashboard_shows_momentum_badge(tmp_path):
         )
 
     gecko = FakeGecko()
-    app, telegram, clock = mk_app(tmp_path, gecko)
+    app, telegram, clock = mk_app(tmp_path, gecko, cfg=_mk_opt(tmp_path, digest_hour=25))
     for i in range(8):
         gecko.new_items = [item(i)] if i == 0 else []
         gecko.top_items = [item(i)]
@@ -208,7 +211,7 @@ def test_stock_as_base_pool_is_not_judged_on_the_stock_fdv(tmp_path):
     On "AMZN / WADDLES" that is Amazon's ~$245B valuation, not the meme's.
     Gating on it rejected every stock-as-base pool - the whole stock-paired meta.
     """
-    cfg = mk_cfg(tmp_path)
+    cfg = _mk_opt(tmp_path)
     pool = _pool(name="AMZN / WADDLES", fdv="245000000000", reserve="241000")
 
     # the raw pool FDV would fail both FDV gates...
@@ -233,7 +236,7 @@ def test_stock_paired_alert_survives_the_filter_end_to_end(tmp_path):
         new_items=[item],
         search_results={"WADDLES": [api_item(name="WADDLES / USDG", fdv="1900000")]},
     )
-    app, telegram, clock = mk_app(tmp_path, gecko)
+    app, telegram, clock = mk_app(tmp_path, gecko, cfg=_mk_opt(tmp_path, digest_hour=25))
     app.run_cycle()
     assert len(telegram.sent) == 1
     assert "FDV(meme) $1.9M" in telegram.sent[0].replace("\\", "")

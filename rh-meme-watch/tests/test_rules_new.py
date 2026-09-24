@@ -15,8 +15,20 @@ def _pool(name: str, reserve, age_min: int) -> Pool:
     return Pool.from_api(api_item(name=name, reserve=reserve, created_at=created))
 
 
-def _passes(tmp_path, name, reserve, age_min):
-    cfg = mk_cfg(tmp_path)
+# These verify floor BEHAVIOUR, so they set their own floors rather than
+# inheriting whatever the defaults are. Pinning defaults here made an ordered
+# change to them present as a broken test.
+TEST_FLOOR = 150_000.0
+TEST_FLOOR_STOCK = 75_000.0
+
+
+def _passes(tmp_path, name, reserve, age_min, **over):
+    cfg = mk_cfg(
+        tmp_path,
+        liq_floor=TEST_FLOOR,
+        liq_floor_stock=TEST_FLOOR_STOCK,
+        **over,
+    )
     pool = _pool(name, reserve, age_min)
     return passes_new_rule(pool, classify(pool, cfg), cfg, NOW)
 
@@ -30,7 +42,7 @@ def test_meme_pool_below_regular_floor_fails(tmp_path):
 
 
 def test_stock_paired_uses_lower_floor(tmp_path):
-    # 118k: above the 75k stock floor, below the 150k regular floor
+    # 118k: above the stock floor, below the regular one
     assert _passes(tmp_path, "AAPLDOG / AAPL", "118000", 41)
     assert not _passes(tmp_path, "PLAINMEME / WETH", "118000", 41)
 
@@ -45,7 +57,7 @@ def test_age_window_limits(tmp_path):
 
 
 def test_unknown_created_at_never_passes(tmp_path):
-    cfg = mk_cfg(tmp_path)
+    cfg = mk_cfg(tmp_path, liq_floor=TEST_FLOOR, liq_floor_stock=TEST_FLOOR_STOCK)
     pool = Pool.from_api(api_item(name="PEPE / WETH", reserve="200000", created_at=None))
     assert not passes_new_rule(pool, classify(pool, cfg), cfg, NOW)
 
@@ -68,5 +80,8 @@ def test_floor_selection(tmp_path):
     cfg = mk_cfg(tmp_path)
     stock = classify(Pool.from_api(api_item(name="AAPLDOG / AAPL")), cfg)
     plain = classify(Pool.from_api(api_item(name="PEPE / WETH")), cfg)
-    assert liquidity_floor(stock, cfg) == cfg.liq_floor_stock == 75_000
-    assert liquidity_floor(plain, cfg) == cfg.liq_floor == 150_000
+    # Explicit values: this asserts which floor gets picked, not what the
+    # defaults happen to be. Pinning defaults here made an ordered change to
+    # them look like a broken test.
+    assert liquidity_floor(stock, cfg) == cfg.liq_floor_stock
+    assert liquidity_floor(plain, cfg) == cfg.liq_floor

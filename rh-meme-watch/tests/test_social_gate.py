@@ -7,11 +7,11 @@ from datetime import timedelta
 from rh_meme_watch.models import Pool
 from rh_meme_watch.rules import classify, meme_socials, passes_new_rule
 
-from conftest import NOW, api_item, mk_cfg
+from conftest import mk_cfg_optional as _mk_opt, NOW, api_item, mk_cfg
 
 
 def test_social_without_liquidity_is_rejected(tmp_path):
-    cfg = mk_cfg(tmp_path, liq_floor=150_000.0, liq_floor_stock=75_000.0)
+    cfg = _mk_opt(tmp_path, liq_floor=150_000.0, liq_floor_stock=75_000.0)
     pool = Pool.from_api(
         api_item(name="SOCIAL / WETH", created_at=NOW, reserve="2500", socials=True)
     )
@@ -22,7 +22,7 @@ def test_social_without_liquidity_is_rejected(tmp_path):
 
 
 def test_liquidity_without_social_is_rejected(tmp_path):
-    cfg = mk_cfg(tmp_path)
+    cfg = _mk_opt(tmp_path)
     pool = Pool.from_api(
         api_item(name="NOSOCIAL / WETH", created_at=NOW, reserve="500000", socials=False)
     )
@@ -32,7 +32,7 @@ def test_liquidity_without_social_is_rejected(tmp_path):
 
 
 def test_social_and_liquidity_together_pass(tmp_path):
-    cfg = mk_cfg(tmp_path, liq_floor=150_000.0)
+    cfg = _mk_opt(tmp_path, liq_floor=150_000.0)
     pool = Pool.from_api(
         api_item(
             name="GOOD / WETH",
@@ -47,7 +47,7 @@ def test_social_and_liquidity_together_pass(tmp_path):
 
 def test_social_must_belong_to_meme_side(tmp_path):
     """A stock-paired pool must not inherit the tokenized stock's socials."""
-    cfg = mk_cfg(tmp_path)
+    cfg = _mk_opt(tmp_path)
     item = api_item(name="AAPL / MEME", created_at=NOW, reserve="500000", socials=False)
     base_id = item["relationships"]["base_token"]["data"]["id"]
     item["_socials_by_token"] = {base_id: ["https://x.com/aapl"]}
@@ -59,7 +59,7 @@ def test_social_must_belong_to_meme_side(tmp_path):
 
 
 def test_stock_paired_meme_side_social_passes(tmp_path):
-    cfg = mk_cfg(tmp_path, liq_floor_stock=75_000.0)
+    cfg = _mk_opt(tmp_path, liq_floor_stock=75_000.0)
     item = api_item(
         name="AAPL / MEME",
         created_at=NOW - timedelta(minutes=30),
@@ -76,7 +76,7 @@ def test_stock_paired_meme_side_social_passes(tmp_path):
 
 def test_missing_social_metadata_fails_closed(tmp_path):
     """An info-endpoint outage must not silently open the gate."""
-    cfg = mk_cfg(tmp_path)
+    cfg = _mk_opt(tmp_path)
     item = api_item(name="OUTAGE / WETH", created_at=NOW, reserve="500000", socials=True)
     item.pop("_socials_by_token")
     pool = Pool.from_api(item)
@@ -86,7 +86,7 @@ def test_missing_social_metadata_fails_closed(tmp_path):
 
 def test_kill_switch_drops_the_social_requirement_but_not_liquidity(tmp_path):
     """REQUIRE_SOCIALS=0 is an outage escape hatch, not a liquidity bypass."""
-    cfg = mk_cfg(tmp_path, require_socials=False, liq_floor=150_000.0)
+    cfg = _mk_opt(tmp_path, require_socials=False, liq_floor=150_000.0)
     aged = NOW - timedelta(minutes=30)
 
     funded = Pool.from_api(
@@ -123,7 +123,7 @@ def test_a_lookup_is_only_spent_on_a_pool_that_cleared_everything_else(tmp_path)
     )
 
     gecko = FakeGecko(new_items=[too_young, too_thin, candidate])
-    cfg = mk_cfg(tmp_path, digest_hour=25, liq_floor=150_000.0, require_socials=True)
+    cfg = _mk_opt(tmp_path, digest_hour=25, liq_floor=150_000.0, require_socials=True)
     app, telegram, clock = mk_app(tmp_path, gecko, cfg=cfg)
 
     app.run_cycle()
@@ -150,7 +150,7 @@ def test_a_candidate_without_socials_is_rejected_and_says_so(tmp_path, caplog):
         tx_h1={"buys": 140, "sells": 70, "buyers": 90, "sellers": 45},
     )
     gecko = FakeGecko(new_items=[anon])
-    cfg = mk_cfg(tmp_path, digest_hour=25, liq_floor=150_000.0, require_socials=True)
+    cfg = _mk_opt(tmp_path, digest_hour=25, liq_floor=150_000.0, require_socials=True)
     app, telegram, clock = mk_app(tmp_path, gecko, cfg=cfg)
 
     with caplog.at_level(logging.INFO, logger="rh_meme_watch.app"):
@@ -171,7 +171,7 @@ def test_socials_found_during_the_alert_are_persisted(tmp_path):
         tx_h1={"buys": 140, "sells": 70, "buyers": 90, "sellers": 45},
     )
     gecko = FakeGecko(new_items=[good])
-    cfg = mk_cfg(tmp_path, digest_hour=25, liq_floor=150_000.0, require_socials=True)
+    cfg = _mk_opt(tmp_path, digest_hour=25, liq_floor=150_000.0, require_socials=True)
     app, telegram, clock = mk_app(tmp_path, gecko, cfg=cfg)
 
     app.run_cycle()

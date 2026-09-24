@@ -163,6 +163,12 @@ def quality_verdict(
     """
     failed: list[str] = []
 
+    # [VIDEO] market cap minimum. His panel sets a floor - "so that we know the
+    # coins we're looking at are actually building some sort of momentum" -
+    # not a ceiling.
+    if cfg.min_fdv > 0 and meme_fdv is not None and meme_fdv < cfg.min_fdv:
+        failed.append(f"mcap {meme_fdv:,.0f} < {cfg.min_fdv:,.0f}")
+
     if cfg.max_fdv > 0 and meme_fdv is not None and meme_fdv > cfg.max_fdv:
         failed.append(f"fdv {meme_fdv:,.0f} > {cfg.max_fdv:,.0f}")
 

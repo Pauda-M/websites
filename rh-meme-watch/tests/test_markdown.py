@@ -30,7 +30,7 @@ def test_escape_md_covers_every_reserved_char():
     escaped = escape_md(nasty)
     assert_fully_escaped(escaped)
     # dollar sign is NOT a MarkdownV2 reserved char and must pass through bare
-    assert escape_md("$150k") == "$150k"
+    assert escape_md("$20k") == "$20k"
 
 
 def test_alert_with_hostile_symbol_is_fully_escaped(tmp_path):
@@ -63,7 +63,7 @@ def test_startup_message_content(tmp_path):
     text = build_startup(cfg)
     assert_fully_escaped(text)
     plain = text.replace("\\", "")
-    assert plain == "rh-meme-watch up · floor $150k / stock $75k · poll 60s"
+    assert plain == "rh-meme-watch up · floor $20k / stock $20k · poll 60s"
 
 
 def test_formatting_helpers():

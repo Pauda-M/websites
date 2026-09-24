@@ -207,3 +207,27 @@ def mk_app(
         sleep_fn=lambda s: None,
     )
     return app, telegram, clock
+
+
+# Gates with no source in the video and never ordered are OFF by default. The
+# tests that exercise them must switch them on deliberately - that is the whole
+# point of the default being off.
+OPTIONAL_GATES = dict(
+    max_fdv=5_000_000.0,
+    min_liq_fdv_ratio=0.02,
+    min_buyers_h1=25,
+    min_buy_sell_ratio=1.0,
+    min_txns_h1=50,
+    min_age_min=10,
+    min_pct_h1=-15.0,
+    min_vol_fdv_ratio=0.01,
+    max_trades_per_buyer=20.0,
+    retrace_h1_pct=20.0,
+    retrace_m15_pct=-3.0,
+    min_fdv=0.0,
+)
+
+
+def mk_cfg_optional(tmp_path: Path, **over) -> Config:
+    """Config with the optional (unsourced) gates enabled, for their own tests."""
+    return mk_cfg(tmp_path, **{**OPTIONAL_GATES, **over})

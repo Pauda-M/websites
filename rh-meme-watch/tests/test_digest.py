@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from conftest import Clock, FakeGecko, api_item, mk_app, mk_cfg
+from conftest import mk_cfg_optional as _mk_opt, Clock, FakeGecko, api_item, mk_app, mk_cfg
 
 # 2026-09-02 is CEST (UTC+2): 05:01 UTC == 07:01 in Zurich.
 BEFORE_SEVEN = datetime(2026, 9, 2, 4, 59, tzinfo=timezone.utc)
@@ -18,7 +18,7 @@ def _pools(now: datetime) -> list[dict]:
             api_item(
                 name=f"MEME{i} / WETH",
                 address=f"0x{i:040x}",
-                reserve="50000",  # below floor -> no NEW alerts interfering
+                reserve="50000",  # under this test's own floor -> no NEW alerts interfering
                 vol_h24=str(1000 * (i + 1)),
                 created_at=now - timedelta(hours=2),
             )
@@ -39,7 +39,7 @@ def _mk(tmp_path, start: datetime):
     clock = Clock(start)
     gecko = FakeGecko(top_items=_pools(start))
     # real digest_hour=7; the liquidity-lock gate is covered in test_liq_lock.py
-    cfg = mk_cfg(tmp_path, require_liq_lock=False)
+    cfg = _mk_opt(tmp_path, require_liq_lock=False, liq_floor=150_000.0)
     return mk_app(tmp_path, gecko, clock=clock, cfg=cfg)
 
 
@@ -100,7 +100,7 @@ def test_digest_excludes_dust_and_unknown_liquidity(tmp_path):
     )
     gecko = FakeGecko(top_items=items)
     app, telegram, _ = mk_app(
-        tmp_path, gecko, clock=clock, cfg=mk_cfg(tmp_path, require_liq_lock=False)
+        tmp_path, gecko, clock=clock, cfg=_mk_opt(tmp_path, require_liq_lock=False, liq_floor=150_000.0)
     )
     app.run_cycle()
     assert len(telegram.sent) == 1
