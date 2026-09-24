@@ -24,6 +24,7 @@ USER_AGENT = "rh-meme-watch/0.1 (Robinhood Chain pool watcher; github.com/Pauda-
 
 BACKOFF_SECONDS = (20.0, 40.0, 80.0)
 RETRYABLE_STATUS = frozenset({403, 429, 500, 502, 503, 504})
+MULTI_BATCH = 30  # /pools/multi/ accepts at most 30 addresses per request
 SOCIAL_CACHE_MAX = 2048
 SOCIAL_FIELDS = (
     "twitter_handle",
@@ -203,6 +204,37 @@ class GeckoClient:
             payload = self._get(f"/networks/{network}/new_pools", {"page": page})
             items.extend(payload.get("data") or [])
         return self._enrich_new_pool_socials(items, network)
+
+    def pools_by_address(
+        self, addresses: list[str], network: str = "robinhood"
+    ) -> list[dict]:
+        """Fetch specific pools by address, whether or not they are still ranked.
+
+        Discovery only returns pools inside the new-pool and top-pool windows, so
+        a pool drops out of view within minutes of being alerted and stops being
+        observed. Anything that needs a history - the liquidity-retention check
+        most of all - then never accumulates enough samples to reach a verdict.
+
+        The /multi/ endpoint takes up to 30 addresses per request, so re-reading a
+        200-pool watchlist costs 7 requests rather than 200, which is what makes
+        this affordable inside the rate limit at all.
+        """
+        items: list[dict] = []
+        for start in range(0, len(addresses), MULTI_BATCH):
+            batch = [a for a in addresses[start : start + MULTI_BATCH] if a]
+            if not batch:
+                continue
+            try:
+                payload = self._get(
+                    f"/networks/{network}/pools/multi/{','.join(batch)}", retries=1
+                )
+            except GeckoUnavailable as exc:
+                # Re-reading the watchlist is maintenance, not discovery. Losing a
+                # batch costs one cycle of history, never the cycle itself.
+                log.info("watchlist refresh batch failed: %s", exc)
+                continue
+            items.extend(payload.get("data") or [])
+        return items
 
     def top_pools(self, network: str = "robinhood", pages: int = 2) -> list[dict]:
         items: list[dict] = []

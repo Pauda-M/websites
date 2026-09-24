@@ -140,6 +140,9 @@ class Config:
     custody_drop_pct: float = 10.0  # LP custodian balance drop that raises an alert
     lp_custodians: tuple[tuple[str, str], ...] = ()
     dashboard_port: int = 8080  # 0 disables the dashboard HTTP server
+    # Alerted pools re-read each cycle so their history keeps accumulating after
+    # they drop out of discovery. Costs one request per 30, so 200 is 7 requests.
+    watchlist_size: int = 200
     snapshot_keep_days: int = 14
 
     @property
@@ -206,5 +209,6 @@ class Config:
             lp_custodians=_custodians(
                 os.environ.get("LP_CUSTODIANS", "").strip() or DEFAULT_LP_CUSTODIANS
             ),
+            watchlist_size=_i("WATCHLIST_SIZE", 200),
             dashboard_port=_i("DASHBOARD_PORT", 8080),
         )

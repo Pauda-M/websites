@@ -121,6 +121,18 @@ class App:
         top_items = self.gecko.top_pools()
         pools = self._dedupe(parse_pools({"data": new_items}) + parse_pools({"data": top_items}))
 
+        # Discovery only surfaces pools inside the new-pool and top-pool windows,
+        # so an alerted pool falls out of view within minutes and stops being
+        # observed. Re-read the watchlist explicitly: without it no pool ever
+        # accumulates the history a retention verdict needs, and escalations are
+        # blind to anything that has dropped out of the rankings.
+        seen = {p.address for p in pools}
+        stale = [a for a in self.store.watchlist(self.cfg.watchlist_size) if a not in seen]
+        if stale:
+            refreshed = parse_pools({"data": self.gecko.pools_by_address(stale)})
+            pools = pools + self._dedupe(refreshed)
+            log.debug("watchlist refresh: %d stale, %d returned", len(stale), len(refreshed))
+
         alerted_now: set[str] = set()
         for pool in pools:
             cls = rules.classify(pool, self.cfg)

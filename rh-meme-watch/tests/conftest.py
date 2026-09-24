@@ -120,13 +120,18 @@ class FakeGecko:
         new_items: list[dict] | None = None,
         top_items: list[dict] | None = None,
         search_results: dict[str, list[dict]] | None = None,
+        watchlist_items: dict[str, dict] | None = None,
     ) -> None:
         self.new_items = new_items or []
         self.top_items = top_items or []
         self.search_results = search_results or {}
+        # Address -> item, served by the watchlist refresh. Empty by default so
+        # the refresh is a no-op unless a test opts in.
+        self.watchlist_items = watchlist_items or {}
         self.raise_on_new: Exception | None = None
         self.raise_on_top: Exception | None = None
         self.search_calls: list[str] = []
+        self.watchlist_calls: list[list[str]] = []
 
     def new_pools(self, network: str = "robinhood", pages: int = 3) -> list[dict]:
         if self.raise_on_new is not None:
@@ -137,6 +142,12 @@ class FakeGecko:
         if self.raise_on_top is not None:
             raise self.raise_on_top
         return list(self.top_items)
+
+    def pools_by_address(
+        self, addresses: list[str], network: str = "robinhood"
+    ) -> list[dict]:
+        self.watchlist_calls.append(list(addresses))
+        return [self.watchlist_items[a] for a in addresses if a in self.watchlist_items]
 
     def search_pools(self, query: str, network: str = "robinhood") -> list[dict]:
         self.search_calls.append(query)

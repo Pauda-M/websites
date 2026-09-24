@@ -180,6 +180,20 @@ class Store:
             return ()
         return tuple(str(v) for v in values if str(v).strip())
 
+    def watchlist(self, limit: int) -> list[str]:
+        """Alerted pools to keep observing, most recently alerted first.
+
+        Discovery drops a pool from view within minutes, so without re-reading
+        these explicitly their snapshot history stops dead and every
+        history-based verdict stays unproven forever.
+        """
+        cur = self.db.execute(
+            "SELECT address FROM pools WHERE first_alert_ts IS NOT NULL "
+            "ORDER BY first_alert_ts DESC LIMIT ?",
+            (max(0, limit),),
+        )
+        return [r["address"] for r in cur]
+
     def get_pool(self, address: str) -> sqlite3.Row | None:
         cur = self.db.execute("SELECT * FROM pools WHERE address = ?", (address,))
         return cur.fetchone()
