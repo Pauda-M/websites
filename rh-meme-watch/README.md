@@ -84,6 +84,11 @@ If Telegram auth fails at startup the container exits non-zero (and
 | `MIN_TXNS_H1` | `50` | buys + sells in the last hour |
 | `MIN_AGE_MIN` | `10` | minimum pool age; skips the instant-rug window |
 | `MIN_PCT_H1` | `-15` | skip what is already dumping |
+| `MIN_VOL_H1` | `5000` | USD, absolute dead-pool floor |
+| `MIN_VOL_FDV_RATIO` | `0.01` | h24 turnover / meme FDV |
+| `MAX_TRADES_PER_BUYER` | `20` | wash-trade cut; real pools run 2-5 |
+| `RETRACE_H1_PCT` | `20` | h1 gain that makes a pullback meaningful |
+| `RETRACE_M15_PCT` | `-3` | m15 drop that marks the top as in |
 | `REQUIRE_SOCIALS` | `1` | escape hatch; 0 drops the social requirement, never the liquidity floor |
 | `SOCIAL_LOOKUPS_PER_CYCLE` | `6` | max `/info` requests per cycle |
 | `SOCIAL_CACHE_TTL_SEC` | `21600` | cache TTL for a pool that has socials |
@@ -150,6 +155,41 @@ Enrichment is deliberately cheap and cannot destabilise the poll loop:
   add their socials minutes later — a 6 h negative cache would suppress those
   for the entire 180 min alert window;
 * a failed lookup fails closed: no socials, no alert.
+
+## Authenticity gates
+
+Three of these came from testing a widely-circulated retail meme-coin checklist
+against the recorded live sample rather than adopting it. The checklist is built
+for a bonding-curve launchpad on another chain, so most of it does not port: its
+market-cap tiers, launchpad columns and priority-fee settings have no meaning on
+a centralised-sequencer chain with no public mempool. What does port is the
+reasoning about which numbers are expensive to fake.
+
+**Turnover vs valuation** (`MIN_VOL_FDV_RATIO`). The checklist gates on "total
+fees paid", on the argument that a token cannot reach a real valuation without
+real trades behind it. There is no fee field here, but the same argument gives
+turnover: a deployer sets the price for free, and cannot trade against it for
+free. A token carrying a multi-million FDV on a few hundred dollars of daily
+volume is priced on nothing.
+
+**Trades per buyer** (`MAX_TRADES_PER_BUYER`). Volume and transaction counts are
+both purchasable at fee cost, so neither proves a pool is real - which is why the
+absolute volume floor below is the weakest gate here, not the strongest. Distinct
+wallets are the expensive part. In the recorded sample every genuine meme pool ran
+between 2.1 and 5.1 trades per buyer; one decoy ran **1402 trades from a single
+buyer**, with volume reported identically across the m15, h1 and h24 windows and
+an FDV of 2.4e19 USD. The threshold sits above the busiest real pool and far under
+the forgery.
+
+**Already ran and rolled over** (`RETRACE_H1_PCT` / `RETRACE_M15_PCT`). A pool up
+hard over the hour but falling over the last quarter of it has put its top in, and
+buying the retrace means buying into overhead supply. Measured on m15 against h1:
+h24 is unusable here because it is unreliable on a pool minutes old (see the API
+quirks above). `MIN_PCT_H1` catches a pool that already crashed; this catches one
+that is still green but rolling.
+
+**Absolute volume floor** (`MIN_VOL_H1`). A dead-pool cut, kept deliberately low.
+It is listed last because it is the easiest of these to fake.
 
 ## On-chain verification (chain 4663)
 

@@ -105,6 +105,20 @@ class Config:
     min_txns_h1: int = 50  # not a dead pool
     min_age_min: int = 10  # skip the instant-rug window
     min_pct_h1: float = -15.0  # "already crashed? skip it"
+    min_vol_h1: float = 5_000.0  # dead-pool floor; sits under every real pool seen
+    # Volume that is not backed by a real valuation. A token can be priced at
+    # anything; paying to trade it costs money, so turnover is the harder number
+    # to fake. 0 disables.
+    min_vol_fdv_ratio: float = 0.01
+    # Wash-trade detector. One wallet round-tripping itself inflates volume and
+    # txn counts at fee cost only; what it cannot cheaply fake is distinct
+    # wallets. Real pools run a few trades per buyer. 0 disables.
+    max_trades_per_buyer: float = 20.0
+    # "Already ran and came back down" - a pool up hard over the hour but
+    # falling over the last quarter of it has put in its top. Both must be set;
+    # 0 on either disables.
+    retrace_h1_pct: float = 20.0
+    retrace_m15_pct: float = -3.0
     # Social gate. A NEW pool's meme side must expose at least one project
     # social. AND-ed with the liquidity floor, never traded off against it.
     require_socials: bool = True
@@ -165,6 +179,11 @@ class Config:
             min_txns_h1=_i("MIN_TXNS_H1", 50),
             min_age_min=_i("MIN_AGE_MIN", 10),
             min_pct_h1=_f("MIN_PCT_H1", -15.0),
+            min_vol_h1=_f("MIN_VOL_H1", 5_000.0),
+            min_vol_fdv_ratio=_f("MIN_VOL_FDV_RATIO", 0.01),
+            max_trades_per_buyer=_f("MAX_TRADES_PER_BUYER", 20.0),
+            retrace_h1_pct=_f("RETRACE_H1_PCT", 20.0),
+            retrace_m15_pct=_f("RETRACE_M15_PCT", -3.0),
             require_socials=_b("REQUIRE_SOCIALS", True),
             social_lookups_per_cycle=_i("SOCIAL_LOOKUPS_PER_CYCLE", 6),
             social_cache_ttl_sec=_i("SOCIAL_CACHE_TTL_SEC", 21_600),

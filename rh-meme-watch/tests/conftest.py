@@ -33,6 +33,8 @@ def api_item(
     vol_h24: str | float | None = "50000",
     pct_h1: str | float | None = "10.0",
     pct_h24: str | float | None = "20.0",
+    vol_m15: str | float | None = "2500",
+    pct_m15: str | float | None = "2.0",
     tx_h1: dict | None = None,
     socials: bool = True,
 ) -> dict:
@@ -58,12 +60,16 @@ def api_item(
             "pool_created_at": created_at,
             "fdv_usd": fdv,
             "market_cap_usd": market_cap,
-            "price_change_percentage": {"h1": pct_h1, "h24": pct_h24},
+            "price_change_percentage": {
+                "h1": pct_h1,
+                "h24": pct_h24,
+                "m15": pct_m15,
+            },
             "transactions": {
                 "h1": tx_h1 or {"buys": 100, "sells": 80, "buyers": 50, "sellers": 40},
                 "h24": {"buys": 900, "sells": 700, "buyers": 300, "sellers": 250},
             },
-            "volume_usd": {"h1": vol_h1, "h24": vol_h24},
+            "volume_usd": {"h1": vol_h1, "h24": vol_h24, "m15": vol_m15},
             "reserve_in_usd": reserve,
         },
         "relationships": {

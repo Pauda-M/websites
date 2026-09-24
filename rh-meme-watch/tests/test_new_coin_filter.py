@@ -95,6 +95,11 @@ def test_every_gate_is_disablable(tmp_path):
         min_buy_sell_ratio=0,
         min_txns_h1=0,
         min_pct_h1=-1e9,
+        min_vol_h1=0,
+        min_vol_fdv_ratio=0,
+        max_trades_per_buyer=0,
+        retrace_h1_pct=0,
+        retrace_m15_pct=0,
     )
     awful = _pool(
         fdv="900000000",

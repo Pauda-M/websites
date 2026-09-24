@@ -99,6 +99,12 @@ class Pool:
     vol_h24: float | None
     price_change_h1: float | None
     price_change_h24: float | None
+    # Short window. The API also exposes m5/m30/h6; m15 is kept because it is the
+    # shortest window that is not pure noise on a thin new pool, and it is what
+    # the retrace check compares the h1 move against. h24 cannot serve there: it
+    # is unreliable on a pool minutes old (see the quirk note above).
+    vol_m15: float | None
+    price_change_m15: float | None
     buys_h1: int
     sells_h1: int
     buyers_h1: int
@@ -147,8 +153,10 @@ class Pool:
             reserve_usd=_pos_or_none(attrs.get("reserve_in_usd")),
             vol_h1=_num(volume.get("h1")),
             vol_h24=_num(volume.get("h24")),
+            vol_m15=_num(volume.get("m15")),
             price_change_h1=_num(pct.get("h1")),
             price_change_h24=_num(pct.get("h24")),
+            price_change_m15=_num(pct.get("m15")),
             buys_h1=_count(tx_h1, "buys"),
             sells_h1=_count(tx_h1, "sells"),
             buyers_h1=_count(tx_h1, "buyers"),

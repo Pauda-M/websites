@@ -156,6 +156,42 @@ def quality_verdict(
     ):
         failed.append(f"dumping {pool.price_change_h1:.0f}% < {cfg.min_pct_h1:.0f}%")
 
+    if cfg.min_vol_h1 > 0 and (pool.vol_h1 or 0.0) < cfg.min_vol_h1:
+        failed.append(f"vol/h1 {pool.vol_h1 or 0:,.0f} < {cfg.min_vol_h1:,.0f}")
+
+    # Turnover against valuation. A token's price is whatever the deployer says;
+    # trading it costs fees, so volume is the harder half of the pair to invent.
+    if cfg.min_vol_fdv_ratio > 0 and meme_fdv and pool.vol_h24 is not None:
+        ratio = pool.vol_h24 / meme_fdv
+        if ratio < cfg.min_vol_fdv_ratio:
+            failed.append(f"vol/fdv {ratio:.4f} < {cfg.min_vol_fdv_ratio}")
+
+    # Wash-trade detector. Volume and txn counts are both purchasable with fees;
+    # distinct wallets are not. A live decoy in the fixture showed 701 buys from
+    # a single buyer, with volume identical across every window.
+    if cfg.max_trades_per_buyer > 0 and pool.buyers_h1 > 0:
+        per_buyer = (pool.buys_h1 + pool.sells_h1) / pool.buyers_h1
+        if per_buyer > cfg.max_trades_per_buyer:
+            failed.append(
+                f"{per_buyer:.0f} trades/buyer > {cfg.max_trades_per_buyer:.0f}"
+            )
+
+    # Already ran and rolled over: up hard on the hour but falling over the last
+    # quarter of it. Measured on m15 rather than h24, which is unreliable on a
+    # pool minutes old.
+    if (
+        cfg.retrace_h1_pct > 0
+        and cfg.retrace_m15_pct < 0
+        and pool.price_change_h1 is not None
+        and pool.price_change_m15 is not None
+        and pool.price_change_h1 >= cfg.retrace_h1_pct
+        and pool.price_change_m15 <= cfg.retrace_m15_pct
+    ):
+        failed.append(
+            f"retracing (h1 {pool.price_change_h1:+.0f}%, "
+            f"m15 {pool.price_change_m15:+.0f}%)"
+        )
+
     return QualityVerdict(not failed, tuple(failed))
 
 
