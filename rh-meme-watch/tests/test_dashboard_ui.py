@@ -120,3 +120,82 @@ def test_start_dashboard_installs_the_skin_and_serves(tmp_path):
         server.shutdown()
         server.server_close()
         legacy.render_html = original
+
+
+def test_social_chips_render_one_link_per_platform():
+    chips = dashboard_ui._social_links(
+        {"socials": ["https://x.com/proj", "https://t.me/projchat"]}
+    )
+    assert 'href="https://x.com/proj"' in chips
+    assert 'href="https://t.me/projchat"' in chips
+    assert "TG" in chips
+    assert chips.count("<a class=\"social\"") == 2
+    assert 'rel="noopener noreferrer nofollow"' in chips
+
+
+def test_card_without_socials_says_so_loudly():
+    chips = dashboard_ui._social_links({"socials": []})
+    assert "NO SOCIAL" in chips
+    assert "<a " not in chips
+
+
+def test_hostile_schemes_are_never_rendered_as_links():
+    """Social URLs come from a third party; a javascript: href is an injection."""
+    chips = dashboard_ui._social_links(
+        {
+            "socials": [
+                "javascript:alert(1)",
+                "data:text/html,<script>alert(1)</script>",
+                "https://t.me/good",
+            ]
+        }
+    )
+    assert "javascript:" not in chips
+    assert "data:text/html" not in chips
+    assert 'href="https://t.me/good"' in chips
+    assert chips.count("<a class=\"social\"") == 1
+
+
+def test_social_url_is_escaped_in_the_href():
+    chips = dashboard_ui._social_links({"socials": ['https://x.com/a"><script>x()']})
+    assert "<script>" not in chips
+    assert "&quot;" in chips or "&gt;" in chips
+
+
+def test_links_appear_on_the_rendered_card(tmp_path):
+    from rh_meme_watch.store import Store
+
+    cfg = mk_cfg(tmp_path)
+    store = Store(cfg.db_path)
+    addr = "0x" + "5e" * 20
+    store.upsert_seen(
+        addr, "SOCIALCOIN", "WETH", "uniswap-v2", NOW, NOW, 120_000.0, 90_000.0,
+        socials=["https://t.me/socialchat"],
+    )
+    store.mark_alerted(addr, NOW, 120_000.0)
+    page = dashboard_ui.render_html(cfg.db_path, cfg, NOW + timedelta(minutes=5), True)
+    assert "SOCIALCOIN" in page
+    assert "https://t.me/socialchat" in page
+
+
+def test_coin_without_socials_is_skipped_from_the_filtered_view(tmp_path):
+    """No social, no fact-check, no place on the radar."""
+    from rh_meme_watch.dashboard import collect, qualifies
+    from rh_meme_watch.store import Store
+
+    cfg = mk_cfg(tmp_path, require_socials=True)
+    store = Store(cfg.db_path)
+    for addr, symbol, links in (
+        ("0x" + "a1" * 20, "HASSOCIAL", ["https://t.me/c"]),
+        ("0x" + "b2" * 20, "NOSOCIAL", None),
+    ):
+        store.upsert_seen(
+            addr, symbol, "WETH", "uniswap-v2", NOW, NOW, 500_000.0, 90_000.0,
+            socials=links,
+        )
+        store.mark_alerted(addr, NOW, 500_000.0)
+
+    data = collect(cfg.db_path, cfg, NOW + timedelta(minutes=5))
+    by_symbol = {p["symbol"]: p for p in data["pools"]}
+    assert not qualifies(by_symbol["NOSOCIAL"], cfg), "no social -> skipped"
+    assert by_symbol["HASSOCIAL"]["socials"] == ["https://t.me/c"]

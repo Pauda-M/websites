@@ -15,6 +15,7 @@ import json
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Sequence
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS pools (
@@ -29,7 +30,8 @@ CREATE TABLE IF NOT EXISTS pools (
     last_liq REAL,
     last_vol_h1 REAL,
     escalated_ts TEXT,
-    status TEXT NOT NULL DEFAULT 'seen'
+    status TEXT NOT NULL DEFAULT 'seen',
+    socials TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_pools_symbol ON pools(symbol);
 CREATE TABLE IF NOT EXISTS alerts (
@@ -89,6 +91,19 @@ class Store:
         self.db.execute("PRAGMA journal_mode=WAL")
         self.db.execute("PRAGMA synchronous=NORMAL")
         self.db.executescript(_SCHEMA)
+        self._migrate()
+
+    def _migrate(self) -> None:
+        """Additive column migrations for databases created by older versions.
+
+        CREATE TABLE IF NOT EXISTS leaves an existing table alone, so a column
+        added to _SCHEMA never reaches a database that already exists - which in
+        production is the only one that matters.
+        """
+        have = {row["name"] for row in self.db.execute("PRAGMA table_info(pools)")}
+        for column, ddl in (("socials", "TEXT"),):
+            if column not in have:
+                self.db.execute(f"ALTER TABLE pools ADD COLUMN {column} {ddl}")
 
     def close(self) -> None:
         self.db.close()
@@ -105,18 +120,25 @@ class Store:
         now: datetime,
         reserve: float | None,
         vol_h1: float | None,
+        socials: Sequence[str] | None = None,
     ) -> None:
+        # An empty list means "not enriched this cycle", not "socials removed":
+        # the per-cycle lookup budget routinely leaves a pool unenriched. Only a
+        # non-empty list overwrites what is stored, so a known-good list is never
+        # clobbered by a budget miss.
+        socials_json = json.dumps(list(socials)) if socials else None
         self.db.execute(
             """
             INSERT INTO pools (address, symbol, quote, dex, created_at, first_seen,
-                               last_liq, last_vol_h1, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'seen')
+                               last_liq, last_vol_h1, status, socials)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'seen', ?)
             ON CONFLICT(address) DO UPDATE SET
                 symbol = excluded.symbol,
                 quote = excluded.quote,
                 dex = excluded.dex,
                 last_liq = excluded.last_liq,
-                last_vol_h1 = excluded.last_vol_h1
+                last_vol_h1 = excluded.last_vol_h1,
+                socials = COALESCE(excluded.socials, pools.socials)
             """,
             (
                 address,
@@ -127,8 +149,26 @@ class Store:
                 _iso(now),
                 reserve,
                 vol_h1,
+                socials_json,
             ),
         )
+
+    @staticmethod
+    def socials_of(row) -> tuple[str, ...]:
+        """Decode a stored socials list, tolerating nulls and legacy rows."""
+        try:
+            raw = row["socials"]
+        except (IndexError, KeyError):
+            return ()
+        if not raw:
+            return ()
+        try:
+            values = json.loads(raw)
+        except (TypeError, ValueError):
+            return ()
+        if not isinstance(values, list):
+            return ()
+        return tuple(str(v) for v in values if str(v).strip())
 
     def get_pool(self, address: str) -> sqlite3.Row | None:
         cur = self.db.execute("SELECT * FROM pools WHERE address = ?", (address,))

@@ -23,6 +23,7 @@ from pathlib import Path
 from .config import Config
 from .fmt import fmt_age, fmt_int, fmt_pct, fmt_usd
 from .rules import lock_verdict, momentum
+from .store import Store
 
 log = logging.getLogger("rh_meme_watch.dashboard")
 
@@ -184,6 +185,7 @@ def collect(db_path: Path, cfg: Config, now: datetime) -> dict:
                     "momentum": mom.label,
                     "vol_change_pct": mom.vol_change_pct,
                     "buyers_change": mom.buyers_change,
+                    "socials": list(Store.socials_of(row)),
                     "custody": _custody_label(oc),
                     "custody_holder": oc["holder"] if oc else None,
                     "custody_pct": (
@@ -243,7 +245,13 @@ def _heartbeat_age(cfg: Config, now: datetime) -> float | None:
 
 
 def qualifies(pool: dict, cfg: Config) -> bool:
-    """Default dashboard filter: liquidity-lock proxy passed AND liq >= MIN_LIQ."""
+    """Default dashboard filter: socials present, lock proxy passed, liq >= MIN_LIQ.
+
+    A coin with no social is skipped here for the same reason it never alerts:
+    with nothing to fact-check the hype against, there is nothing to look at.
+    """
+    if cfg.require_socials and not pool.get("socials"):
+        return False
     liq = pool.get("last_liq")
     return pool.get("liq_lock") == "locked" and liq is not None and liq >= cfg.min_liq
 

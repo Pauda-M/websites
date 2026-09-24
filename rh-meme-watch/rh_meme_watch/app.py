@@ -133,6 +133,7 @@ class App:
                 now,
                 pool.reserve_usd,
                 pool.vol_h1,
+                socials=rules.meme_socials(pool, cls),
             )
             if self._maybe_new_alert(pool, cls, now):
                 alerted_now.add(pool.address)

@@ -12,6 +12,7 @@ from datetime import datetime
 from . import dashboard as legacy
 from .config import Config
 from .fmt import fmt_age, fmt_int, fmt_pct, fmt_usd
+from .socials import platform_of
 
 FOMO_URL = "https://fomo.family/"
 GECKO_BASE = "https://www.geckoterminal.com/robinhood/pools/"
@@ -52,6 +53,39 @@ def _spark(values: list[float], width: int = 180, height: int = 54) -> str:
         f'<polyline points="{line}" fill="none" stroke="#79a3ff" stroke-width="2.4" '
         'stroke-linecap="round" stroke-linejoin="round"/></svg>'
     )
+
+
+_SOCIAL_LABELS = {
+    "x": "\U0001d54f",
+    "telegram": "TG",
+    "discord": "DC",
+    "farcaster": "FC",
+    "zora": "ZORA",
+}
+
+
+def _social_links(pool: dict) -> str:
+    """Clickable chips for the pool's socials, so the hype source is one click away.
+
+    These URLs come from a third party, so only http(s) is rendered - a
+    ``javascript:`` or ``data:`` href reaching the page would be an injection.
+    """
+    links = pool.get("socials") or []
+    chips: list[str] = []
+    for url in links:
+        text = str(url).strip()
+        if not text.lower().startswith(("http://", "https://")):
+            continue
+        platform = platform_of(text)
+        label = _SOCIAL_LABELS.get(platform, platform[:4].upper() or "LINK")
+        href = html.escape(text, quote=True)
+        chips.append(
+            f'<a class="social" href="{href}" target="_blank" '
+            f'rel="noopener noreferrer nofollow" title="{href}">{html.escape(label)}</a>'
+        )
+    if not chips:
+        return '<span class="social social-none">NO SOCIAL</span>'
+    return "".join(chips)
 
 
 def _risk_badges(pool: dict) -> str:
@@ -128,6 +162,7 @@ def _hero_card(pool: dict, now: datetime, rank: int) -> str:
     <div class="heat-ring" style="--heat:{heat}"><b>{heat}</b><small>HEAT</small></div>
   </div>
   <div class="op-badges">{_risk_badges(pool)}</div>
+  <div class="socials">{_social_links(pool)}</div>
   <div class="op-grid">
     <div><span>Liquidity</span><b>{html.escape(_money(pool.get('last_liq')))}</b><small>{html.escape(str(pool.get('liq_mult') or '—'))}x vs alert</small></div>
     <div><span>Volume 1h</span><b>{html.escape(_money(pool.get('vol_h1')))}</b><small>{buyers}/{sellers} buyers/sellers</small></div>
@@ -160,7 +195,7 @@ def _table_row(pool: dict, now: datetime) -> str:
   <td>
     <div class="asset"><span class="token-mark small">{_initials(raw_symbol)}</span><div><strong>{symbol}</strong><span>/{quote} · {html.escape(str(pool.get('dex') or ''))}</span></div></div>
   </td>
-  <td><div class="badges">{_risk_badges(pool)}</div></td>
+  <td><div class="badges">{_risk_badges(pool)}</div><div class="socials">{_social_links(pool)}</div></td>
   <td class="mono">{html.escape(_age(pool.get('first_alert_ts'), now))}</td>
   <td class="mono"><strong>{html.escape(_money(pool.get('last_liq')))}</strong><span class="secondary">{mult} vs alert</span></td>
   <td class="mono"><strong>{html.escape(_money(pool.get('vol_h1')))}</strong><span class="secondary">{buyers}/{sellers}</span></td>
@@ -210,6 +245,7 @@ h1{{font-size:22px;letter-spacing:-.02em;margin:0}} .kicker{{color:var(--muted);
 .section-head{{display:flex;align-items:end;justify-content:space-between;gap:16px;margin:24px 0 12px}} .section-head h2{{font-size:15px;margin:0}} .section-head p{{margin:3px 0 0;color:var(--muted)}} .toggle{{text-decoration:none;border:1px solid var(--line);background:var(--panel);padding:8px 11px;border-radius:9px;color:#c7d0de}}
 .op-grid-wrap{{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}} .opportunity{{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(17,23,34,.98),rgba(10,14,21,.98));border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow)}} .opportunity:before{{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--blue);opacity:.8}} .opportunity.warm:before{{background:var(--amber)}} .opportunity.hot:before{{background:var(--red);box-shadow:0 0 24px var(--red)}} .op-top{{display:flex;align-items:center;gap:10px}} .rank{{color:var(--muted);font-weight:800}} .token-mark{{width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,#26334a,#182132);display:grid;place-items:center;color:#dce6ff;font-weight:800;border:1px solid #32405a}} .token-mark.small{{width:30px;height:30px;border-radius:9px;font-size:11px}} .op-name{{min-width:0;flex:1}} .op-name strong{{font-size:17px}} .op-name span,.asset span{{display:block;color:var(--muted);font-size:10px}} .heat-ring{{--heat:0;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--red) calc(var(--heat)*1%),#202938 0);position:relative}} .heat-ring:after{{content:"";position:absolute;inset:5px;background:#0c1119;border-radius:50%}} .heat-ring b,.heat-ring small{{z-index:1;position:absolute}} .heat-ring b{{font-size:16px;top:10px}} .heat-ring small{{font-size:7px;bottom:9px;color:var(--muted);letter-spacing:.12em}}
 .op-badges,.badges{{display:flex;flex-wrap:wrap;gap:5px;margin:12px 0}} .pill{{border:1px solid #2d3646;color:#9ba7b8;background:#151b25;border-radius:999px;padding:3px 7px;font-size:8px;font-weight:800;letter-spacing:.06em}} .pill-green{{color:var(--green);border-color:rgba(71,209,140,.25);background:rgba(71,209,140,.07)}} .pill-amber{{color:var(--amber);border-color:rgba(255,191,90,.25);background:rgba(255,191,90,.07)}} .pill-red{{color:var(--red);border-color:rgba(255,98,109,.25);background:rgba(255,98,109,.07)}}
+.socials{{display:flex;flex-wrap:wrap;gap:5px;margin:-6px 0 10px}} .social{{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:20px;padding:0 6px;border:1px solid #2f3a4c;border-radius:6px;background:#141b26;color:#c3d0e2;font-size:9px;font-weight:800;text-decoration:none;letter-spacing:.04em}} .social:hover{{border-color:var(--blue);color:#fff}} .social-none{{color:var(--red);border-color:rgba(255,98,109,.3);background:rgba(255,98,109,.06)}}
 .op-grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}} .op-grid>div{{background:#0a0e15;border:1px solid #1c2533;border-radius:11px;padding:9px}} .op-grid span{{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.07em}} .op-grid b{{display:block;margin-top:3px;font-size:14px}} .op-grid small{{color:var(--muted);font-size:9px}} .positive{{color:var(--green)!important}} .negative{{color:var(--red)!important}} .mini-chart{{height:58px;margin:10px 0 6px}} .spark{{width:100%;height:100%;display:block}}
 .actions{{display:flex;gap:7px}} .btn,.row-actions a,.copy-icon{{appearance:none;text-decoration:none;border:1px solid var(--line);background:#111722;color:#dbe3ef;border-radius:8px;padding:8px 10px;font:inherit;font-weight:700;cursor:pointer}} .btn-primary{{background:linear-gradient(135deg,#6f8fff,#4763df);border-color:#6f8fff;color:white;flex:1;text-align:center}} .op-foot{{display:flex;justify-content:space-between;gap:12px;margin-top:9px;color:var(--muted);font-size:9px}}
 .table-card{{background:rgba(11,15,22,.92);border:1px solid var(--line);border-radius:16px;overflow:hidden}} .table-scroll{{overflow:auto}} table{{border-collapse:collapse;width:100%;min-width:1180px}} th{{text-align:left;padding:10px 12px;color:#788499;font-size:9px;text-transform:uppercase;letter-spacing:.1em;border-bottom:1px solid var(--line);background:#0b1018;position:sticky;top:0}} td{{padding:10px 12px;border-bottom:1px solid rgba(32,41,56,.72);vertical-align:middle}} tbody tr:hover{{background:rgba(92,126,255,.055)}} .asset{{display:flex;align-items:center;gap:8px}} .asset strong{{font-size:12px}} .mono{{font-variant-numeric:tabular-nums;white-space:nowrap}} .secondary{{display:block;color:var(--muted);font-size:9px;margin-top:2px}} .heat-cell{{display:flex;align-items:center;gap:7px}} .heat-cell>span{{font-weight:800;width:22px}} .heat-cell>div{{width:72px;height:6px;border-radius:9px;background:#202938;overflow:hidden}} .heat-cell i{{display:block;height:100%;background:linear-gradient(90deg,#5f8aff,#ffbf5a,#ff626d)}} .row-actions{{display:flex;gap:5px}} .row-actions a,.copy-icon{{padding:5px 7px;font-size:10px}}
