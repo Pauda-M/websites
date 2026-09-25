@@ -109,11 +109,11 @@
     <p class="sub">Agent: &ldquo;Pay for yourself or you die&rdquo; &middot; <span id="meta-created"></span></p>
   </header>
 
-  <div class="banner">
-    <strong>&#9888; PAPER TRADING ONLY.</strong> No real-money positions. All market prices are
-    dated press citations, not live quotes (market APIs are blocked from the research
-    environment) &mdash; assume staleness. Positions marked with a fill condition are voided if the
-    live price has moved past the sourced quote.
+  <div class="banner" id="banner">
+    <strong>&#9888; PAPER TRADING ONLY.</strong> No real-money positions. Entry quotes are
+    dated press citations; live bid/ask (when shown) is polled from venue APIs by the
+    on-server feed. Fees, depth, and slippage are still not modeled &mdash; live-marked paper
+    P&amp;L remains an upper bound on what real trading would have returned.
   </div>
 
   <div class="tiles" id="tiles"></div>
@@ -123,7 +123,7 @@
     <thead>
       <tr>
         <th>Market</th><th>Venue</th><th>Status</th>
-        <th>Mkt price (YES)</th><th>Agent est.</th><th>Edge</th><th>Next check</th>
+        <th>Entry quote (YES)</th><th>Live YES bid/ask</th><th>Agent est.</th><th>Unrealized</th><th>Next check</th>
       </tr>
     </thead>
     <tbody id="rows"></tbody>
@@ -157,16 +157,46 @@ function badge(status) {
   return `<span class="badge"><span class="dot" style="background:${s.color}"></span>${s.icon}&nbsp;${s.label}</span>`;
 }
 
-fetch("ledger.json", { cache: "no-store" })
-  .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-  .then(render)
+Promise.all([
+  fetch("ledger.json", { cache: "no-store" })
+    .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }),
+  fetch("prices.json", { cache: "no-store" })
+    .then(r => (r.ok ? r.json() : null))
+    .catch(() => null)
+])
+  .then(([ledger, prices]) => render(ledger, prices))
   .catch(e => {
     document.getElementById("err").textContent =
       "Could not load ledger.json (" + e.message + "). It must be served from the same directory as this page.";
   });
 
-function render(data) {
+// Conservative paper mark: a NO position exits at the NO bid (= 1 - YES ask);
+// a YES position exits at the YES bid. Falls back to last if the book is empty.
+function markFor(pos, q) {
+  if (!q || q.error) return null;
+  if (pos.side === "NO") {
+    const yesAsk = q.yes_ask ?? q.last;
+    return yesAsk == null ? null : 1 - yesAsk;
+  }
+  const yesBid = q.yes_bid ?? q.last;
+  return yesBid == null ? null : yesBid;
+}
+
+function unrealized(e, q) {
+  const pos = e.paper_position;
+  if (!pos || e.status !== "OPEN") return null;
+  const mark = markFor(pos, q);
+  if (mark == null) return null;
+  const entry = pos["entry_price_" + pos.side.toLowerCase()];
+  return pos.contracts * (mark - entry);
+}
+
+function render(data, prices) {
+  const live = prices?.markets || {};
+  const liveAsOf = prices?.as_of || null;
   const es = data.entries || [];
+  const totalUnreal = es.reduce((s, e) => s + (unrealized(e, live[e.id]) ?? 0), 0);
+  const anyLive = Object.keys(live).length > 0;
   document.getElementById("meta-created").textContent =
     "mode: " + (data.meta?.mode || "?") + " · ledger created " + (data.meta?.created || "?");
 
@@ -179,25 +209,39 @@ function render(data) {
     { label: "Paper bankroll", value: usd(data.meta?.paper_bankroll_usd), note: "assumption, defined at start" },
     { label: "Markets researched", value: es.length, note: es.filter(e => e.verdict === "PASS").length + " honest pass(es)" },
     { label: "Open positions", value: open.length, note: usd(atRisk) + " at risk" },
-    { label: "Resolved", value: resolved.length, note: resolved.length ? wins + " win(s)" : "nothing resolved yet" }
+    { label: "Resolved", value: resolved.length, note: resolved.length ? wins + " win(s)" : "nothing resolved yet" },
+    { label: "Unrealized P&L (paper)", value: anyLive ? (totalUnreal >= 0 ? "+" : "−") + usd(Math.abs(totalUnreal)).slice(0) : "—",
+      note: anyLive ? "marked to live book, " + (liveAsOf || "") + " UTC" : "no live feed yet" }
   ];
   document.getElementById("tiles").innerHTML = tiles.map(t =>
     `<div class="tile"><div class="label">${t.label}</div><div class="value">${t.value}</div><div class="note">${t.note}</div></div>`
   ).join("");
 
-  document.getElementById("rows").innerHTML = es.map(e => `
+  document.getElementById("rows").innerHTML = es.map(e => {
+    const q = live[e.id];
+    const liveCell = !q ? "—" : q.error ? "feed err" :
+      `${pct(q.yes_bid)} / ${pct(q.yes_ask)}`;
+    const u = unrealized(e, q);
+    return `
     <tr>
       <td>${e.market}</td>
       <td>${e.venue || "—"}</td>
       <td>${badge(e.status)}</td>
       <td class="num">${pct(e.market_price_yes)}</td>
+      <td class="num">${liveCell}</td>
       <td class="num">${pct(e.agent_probability_yes)}</td>
-      <td class="num">${e.edge_pct_points > 0 ? "+" : ""}${e.edge_pct_points ?? "—"} pts</td>
+      <td class="num">${u == null ? "—" : (u >= 0 ? "+" : "−") + usd(Math.abs(u))}</td>
       <td class="num">${e.next_check || "—"}</td>
-    </tr>`).join("");
+    </tr>`;
+  }).join("");
 
   document.getElementById("cards").innerHTML = es.map(e => {
     const pos = e.paper_position;
+    const q = live[e.id];
+    const u = unrealized(e, q);
+    const liveLine = !q ? "" : q.error
+      ? `<div class="kv"><b>Live feed:</b> error — ${q.error}</div>`
+      : `<div class="kv"><b>Live (server-polled ${q.fetched_at || ""} UTC):</b> YES ${pct(q.yes_bid)} bid / ${pct(q.yes_ask)} ask, last ${pct(q.last)}${u != null ? ` — unrealized ${(u >= 0 ? "+" : "−") + usd(Math.abs(u))} (marked at ${e.paper_position?.side === "NO" ? "NO bid" : "YES bid"})` : ""}</div>`;
     return `
     <div class="card">
       <h3>${e.market}</h3>
@@ -207,6 +251,7 @@ function render(data) {
         <div class="p"><div class="label">Agent estimate</div><div class="v">${pct(e.agent_probability_yes)}</div></div>
         <div class="p"><div class="label">Verdict</div><div class="v">${e.verdict}</div></div>
       </div>
+      ${liveLine}
       <div class="kv"><b>Confidence:</b> ${e.confidence}</div>
       ${pos ? `<div class="kv"><b>Paper position:</b> ${pos.contracts} × ${pos.side} @ ${pct(pos["entry_price_" + pos.side.toLowerCase()])} — cost ${usd(pos.cost_usd)}, max profit ${usd(pos.max_profit_usd)}</div>
       <div class="kv"><b>Fill condition:</b> ${pos.fill_condition}</div>` : `<div class="kv"><b>No position.</b> Logged for calibration tracking.</div>`}

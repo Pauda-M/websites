@@ -1,0 +1,17 @@
+[
+  {
+    "ledger_id": "2026-09-25-shutdown-oct1",
+    "venue": "kalshi",
+    "kalshi_ticker": "KXGOVTSHUTDOWN-26OCT01"
+  },
+  {
+    "ledger_id": "2026-09-25-fed-another-hike-2026",
+    "venue": "polymarket",
+    "poly_slug": "FILL_AT_DEPLOY_discover_via_gamma_api_search"
+  },
+  {
+    "ledger_id": "2026-09-25-btc-100k-2026",
+    "venue": "kalshi",
+    "kalshi_ticker": "FILL_AT_DEPLOY_discover_via_kalshi_series_search"
+  }
+]
