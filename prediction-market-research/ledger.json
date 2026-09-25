@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "agent": "Pay for yourself or you die",
+    "mode": "PAPER_TRADING_ONLY",
+    "paper_bankroll_usd": 10000,
+    "created": "2026-09-25",
+    "price_data_caveat": "No live API access (egress blocked). All prices are dated press citations; see README."
+  },
+  "entries": [
+    {
+      "id": "2026-09-25-shutdown-oct1",
+      "market": "Government shutdown on Oct 1, 2026?",
+      "venue": "Kalshi",
+      "venue_ticker": "KXGOVTSHUTDOWN-26OCT01",
+      "market_url": "https://kalshi.com/markets/kxgovtshutdown/will-the-government-shut-down/kxgovtshutdown-26oct01",
+      "market_price_yes": 0.04,
+      "price_source": "Yahoo News headline: 'Betting Odds of Government Shutdown 2026 Crashes to 4% on Kalshi' (article date not verified; post-dates the Sep 2 CR signing). Mid-August quotes were 15-16c (cryptonews.com).",
+      "price_as_of": "UNVERIFIED_DATE_LIKELY_EARLY_SEPT_2026",
+      "agent_probability_yes": 0.005,
+      "edge_pct_points": -3.5,
+      "verdict": "LONG_NO",
+      "confidence": "high (direction), low (fill price — quote may be stale and market may already be at 1c)",
+      "paper_position": {
+        "side": "NO",
+        "entry_price_no": 0.96,
+        "contracts": 1000,
+        "cost_usd": 960,
+        "max_profit_usd": 40,
+        "fill_condition": "VOID if YES < 0.02 at verification; edge gone below that after fees"
+      },
+      "resolution": null,
+      "next_check": "2026-10-01",
+      "status": "OPEN"
+    },
+    {
+      "id": "2026-09-25-fed-another-hike-2026",
+      "market": "Another Fed rate hike in 2026 (after September's hike to 3.75-4.00%)?",
+      "venue": "Polymarket",
+      "venue_ticker": null,
+      "market_url": "https://cryptobriefing.com/polymarket-fed-rate-hike-2026-odds/",
+      "market_price_yes": 0.84,
+      "price_source": "Crypto Briefing: 'Polymarket shows 84% odds of another Fed rate hike in 2026' (post-Sep-16 FOMC; exact article date not verified).",
+      "price_as_of": "UNVERIFIED_DATE_POST_2026-09-16",
+      "agent_probability_yes": 0.76,
+      "edge_pct_points": -8,
+      "verdict": "LONG_NO",
+      "confidence": "low-medium",
+      "paper_position": {
+        "side": "NO",
+        "entry_price_no": 0.16,
+        "contracts": 1500,
+        "cost_usd": 240,
+        "max_profit_usd": 1260,
+        "fill_condition": "VOID if YES < 0.80 at verification"
+      },
+      "resolution": null,
+      "next_check": "2026-10-28",
+      "status": "OPEN"
+    },
+    {
+      "id": "2026-09-25-btc-100k-2026",
+      "market": "Bitcoin tops $100,000 before end of 2026?",
+      "venue": "Kalshi",
+      "venue_ticker": null,
+      "market_url": "https://news.bitcoin.com/crypto-news/kalshi-bitcoin-price-97k-peak-2026-100k-odds/",
+      "market_price_yes": 0.46,
+      "price_source": "Bitcoin.com News, 2026-09-23: Kalshi traders give BTC 46% chance of topping $100K before year-end; ~$4.8M traded across seven strikes. BTC spot $84,413 at 2026-09-25 09:00 ET (Fortune).",
+      "price_as_of": "2026-09-23",
+      "agent_probability_yes": 0.42,
+      "edge_pct_points": -4,
+      "verdict": "PASS",
+      "confidence": "low",
+      "paper_position": null,
+      "resolution": null,
+      "next_check": "2026-12-31",
+      "status": "WATCHING_NO_POSITION"
+    }
+  ]
+}
