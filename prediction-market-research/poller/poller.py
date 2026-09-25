@@ -36,13 +36,22 @@ def get_json(url: str):
 
 
 def poll_kalshi(ticker: str) -> dict:
+    # This deployment's API returns decimal-dollar strings (yes_bid_dollars);
+    # fall back to the integer-cent fields older deployments use.
     m = get_json(f"{KALSHI_BASE}/markets/{ticker}")["market"]
-    cents = lambda v: None if v in (None, "") else round(v / 100.0, 4)
+
+    def price(dollars_key, cents_key):
+        v = m.get(dollars_key)
+        if v not in (None, ""):
+            return round(float(v), 4)
+        v = m.get(cents_key)
+        return None if v in (None, "") else round(v / 100.0, 4)
+
     return {
-        "yes_bid": cents(m.get("yes_bid")),
-        "yes_ask": cents(m.get("yes_ask")),
-        "last": cents(m.get("last_price")),
-        "volume": m.get("volume"),
+        "yes_bid": price("yes_bid_dollars", "yes_bid"),
+        "yes_ask": price("yes_ask_dollars", "yes_ask"),
+        "last": price("last_price_dollars", "last_price"),
+        "volume": m.get("volume_fp") or m.get("volume"),
         "status": m.get("status"),
         "close_time": m.get("close_time"),
         "source": f"kalshi:{ticker}",
@@ -96,6 +105,7 @@ def write_atomic(path: str, payload: dict) -> None:
     fd, tmp = tempfile.mkstemp(dir=d, suffix=".tmp")
     with os.fdopen(fd, "w") as f:
         json.dump(payload, f, indent=1)
+    os.chmod(tmp, 0o644)  # mkstemp defaults to 0600, unreadable by the nginx worker
     os.replace(tmp, path)
 
 
