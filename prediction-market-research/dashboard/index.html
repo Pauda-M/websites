@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PM Research Ledger</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-0: #f4f4f2;
+    --surface-1: #fcfcfb;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #7a7975;
+    --border: #e2e1dd;
+    --accent: #2a78d6;
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+    --badge-bg: #efeeea;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --surface-0: #111110;
+      --surface-1: #1a1a19;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted: #8f8e86;
+      --border: #33332f;
+      --accent: #3987e5;
+      --badge-bg: #262623;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface-0: #111110;
+    --surface-1: #1a1a19;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #8f8e86;
+    --border: #33332f;
+    --accent: #3987e5;
+    --badge-bg: #262623;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--surface-0);
+    color: var(--text-primary);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 24px 16px 64px;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  header h1 { font-size: 1.45rem; margin: 0 0 2px; letter-spacing: -0.01em; }
+  header .sub { color: var(--text-secondary); font-size: 0.92rem; margin: 0; }
+  .banner {
+    margin: 16px 0 20px; padding: 10px 14px; border-radius: 8px;
+    background: var(--badge-bg); border: 1px solid var(--border);
+    color: var(--text-secondary); font-size: 0.88rem;
+  }
+  .banner strong { color: var(--text-primary); }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .tile {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .tile .label { font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .tile .value { font-size: 1.6rem; font-weight: 650; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .tile .note { font-size: 0.8rem; color: var(--text-secondary); }
+  h2 { font-size: 1.05rem; margin: 28px 0 10px; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: 600; background: var(--surface-1); }
+  tr:last-child td { border-bottom: none; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.78rem; font-weight: 600; padding: 2px 9px;
+    border-radius: 999px; background: var(--badge-bg); border: 1px solid var(--border);
+    color: var(--text-primary); white-space: nowrap;
+  }
+  .badge .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .card {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 18px; margin-bottom: 14px;
+  }
+  .card h3 { margin: 0 0 4px; font-size: 1rem; }
+  .card .meta { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 10px; }
+  .probrow { display: flex; gap: 24px; flex-wrap: wrap; margin: 10px 0; }
+  .probrow .p .label { font-size: 0.76rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .probrow .p .v { font-size: 1.25rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .kv { font-size: 0.88rem; color: var(--text-secondary); margin: 4px 0; }
+  .kv b { color: var(--text-primary); font-weight: 600; }
+  .src { font-size: 0.8rem; color: var(--text-muted); margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px; }
+  a { color: var(--accent); }
+  footer { margin-top: 32px; color: var(--text-muted); font-size: 0.8rem; }
+  #err { color: var(--critical); font-weight: 600; }
+  @media (max-width: 640px) {
+    .cols-collapse th:nth-child(5), .cols-collapse td:nth-child(5) { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Prediction-Market Research Ledger</h1>
+    <p class="sub">Agent: &ldquo;Pay for yourself or you die&rdquo; &middot; <span id="meta-created"></span></p>
+  </header>
+
+  <div class="banner">
+    <strong>&#9888; PAPER TRADING ONLY.</strong> No real-money positions. All market prices are
+    dated press citations, not live quotes (market APIs are blocked from the research
+    environment) &mdash; assume staleness. Positions marked with a fill condition are voided if the
+    live price has moved past the sourced quote.
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <h2>Positions &amp; research log</h2>
+  <table class="cols-collapse">
+    <thead>
+      <tr>
+        <th>Market</th><th>Venue</th><th>Status</th>
+        <th>Mkt price (YES)</th><th>Agent est.</th><th>Edge</th><th>Next check</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <h2>Detail</h2>
+  <div id="cards"></div>
+  <p id="err"></p>
+
+  <footer>
+    Ledger source of truth: <code>prediction-market-research/ledger.json</code> in the
+    Pauda-M/websites repo (branch <code>claude/prediction-market-research-xxdf7z</code>).
+    This page renders whatever ledger.json sits beside it &mdash; redeploys are file copies.
+  </footer>
+</div>
+
+<script>
+const pct = x => (x == null ? "—" : (100 * x).toFixed(1).replace(/\.0$/, "") + "%");
+const usd = x => (x == null ? "—" : "$" + Number(x).toLocaleString("en-US"));
+
+const STATUS = {
+  OPEN:                 { color: "var(--warning)",  icon: "⏳", label: "OPEN" },
+  WATCHING_NO_POSITION: { color: "var(--accent)",   icon: "○", label: "WATCHING (no position)" },
+  RESOLVED_WIN:         { color: "var(--good)",     icon: "✓", label: "RESOLVED — WIN" },
+  RESOLVED_LOSS:        { color: "var(--critical)", icon: "✗", label: "RESOLVED — LOSS" },
+  VOIDED:               { color: "var(--text-muted)", icon: "∅", label: "VOIDED (stale fill)" }
+};
+
+function badge(status) {
+  const s = STATUS[status] || { color: "var(--text-muted)", icon: "?", label: status };
+  return `<span class="badge"><span class="dot" style="background:${s.color}"></span>${s.icon}&nbsp;${s.label}</span>`;
+}
+
+fetch("ledger.json", { cache: "no-store" })
+  .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+  .then(render)
+  .catch(e => {
+    document.getElementById("err").textContent =
+      "Could not load ledger.json (" + e.message + "). It must be served from the same directory as this page.";
+  });
+
+function render(data) {
+  const es = data.entries || [];
+  document.getElementById("meta-created").textContent =
+    "mode: " + (data.meta?.mode || "?") + " · ledger created " + (data.meta?.created || "?");
+
+  const open = es.filter(e => e.status === "OPEN");
+  const atRisk = open.reduce((s, e) => s + (e.paper_position?.cost_usd || 0), 0);
+  const resolved = es.filter(e => (e.status || "").startsWith("RESOLVED"));
+  const wins = es.filter(e => e.status === "RESOLVED_WIN").length;
+
+  const tiles = [
+    { label: "Paper bankroll", value: usd(data.meta?.paper_bankroll_usd), note: "assumption, defined at start" },
+    { label: "Markets researched", value: es.length, note: es.filter(e => e.verdict === "PASS").length + " honest pass(es)" },
+    { label: "Open positions", value: open.length, note: usd(atRisk) + " at risk" },
+    { label: "Resolved", value: resolved.length, note: resolved.length ? wins + " win(s)" : "nothing resolved yet" }
+  ];
+  document.getElementById("tiles").innerHTML = tiles.map(t =>
+    `<div class="tile"><div class="label">${t.label}</div><div class="value">${t.value}</div><div class="note">${t.note}</div></div>`
+  ).join("");
+
+  document.getElementById("rows").innerHTML = es.map(e => `
+    <tr>
+      <td>${e.market}</td>
+      <td>${e.venue || "—"}</td>
+      <td>${badge(e.status)}</td>
+      <td class="num">${pct(e.market_price_yes)}</td>
+      <td class="num">${pct(e.agent_probability_yes)}</td>
+      <td class="num">${e.edge_pct_points > 0 ? "+" : ""}${e.edge_pct_points ?? "—"} pts</td>
+      <td class="num">${e.next_check || "—"}</td>
+    </tr>`).join("");
+
+  document.getElementById("cards").innerHTML = es.map(e => {
+    const pos = e.paper_position;
+    return `
+    <div class="card">
+      <h3>${e.market}</h3>
+      <div class="meta">${e.venue}${e.venue_ticker ? " · " + e.venue_ticker : ""} · id ${e.id} · ${badge(e.status)}</div>
+      <div class="probrow">
+        <div class="p"><div class="label">Market (YES)</div><div class="v">${pct(e.market_price_yes)}</div></div>
+        <div class="p"><div class="label">Agent estimate</div><div class="v">${pct(e.agent_probability_yes)}</div></div>
+        <div class="p"><div class="label">Verdict</div><div class="v">${e.verdict}</div></div>
+      </div>
+      <div class="kv"><b>Confidence:</b> ${e.confidence}</div>
+      ${pos ? `<div class="kv"><b>Paper position:</b> ${pos.contracts} × ${pos.side} @ ${pct(pos["entry_price_" + pos.side.toLowerCase()])} — cost ${usd(pos.cost_usd)}, max profit ${usd(pos.max_profit_usd)}</div>
+      <div class="kv"><b>Fill condition:</b> ${pos.fill_condition}</div>` : `<div class="kv"><b>No position.</b> Logged for calibration tracking.</div>`}
+      ${e.resolution ? `<div class="kv"><b>Resolution:</b> ${typeof e.resolution === "string" ? e.resolution : JSON.stringify(e.resolution)}</div>` : ""}
+      <div class="src"><b>Price source (dated citation, not a live quote):</b> ${e.price_source}
+      ${e.market_url ? ` · <a href="${e.market_url}" rel="noopener">market link</a>` : ""}</div>
+    </div>`;
+  }).join("");
+}
+</script>
+</body>
+</html>
