@@ -264,8 +264,22 @@ class App:
         # closed with no data. By this line the pool has cleared everything else,
         # so a lookup here is a lookup that decides an alert.
         if self.cfg.require_socials:
-            pool = pool.with_socials(self.gecko.socials_for(pool.address))
+            by_token = self.gecko.socials_for(pool.address)
+            matched = pool.sides_matched(by_token)
+            pool = pool.with_socials(by_token)
             socials = rules.meme_socials(pool, cls)
+            if by_token and not matched:
+                # The lookup returned tokens but none were this pool's sides.
+                # That is a key-format mismatch, and downstream it is
+                # indistinguishable from "this token has no socials" - which is
+                # how a silent version of this produced zero alerts.
+                log.error(
+                    "social lookup for %s returned keys %s, expected one of %s "
+                    "- key format mismatch, NOT an absence of socials",
+                    pool.address,
+                    sorted(by_token)[:4],
+                    [pool.base_token_id, pool.quote_token_id],
+                )
             if not socials:
                 log.info(
                     "filtered out %s (%s): no social on the meme side",

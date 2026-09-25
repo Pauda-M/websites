@@ -68,11 +68,28 @@ def _rel_id(item: dict, key: str) -> str:
         return ""
 
 
+def token_address(token_id: str) -> str:
+    """The address out of a token resource id, however it is spelled.
+
+    GeckoTerminal ids look like "robinhood_0xabc..." in pool relationships. The
+    info endpoint's spelling is not guaranteed to match, so comparisons are made
+    on the address alone, lowercased.
+    """
+    text = str(token_id or "").strip().lower()
+    return text.rsplit("_", 1)[-1] if "_" in text else text
+
+
 def _socials(item: dict, token_id: str) -> tuple[str, ...]:
     raw = item.get("_socials_by_token") or {}
     if not isinstance(raw, dict):
         return ()
-    values = raw.get(token_id) or ()
+    values = raw.get(token_id)
+    if values is None:  # fall back to address matching, per token_address()
+        wanted = token_address(token_id)
+        for key, candidate in raw.items():
+            if token_address(key) == wanted:
+                values = candidate
+                break
     if not isinstance(values, (list, tuple)):
         return ()
     return tuple(str(v) for v in values if str(v).strip())
@@ -117,16 +134,32 @@ class Pool:
     def with_socials(self, by_token: dict) -> "Pool":
         """Return a copy carrying socials fetched after construction.
 
-        Discovery does not include social metadata, so it is attached later for
-        the few pools worth spending a lookup on.
+        Matching is on the token ADDRESS, not on the whole resource id. The ids
+        come from two different endpoints - the pool's relationships and the
+        pool-info payload - and nothing guarantees they are spelled identically.
+        An exact-string match that silently misses produces "no socials" for
+        every pool, indistinguishable from a chain whose projects register none.
         """
         if not by_token:
             return self
+        folded = {token_address(k): tuple(v or ()) for k, v in by_token.items()}
         return replace(
             self,
-            base_socials=tuple(by_token.get(self.base_token_id) or ()),
-            quote_socials=tuple(by_token.get(self.quote_token_id) or ()),
+            base_socials=folded.get(token_address(self.base_token_id), ()),
+            quote_socials=folded.get(token_address(self.quote_token_id), ()),
         )
+
+    def sides_matched(self, by_token: dict) -> bool:
+        """Did a social payload actually line up with either side of this pool?
+
+        False while ``by_token`` is non-empty means the lookup found tokens but
+        matched none of them - a key-format mismatch, not an absence of socials.
+        Those two look identical downstream, so they must be told apart here.
+        """
+        if not by_token:
+            return False
+        wanted = {token_address(self.base_token_id), token_address(self.quote_token_id)}
+        return any(token_address(k) in wanted for k in by_token)
 
     @classmethod
     def from_api(cls, item: dict) -> "Pool":

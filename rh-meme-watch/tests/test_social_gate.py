@@ -179,3 +179,56 @@ def test_socials_found_during_the_alert_are_persisted(tmp_path):
     from rh_meme_watch.store import Store
     row = app.store.get_pool("0x" + "55" * 20)
     assert Store.socials_of(row), "written to the store, not just used and dropped"
+
+
+# --- the mismatch my tests could not previously detect ----------------------
+
+def test_socials_match_when_the_info_endpoint_spells_ids_differently(tmp_path):
+    """The bug this exists for.
+
+    Pool relationships key tokens as "robinhood_0xabc..."; the info endpoint's
+    spelling is a separate contract and nothing guarantees it matches. An
+    exact-string lookup that misses yields no socials for every pool - which
+    downstream is indistinguishable from a chain whose projects register none,
+    and is how a live deployment produced zero alerts with 205 green tests.
+
+    conftest builds both sides from one variable, so no existing test could
+    detect this. These spell them differently on purpose.
+    """
+    item = api_item(name="SPELT / WETH", created_at=NOW, reserve="500000", socials=False)
+    base_id = item["relationships"]["base_token"]["data"]["id"]  # robinhood_0xbase...
+    address = base_id.rsplit("_", 1)[-1]
+    pool = Pool.from_api(item)
+
+    for spelling in (
+        address,                    # bare address
+        address.upper(),            # different case
+        f"solana_{address}",        # a different network prefix
+        f"eth_{address.upper()}",
+    ):
+        enriched = pool.with_socials({spelling: ["https://t.me/real"]})
+        cls = classify(enriched, cfg_for(tmp_path))
+        assert meme_socials(enriched, cls) == ("https://t.me/real",), (
+            f"{spelling!r} must still match the pool's base token"
+        )
+
+
+def test_a_payload_that_matches_nothing_is_distinguishable_from_no_socials(tmp_path):
+    """Both produce an empty result; only one is a fault, so they must differ."""
+    item = api_item(name="OTHER / WETH", created_at=NOW, reserve="500000", socials=False)
+    pool = Pool.from_api(item)
+
+    assert not pool.sides_matched({}), "nothing fetched is not a mismatch"
+    assert not pool.sides_matched(
+        {"robinhood_0xsomethingelse": ["https://t.me/x"]}
+    ), "keys that match neither side IS a mismatch"
+    assert pool.sides_matched(
+        {pool.base_token_id: ["https://t.me/x"]}
+    ), "a genuine hit"
+    assert pool.sides_matched(
+        {pool.quote_token_id.rsplit("_", 1)[-1].upper(): ["https://t.me/x"]}
+    ), "a hit on the quote side, differently spelled"
+
+
+def cfg_for(tmp_path):
+    return mk_cfg(tmp_path, require_socials=True)
