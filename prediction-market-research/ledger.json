@@ -4,7 +4,8 @@
     "mode": "PAPER_TRADING_ONLY",
     "paper_bankroll_usd": 10000,
     "created": "2026-09-25",
-    "price_data_caveat": "No live API access (egress blocked). All prices are dated press citations; see README."
+    "price_data_caveat": "No live API access (egress blocked). All prices are dated press citations; see README.",
+    "live_feed": "On-server poller (pm-research-poller) since 2026-09-25T18:06Z: live Kalshi/Polymarket bid-ask every 5 min. Entries from here on are only 'filled' at live executable prices."
   },
   "entries": [
     {
@@ -19,7 +20,7 @@
       "agent_probability_yes": 0.005,
       "edge_pct_points": -3.5,
       "verdict": "LONG_NO",
-      "confidence": "high (direction), low (fill price — quote may be stale and market may already be at 1c)",
+      "confidence": "high (direction), low (fill price \u2014 quote may be stale and market may already be at 1c)",
       "paper_position": {
         "side": "NO",
         "entry_price_no": 0.96,
@@ -28,9 +29,9 @@
         "max_profit_usd": 40,
         "fill_condition": "VOID if YES < 0.02 at verification; edge gone below that after fees"
       },
-      "resolution": null,
+      "resolution": "FILL VOIDED 2026-09-25T18:06Z: first live quote showed YES 0.00 bid / 0.01 ask (fill condition: void if YES < 0.02). The 4c press quote was stale; the near-certainty discount had already been collected by the market. No paper P&L. Underlying call (no shutdown Oct 1) still tracked for calibration; resolution 2026-10-01.",
       "next_check": "2026-10-01",
-      "status": "OPEN"
+      "status": "VOIDED"
     },
     {
       "id": "2026-09-25-fed-another-hike-2026",
@@ -53,9 +54,9 @@
         "max_profit_usd": 1260,
         "fill_condition": "VOID if YES < 0.80 at verification"
       },
-      "resolution": null,
-      "next_check": "2026-10-28",
-      "status": "OPEN"
+      "resolution": "FILL VOIDED 2026-09-25T18:06Z: first live quote 0.90 bid / 0.91 ask vs the 84% press quote used at entry - NO at 16c was never executable (live NO ~9.5c). Market moved 6.5 pts hawkish vs the citation; agent's 76% estimate was built on Sep-18 FedWatch data and needs fresh research before any re-entry. Re-underwrite scheduled 2026-09-28.",
+      "next_check": "2026-09-28",
+      "status": "VOIDED"
     },
     {
       "id": "2026-09-25-btc-100k-2026",
@@ -64,7 +65,7 @@
       "venue_ticker": null,
       "market_url": "https://news.bitcoin.com/crypto-news/kalshi-bitcoin-price-97k-peak-2026-100k-odds/",
       "market_price_yes": 0.46,
-      "price_source": "Bitcoin.com News, 2026-09-23: Kalshi traders give BTC 46% chance of topping $100K before year-end; ~$4.8M traded across seven strikes. BTC spot $84,413 at 2026-09-25 09:00 ET (Fortune).",
+      "price_source": "Bitcoin.com News, 2026-09-23: Kalshi traders give BTC 46% chance of topping $100K before year-end; ~$4.8M traded across seven strikes. BTC spot $84,413 at 2026-09-25 09:00 ET (Fortune). LIVE UPDATE 2026-09-25T18:06Z (server poller, KXBTCMAXY-26DEC31-99999.99): YES 0.38 bid / 0.39 ask - market drifted 7-8 pts below the Sep-23 press quote, now slightly BELOW agent's 42% estimate. Mild YES lean, still within model error bars; remains PASS.",
       "price_as_of": "2026-09-23",
       "agent_probability_yes": 0.42,
       "edge_pct_points": -4,
