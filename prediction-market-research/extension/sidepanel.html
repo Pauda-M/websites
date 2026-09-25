@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PM Ledger</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-0: #f4f4f2;
+    --surface-1: #fcfcfb;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #7a7975;
+    --border: #e2e1dd;
+    --accent: #2a78d6;
+    --good: #0ca30c;
+    --warning: #fab219;
+    --critical: #d03b3b;
+    --badge-bg: #efeeea;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --surface-0: #111110;
+      --surface-1: #1a1a19;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted: #8f8e86;
+      --border: #33332f;
+      --accent: #3987e5;
+      --badge-bg: #262623;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface-0: #111110;
+    --surface-1: #1a1a19;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #8f8e86;
+    --border: #33332f;
+    --accent: #3987e5;
+    --badge-bg: #262623;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--surface-0);
+    color: var(--text-primary);
+    font: 13px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 12px 12px 24px;
+    min-width: 0;
+  }
+  h1 { font-size: 0.95rem; margin: 0; letter-spacing: -0.01em; }
+  .sub { color: var(--text-muted); font-size: 0.72rem; margin: 2px 0 10px; }
+  .paper {
+    display: inline-block; font-size: 0.68rem; font-weight: 700;
+    padding: 1px 7px; border-radius: 999px;
+    background: var(--badge-bg); border: 1px solid var(--border);
+    color: var(--text-secondary); letter-spacing: 0.05em;
+  }
+  .total {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px; margin-bottom: 10px;
+  }
+  .total .label { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .total .value { font-size: 1.35rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .total .note { font-size: 0.7rem; color: var(--text-secondary); }
+  .card {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px; margin-bottom: 8px;
+  }
+  .card .q { font-weight: 600; font-size: 0.82rem; margin-bottom: 4px; overflow-wrap: anywhere; }
+  footer, #status { overflow-wrap: anywhere; }
+  .row { display: flex; justify-content: space-between; gap: 8px; font-size: 0.78rem; color: var(--text-secondary); margin: 2px 0; }
+  .row .v { color: var(--text-primary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 0.68rem; font-weight: 600; padding: 1px 7px;
+    border-radius: 999px; background: var(--badge-bg); border: 1px solid var(--border);
+    color: var(--text-primary); margin-bottom: 5px;
+  }
+  .badge .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  footer { margin-top: 10px; color: var(--text-muted); font-size: 0.68rem; }
+  footer a { color: var(--accent); }
+  #status { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 8px; }
+  #status.err { color: var(--critical); font-weight: 600; }
+</style>
+</head>
+<body>
+  <h1>PM Research Ledger</h1>
+  <div class="sub"><span class="paper">PAPER ONLY</span> &nbsp;&ldquo;Pay for yourself or you die&rdquo;</div>
+  <div id="status">connecting&hellip;</div>
+  <div id="total"></div>
+  <div id="cards"></div>
+  <footer id="foot"></footer>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

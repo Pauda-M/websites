@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "PM Research Ledger",
+  "version": "1.0.0",
+  "description": "Live paper-trading prediction-market ledger, served from the pbquant server. Read-only.",
+  "side_panel": { "default_path": "sidepanel.html" },
+  "action": { "default_title": "Open PM Research Ledger" },
+  "background": { "service_worker": "background.js" },
+  "permissions": ["sidePanel"],
+  "host_permissions": [
+    "http://192.168.50.88:8794/*",
+    "http://100.125.213.17:8794/*"
+  ]
+}
