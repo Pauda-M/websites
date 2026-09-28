@@ -5,7 +5,8 @@
     "paper_bankroll_usd": 10000,
     "created": "2026-09-25",
     "price_data_caveat": "No live API access (egress blocked). All prices are dated press citations; see README.",
-    "live_feed": "On-server poller (pm-research-poller) since 2026-09-25T18:06Z: live Kalshi/Polymarket bid-ask every 5 min. Entries from here on are only 'filled' at live executable prices."
+    "live_feed": "On-server poller (pm-research-poller) since 2026-09-25T18:06Z: live Kalshi/Polymarket bid-ask every 5 min. Entries from here on are only 'filled' at live executable prices.",
+    "last_review": "2026-09-28 mid-window check"
   },
   "entries": [
     {
@@ -42,8 +43,8 @@
       "market_price_yes": 0.84,
       "price_source": "Crypto Briefing: 'Polymarket shows 84% odds of another Fed rate hike in 2026' (post-Sep-16 FOMC; exact article date not verified).",
       "price_as_of": "UNVERIFIED_DATE_POST_2026-09-16",
-      "agent_probability_yes": 0.76,
-      "edge_pct_points": -8,
+      "agent_probability_yes": 0.85,
+      "edge_pct_points": -5.5,
       "verdict": "LONG_NO",
       "confidence": "low-medium",
       "paper_position": {
@@ -54,8 +55,8 @@
         "max_profit_usd": 1260,
         "fill_condition": "VOID if YES < 0.80 at verification"
       },
-      "resolution": "FILL VOIDED 2026-09-25T18:06Z: first live quote 0.90 bid / 0.91 ask vs the 84% press quote used at entry - NO at 16c was never executable (live NO ~9.5c). Market moved 6.5 pts hawkish vs the citation; agent's 76% estimate was built on Sep-18 FedWatch data and needs fresh research before any re-entry. Re-underwrite scheduled 2026-09-28.",
-      "next_check": "2026-09-28",
+      "resolution": "FILL VOIDED 2026-09-25T18:06Z: first live quote 0.90 bid / 0.91 ask vs the 84% press quote used at entry - NO at 16c was never executable (live NO ~9.5c). Market moved 6.5 pts hawkish vs the citation; agent's 76% estimate was built on Sep-18 FedWatch data and needs fresh research before any re-entry. Re-underwrite scheduled 2026-09-28. RE-UNDERWRITE 2026-09-28: FedWatch Oct hike odds now ~73% (CNBC Sep 23, post-Barr comments); dot-plot median implies one more 2026 hike. Agent estimate raised 0.76 -> 0.85; market 0.90/0.91 unchanged since Sep 25. Residual ~5pt gap is inside error bars for a model that just moved 9pts toward the market in 3 days - NO RE-ENTRY. Lesson logged: the market led, the model lagged.",
+      "next_check": "2026-10-28",
       "status": "VOIDED"
     },
     {
@@ -65,7 +66,7 @@
       "venue_ticker": null,
       "market_url": "https://news.bitcoin.com/crypto-news/kalshi-bitcoin-price-97k-peak-2026-100k-odds/",
       "market_price_yes": 0.46,
-      "price_source": "Bitcoin.com News, 2026-09-23: Kalshi traders give BTC 46% chance of topping $100K before year-end; ~$4.8M traded across seven strikes. BTC spot $84,413 at 2026-09-25 09:00 ET (Fortune). LIVE UPDATE 2026-09-25T18:06Z (server poller, KXBTCMAXY-26DEC31-99999.99): YES 0.38 bid / 0.39 ask - market drifted 7-8 pts below the Sep-23 press quote, now slightly BELOW agent's 42% estimate. Mild YES lean, still within model error bars; remains PASS.",
+      "price_source": "Bitcoin.com News, 2026-09-23: Kalshi traders give BTC 46% chance of topping $100K before year-end; ~$4.8M traded across seven strikes. BTC spot $84,413 at 2026-09-25 09:00 ET (Fortune). LIVE UPDATE 2026-09-25T18:06Z (server poller, KXBTCMAXY-26DEC31-99999.99): YES 0.38 bid / 0.39 ask - market drifted 7-8 pts below the Sep-23 press quote, now slightly BELOW agent's 42% estimate. Mild YES lean, still within model error bars; remains PASS. 2026-09-28 15:59Z: YES 0.35/0.36 - market now 6-7 pts BELOW agent's 42%; drift continues. Estimate kept at 0.42 pending fresh spot/vol inputs; a live-priced YES entry becomes defensible only if the gap widens past ~10 pts with spot re-checked.",
       "price_as_of": "2026-09-23",
       "agent_probability_yes": 0.42,
       "edge_pct_points": -4,
@@ -73,7 +74,7 @@
       "confidence": "low",
       "paper_position": null,
       "resolution": null,
-      "next_check": "2026-12-31",
+      "next_check": "2026-10-05",
       "status": "WATCHING_NO_POSITION"
     }
   ]
